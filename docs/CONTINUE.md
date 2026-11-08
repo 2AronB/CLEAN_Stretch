@@ -19,6 +19,12 @@ Phase: **implementation — Slices S0 + S1 first draft** (2026-11-08, D-020).
   scan) using Gradle 8's bundled Kotlin 2.0.21 compiler + JUnit 4.13.2.
 - Every keyframe rendered to PNG with tools/pose-preview and checked by eye.
 
+## Git
+- Git for Windows 2.56.0.4 installed on the PC (winget). This folder is the repo;
+  `main` tracks https://github.com/2AronB/CLEAN_Stretch (public). The GitHub repo was
+  empty before 2026-11-08 — the first commit is this PC's folder. Commits use
+  `2AronB <2AronB@users.noreply.github.com>` (repo-local) so no personal email is public.
+
 ## Verified on the owner's PC (2026-11-08, Claude Code)
 - `local.properties` created (points at the default Android SDK; git-ignored).
 - `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` — BUILD SUCCESSFUL on the
@@ -56,15 +62,12 @@ rechecked on the emulator:
   The short label stays 2024 so it doesn't clash with S26 "Ingram et al. 2025".
 
 ## Not yet verified
-- Git: Git is not installed on the PC, so the folder is not a repo yet and nothing
-  has been committed or pushed (step 2 of the first-session checklist skipped).
 - Owner look-and-feel review on phone (the point of S1). First impression
   (2026-11-08): "animations are clean … some need polish, but clear enough for now."
 - AGENTS.md still says "discovery, application code not authorized"; D-020 says
   implementation. Owner to confirm, then align AGENTS.md.
 
 ## Next
-1. Owner installs Git; then init, connect to github.com/2AronB/CLEAN_Stretch, commit, push.
-2. Check cold-start time on a real phone.
-3. Owner reviews the figure and player feel on the phone.
-4. Then S2 (real runner: voice, chimes, sessions, resume) — needs Room + VIBRATE approval.
+1. Check cold-start time on a real phone.
+2. Owner reviews the figure and player feel on the phone.
+3. Then S2 (real runner: voice, chimes, sessions, resume) — needs Room + VIBRATE approval.

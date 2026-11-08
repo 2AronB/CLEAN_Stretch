@@ -1,6 +1,7 @@
 package dev.clean.stretch.settings
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,32 +28,32 @@ class AppPreferences(context: Context) {
 
     fun updateVoiceCues(enabled: Boolean) {
         voiceCues = enabled
-        prefs.edit().putBoolean(KEY_VOICE, enabled).apply()
+        prefs.edit { putBoolean(KEY_VOICE, enabled) }
     }
 
     fun updateChimeCues(enabled: Boolean) {
         chimeCues = enabled
-        prefs.edit().putBoolean(KEY_CHIMES, enabled).apply()
+        prefs.edit { putBoolean(KEY_CHIMES, enabled) }
     }
 
     fun updateVibrationCues(enabled: Boolean) {
         vibrationCues = enabled
-        prefs.edit().putBoolean(KEY_VIBRATION, enabled).apply()
+        prefs.edit { putBoolean(KEY_VIBRATION, enabled) }
     }
 
     fun updateThemeMode(mode: ThemeMode) {
         themeMode = mode
-        prefs.edit().putInt(KEY_THEME, mode.ordinal).apply()
+        prefs.edit { putInt(KEY_THEME, mode.ordinal) }
     }
 
     fun updateWallpaperColors(enabled: Boolean) {
         wallpaperColors = enabled
-        prefs.edit().putBoolean(KEY_WALLPAPER, enabled).apply()
+        prefs.edit { putBoolean(KEY_WALLPAPER, enabled) }
     }
 
     fun updateStillFigures(enabled: Boolean) {
         stillFigures = enabled
-        prefs.edit().putBoolean(KEY_STILL, enabled).apply()
+        prefs.edit { putBoolean(KEY_STILL, enabled) }
     }
 
     private companion object {

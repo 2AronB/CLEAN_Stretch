@@ -1,6 +1,7 @@
 package dev.clean.stretch.data
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Where an unfinished routine got to, written at every step boundary (docs/PLAN.md §3.1).
@@ -34,17 +35,17 @@ class CheckpointStore(context: Context) {
     }
 
     fun save(c: Checkpoint) {
-        prefs.edit()
-            .putString(KEY_ROUTE, c.route)
-            .putInt(KEY_INDEX, c.index)
-            .putLong(KEY_STARTED, c.startedAt)
-            .putLong(KEY_SAVED, c.savedAt)
-            .putString(KEY_RECORDS, c.records)
-            .apply()
+        prefs.edit {
+            putString(KEY_ROUTE, c.route)
+            putInt(KEY_INDEX, c.index)
+            putLong(KEY_STARTED, c.startedAt)
+            putLong(KEY_SAVED, c.savedAt)
+            putString(KEY_RECORDS, c.records)
+        }
     }
 
     fun clear() {
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
     }
 
     private companion object {

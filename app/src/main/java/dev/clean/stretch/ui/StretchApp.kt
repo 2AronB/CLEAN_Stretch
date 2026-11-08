@@ -155,18 +155,18 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, saver: SessionSaver) 
             modifier = Modifier.fillMaxSize().padding(padding),
             label = "screen",
         ) { route ->
-          screenStates.SaveableStateProvider(Route.encode(route)) {
-            when (route) {
-                Route.Today -> TodayScreen(prefs = prefs, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) })
-                Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
-                Route.Progress -> ProgressScreen(history)
-                Route.Settings -> SettingsScreen(prefs = prefs, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) })
-                is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) })
-                is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
-                Route.Studio -> PoseStudioScreen(onBack = ::pop)
-                Route.Sources -> SourcesScreen(onBack = ::pop)
+            screenStates.SaveableStateProvider(Route.encode(route)) {
+                when (route) {
+                    Route.Today -> TodayScreen(prefs = prefs, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) })
+                    Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
+                    Route.Progress -> ProgressScreen(history)
+                    Route.Settings -> SettingsScreen(prefs = prefs, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) })
+                    is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) })
+                    is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
+                    Route.Studio -> PoseStudioScreen(onBack = ::pop)
+                    Route.Sources -> SourcesScreen(onBack = ::pop)
+                }
             }
-          }
         }
     }
 }

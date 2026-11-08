@@ -35,7 +35,7 @@ import dev.clean.stretch.ui.figure.rememberFigureClock
 
 /** Large title used at the top of each tab, like stock Android apps. */
 @Composable
-fun ScreenTitle(title: String, subtitle: String? = null, modifier: Modifier = Modifier) {
+fun ScreenTitle(title: String, modifier: Modifier = Modifier, subtitle: String? = null) {
     Column(modifier.fillMaxWidth().statusBarsPadding().padding(start = 24.dp, end = 24.dp, top = 28.dp, bottom = 12.dp)) {
         if (subtitle != null) {
             Text(subtitle, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)

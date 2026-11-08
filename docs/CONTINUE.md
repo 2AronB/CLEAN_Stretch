@@ -165,3 +165,10 @@ rechecked on the emulator:
   player. Owner to review wording of conditions and default limits.
 - Gap seen: with "no floor" + "avoid legs" only 2 stretches qualify → S3 needs more standing
   and chair stretches. Saving routines and the if-then plan / reminder ask are not built yet.
+
+## S3 round 3 (2026-11-08): 5 standing stretches — 21 total
+- Standing upper-back stretch (spinalFlexion), Standing lunge hip flexor (each side), Overhead
+  reach, Standing back bend (core), Standing knee hug (each side). Poses checked by eye on the
+  emulator (back-bend arms fixed). 64 voice clips. 31/31 tests, lint 0 errors.
+- Still to do for S3: ~9 more stretches, easier/harder variants (EVIDENCE §5.4), chair
+  versions (needs a chair prop in FigureView), wrists/forearms for Desk.

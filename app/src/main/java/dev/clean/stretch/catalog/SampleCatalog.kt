@@ -439,10 +439,142 @@ object SampleCatalog {
         ),
     )
 
+    // ---- Round 3 (S3): standing options so "no floor" and Desk routines have more to choose from.
+
+    val upperBack = Stretch(
+        key = "standing_upper_back",
+        spinalFlexion = true,
+        name = "Standing upper-back stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.UpperBack),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        highlight = setOf(Segment.Torso),
+        summary = "Reach your arms forward and round your upper back, like hugging a big ball.",
+        cues = listOf(
+            "Stand tall with your knees soft.",
+            "Reach both arms forward at shoulder height and clasp your hands.",
+            "Round your upper back and let your head drop a little.",
+            "Feel between your shoulder blades. Breathe into your back.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(torso = 176f, spine = 14f, head = -20f, nearShoulder = 90f, nearElbow = 10f, farShoulder = 88f, farElbow = 12f),
+            deep = Pose(torso = 174f, spine = 18f, head = -25f, nearShoulder = 95f, nearElbow = 8f, farShoulder = 93f, farElbow = 10f),
+        ),
+    )
+
+    val standingLunge = Stretch(
+        key = "standing_lunge_hip_flexor",
+        name = "Standing lunge hip flexor",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.HipFlexors),
+        secondary = listOf(Muscle.Quadriceps),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "A long step back, tuck your hips under and feel the front of the back hip.",
+        cues = listOf(
+            "Stand tall and take a long step back with one foot, heel lifted.",
+            "Bend your front knee a little and keep your back leg long.",
+            "Tuck your hips under and squeeze the back-leg buttock.",
+            "Reach the back-leg arm overhead. Feel the front of that hip.",
+        ),
+        cautions = listOf("Hold a wall or chair for balance if you need to."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(torso = 182f, spine = -3f, nearShoulder = 160f, nearElbow = 8f, farShoulder = 30f, farElbow = 20f, nearHip = -25f, nearKnee = 15f, farHip = 25f, farKnee = 30f, farAnkle = 5f),
+            deep = Pose(torso = 184f, spine = -4f, nearShoulder = 168f, nearElbow = 6f, farShoulder = 32f, farElbow = 22f, nearHip = -30f, nearKnee = 18f, nearAnkle = -10f, farHip = 30f, farKnee = 45f, farAnkle = 15f),
+        ),
+    )
+
+    val overheadReach = Stretch(
+        key = "overhead_reach",
+        name = "Overhead reach",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Lats),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm, Segment.Torso),
+        summary = "Reach both arms up and grow tall through your sides.",
+        cues = listOf(
+            "Stand tall with your feet hip-width apart.",
+            "Reach both arms overhead, hands shoulder-width or clasped.",
+            "Grow tall from your ribs to your fingertips without arching your lower back.",
+            "Feel your sides and under your arms. Breathe slowly.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(spine = -3f, head = 6f, nearShoulder = 175f, nearElbow = 4f, farShoulder = 172f, farElbow = 6f),
+            deep = Pose(torso = 182f, spine = -5f, head = 8f, nearShoulder = 182f, nearElbow = 2f, farShoulder = 179f, farElbow = 4f),
+        ),
+    )
+
+    val standingBackBend = Stretch(
+        key = "standing_back_bend",
+        name = "Standing back bend",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Abdominals),
+        secondary = listOf(Muscle.HipFlexors),
+        position = Position.Standing,
+        highlight = setOf(Segment.Torso),
+        summary = "Hands on your lower back, lift your chest and lean back a little.",
+        cues = listOf(
+            "Stand tall and place your hands on your lower back.",
+            "Lift your chest toward the ceiling.",
+            "Lean back only a little, keeping your neck long.",
+            "Feel the front of your body. Breathe slowly.",
+        ),
+        cautions = listOf("Keep it small. Skip it if leaning back hurts your back."),
+        sourceIds = listOf("S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(torso = 190f, spine = -9f, head = 8f, nearShoulder = -40f, nearElbow = 50f, farShoulder = -38f, farElbow = 48f),
+            deep = Pose(torso = 194f, spine = -11f, head = 10f, nearShoulder = -42f, nearElbow = 52f, farShoulder = -40f, farElbow = 50f),
+        ),
+    )
+
+    val standingKneeHug = Stretch(
+        key = "standing_knee_hug",
+        name = "Standing knee hug",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Glutes),
+        secondary = listOf(Muscle.LowerBack),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Stand tall and hug one knee up toward your chest.",
+        cues = listOf(
+            "Stand tall, near a wall if you'd like support.",
+            "Lift one knee and hold it just below the knee with both hands.",
+            "Draw it gently toward your chest while standing tall.",
+            "Feel the back of that hip. Breathe slowly.",
+        ),
+        cautions = listOf("Hold a wall with one hand if you feel wobbly."),
+        sourceIds = listOf("S3", "S15"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 53f, nearElbow = 30f, farShoulder = 50f, farElbow = 34f, nearHip = 120f, nearKnee = 120f, nearAnkle = -10f),
+            deep = Pose(nearShoulder = 58f, nearElbow = 34f, farShoulder = 55f, farElbow = 38f, nearHip = 130f, nearKnee = 125f, nearAnkle = -10f),
+        ),
+    )
+
     val all: List<Stretch> = listOf(
         seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow,
         neckFlexion, chestOpener, wallLat, kneeToChest, butterfly, bentKneeCalf, standingHamstring,
         sphinx, lyingHamstring, downwardDog,
+        upperBack, standingLunge, overheadReach, standingBackBend, standingKneeHug,
     )
 
 

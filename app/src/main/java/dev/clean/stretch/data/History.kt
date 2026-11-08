@@ -107,16 +107,17 @@ abstract class HistoryDao {
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
 }
 
-/** v1: sessions. v2: adds the profile table (automatic migration; no existing data changes). */
+/** v1: sessions. v2: adds profile. v3: adds saved routines. Automatic migrations; existing data is kept. */
 @Database(
-    entities = [SessionEntity::class, SessionStepEntity::class, ProfileEntity::class],
-    version = 2,
+    entities = [SessionEntity::class, SessionStepEntity::class, ProfileEntity::class, SavedRoutineEntity::class],
+    version = 3,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 abstract class StretchDatabase : RoomDatabase() {
     abstract fun history(): HistoryDao
     abstract fun profile(): ProfileDao
+    abstract fun routines(): SavedRoutineDao
 
     companion object {
         @Volatile private var instance: StretchDatabase? = null

@@ -34,6 +34,8 @@ import dev.clean.stretch.data.BackupManager
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.ProfileDao
 import dev.clean.stretch.data.ProfileMapper
+import dev.clean.stretch.data.SavedRoutineDao
+import dev.clean.stretch.data.SavedRoutineEntity
 import dev.clean.stretch.data.profile
 import dev.clean.stretch.plan.RoutineKind
 import kotlinx.coroutines.launch
@@ -112,7 +114,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
+fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
     val dark = when (prefs.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -126,12 +128,12 @@ fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao
         onDispose { }
     }
     StretchTheme(dark = dark, wallpaperColors = prefs.wallpaperColors) {
-        StretchApp(prefs, history, profiles, saver, backup)
+        StretchApp(prefs, history, profiles, routines, saver, backup)
     }
 }
 
 @Composable
-fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver, backup: BackupManager) {
+fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, saver: SessionSaver, backup: BackupManager) {
     // null until the saved profile has loaded, so first-run cards don't flash.
     val profile by remember { profiles.profile() }.collectAsState(initial = null)
     val stack: SnapshotStateList<Route> = rememberSaveable(
@@ -184,7 +186,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
             screenStates.SaveableStateProvider(Route.encode(route)) {
                 when (route) {
                     Route.Today -> profile?.let { p ->
-                        TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
+                        TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines)
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
                     Route.Progress -> ProgressScreen(history, prefs.daysPerWeek)
@@ -205,7 +207,14 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                         )
                     }
                     is Route.Preview -> profile?.let { p ->
-                        RoutinePreviewScreen(route = route, profile = p, onBack = ::pop, onStart = ::replace)
+                        RoutinePreviewScreen(
+                            route = route, profile = p, onBack = ::pop, onStart = ::replace,
+                            onSave = { name, keys ->
+                                AppScope.launch {
+                                    routines.insert(SavedRoutineEntity(name = name, kind = route.kind.name, holdSeconds = route.holdSeconds, keys = keys.joinToString(","), createdAt = System.currentTimeMillis()))
+                                }
+                            },
+                        )
                     }
                 }
             }

@@ -19,7 +19,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.FilterChip
@@ -32,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,6 +49,9 @@ import dev.clean.stretch.plan.Generator
 import dev.clean.stretch.plan.Profile
 import dev.clean.stretch.plan.RoutineKind
 import dev.clean.stretch.data.HistoryDao
+import dev.clean.stretch.data.SavedRoutineDao
+import dev.clean.stretch.data.SavedRoutineEntity
+import kotlinx.coroutines.launch
 import dev.clean.stretch.data.Stats
 import dev.clean.stretch.figure.Easing
 import dev.clean.stretch.figure.MotionPlayer
@@ -73,7 +79,11 @@ fun TodayScreen(
     onOpenStretch: (String) -> Unit,
     onOpenSources: () -> Unit,
     onOpenSetup: () -> Unit,
+    savedRoutines: SavedRoutineDao,
 ) {
+    val saved by remember { savedRoutines.observe() }.collectAsState(initial = emptyList())
+    var deleting by remember { mutableStateOf<SavedRoutineEntity?>(null) }
+    val scope = rememberCoroutineScope()
     val reduced = rememberReducedMotion(prefs.stillFigures)
     var checkpoint by remember { mutableStateOf(saver.checkpoints.load()) }
     val zone = remember { ZoneId.systemDefault() }
@@ -142,11 +152,42 @@ fun TodayScreen(
             RoutineStrip(stretches, onOpenStretch)
         }
         Spacer(Modifier.height(20.dp))
+        if (saved.isNotEmpty()) {
+            Spacer(Modifier.height(20.dp))
+            SectionLabel("Your routines")
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                saved.forEach { r ->
+                    val keys = r.keys.split(",").filter { SampleCatalog.byKey(it) != null }
+                    val kindOf = RoutineKind.entries.firstOrNull { it.name == r.kind } ?: RoutineKind.Full
+                    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(r.name, style = MaterialTheme.typography.titleMedium)
+                                Text("${keys.size} stretches · about ${Generator.estimateMinutes(keys, r.holdSeconds)} min", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            TextButton(onClick = { deleting = r }) { Text("Delete") }
+                            Button(onClick = { onStart(Route.Preview(kindOf, r.holdSeconds, keys)) }, enabled = keys.isNotEmpty()) { Text("Open") }
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(20.dp))
         SectionLabel("This week")
         WeekCard(today, activeDays, prefs.daysPerWeek, streak)
         Spacer(Modifier.height(20.dp))
         EvidenceCard(onOpenSources)
         Spacer(Modifier.height(32.dp))
+    }
+
+    deleting?.let { r ->
+        AlertDialog(
+            onDismissRequest = { deleting = null },
+            title = { Text("Delete \"${r.name}\"?") },
+            text = { Text("The routine is removed. Your history of past sessions stays as it is.") },
+            confirmButton = { TextButton(onClick = { scope.launch { savedRoutines.delete(r.id) }; deleting = null }) { Text("Delete") } },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text("Cancel") } },
+        )
     }
 }
 

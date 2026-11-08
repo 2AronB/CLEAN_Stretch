@@ -7,6 +7,7 @@ data class BackupData(
     val profile: ProfileEntity?,
     /** Small settings (theme, cues, plan, reminder) as text. */
     val settings: Map<String, String>,
+    val routines: List<SavedRoutineEntity> = emptyList(),
 )
 
 class BackupException(message: String) : Exception(message)
@@ -42,6 +43,9 @@ object BackupCodec {
                 )
             },
             "settings" to data.settings,
+            "routines" to data.routines.map { r ->
+                mapOf("id" to r.id, "name" to r.name, "kind" to r.kind, "holdSeconds" to r.holdSeconds, "keys" to r.keys, "createdAt" to r.createdAt)
+            },
         ),
     )
 
@@ -83,6 +87,9 @@ object BackupCodec {
             )
         }
         val settings = (root["settings"] as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v.toString() } ?: emptyMap()
-        return BackupData(sessions, steps, profile, settings)
+        val routines = if (root["routines"] == null) emptyList() else list("routines").map {
+            SavedRoutineEntity(id = it.long("id"), name = it.str("name"), kind = it.str("kind"), holdSeconds = it.int("holdSeconds"), keys = it.str("keys"), createdAt = it.long("createdAt"))
+        }
+        return BackupData(sessions, steps, profile, settings, routines)
     }
 }

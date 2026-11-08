@@ -18,6 +18,7 @@ class BackupTest {
         profile = ProfileEntity(goal = "Desk", olderAdult = true, focus = "Neck,Back", avoid = "", noFloor = true, noKneeling = false,
             hasWall = true, conditions = "Pregnancy", minutes = 10, setupDone = true, updatedAt = 5L),
         settings = mapOf("theme_mode" to "2", "cue_voice" to "false"),
+        routines = listOf(SavedRoutineEntity(id = 3, name = "Morning, mine", kind = "Quick", holdSeconds = 30, keys = "neck_flexion,overhead_reach", createdAt = 7L)),
     )
 
     @Test

@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +48,15 @@ import kotlin.random.Random
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoutinePreviewScreen(route: Route.Preview, profile: Profile, onBack: () -> Unit, onStart: (Route) -> Unit) {
+fun RoutinePreviewScreen(
+    route: Route.Preview,
+    profile: Profile,
+    onBack: () -> Unit,
+    onStart: (Route) -> Unit,
+    onSave: (name: String, keys: List<String>) -> Unit,
+) {
+    var naming by rememberSaveable { mutableStateOf(false) }
+    var saved by rememberSaveable { mutableStateOf(false) }
     var keysText by rememberSaveable { mutableStateOf(route.keys.joinToString(",")) }
     var minutes by rememberSaveable { mutableIntStateOf(profile.minutes) }
     var seed by rememberSaveable { mutableIntStateOf(0) }
@@ -57,7 +67,9 @@ fun RoutinePreviewScreen(route: Route.Preview, profile: Profile, onBack: () -> U
     val estimate = Generator.estimateMinutes(keys, route.holdSeconds)
 
     Column(Modifier.fillMaxSize()) {
-        BackBar(route.kind.title, onBack)
+        BackBar(route.kind.title, onBack) {
+            TextButton(onClick = { naming = true }, enabled = keys.isNotEmpty()) { Text(if (saved) "Saved" else "Save") }
+        }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
             Text(
                 "${keys.size} stretches · about $estimate min · ${route.holdSeconds} s holds",
@@ -131,5 +143,17 @@ fun RoutinePreviewScreen(route: Route.Preview, profile: Profile, onBack: () -> U
                 Text("Start")
             }
         }
+    }
+    if (naming) {
+        var name by rememberSaveable { mutableStateOf(route.kind.title) }
+        AlertDialog(
+            onDismissRequest = { naming = false },
+            title = { Text("Save this routine") },
+            text = { OutlinedTextField(value = name, onValueChange = { name = it.take(40) }, singleLine = true, label = { Text("Name") }) },
+            confirmButton = {
+                TextButton(onClick = { onSave(name.trim().ifEmpty { route.kind.title }, keys); saved = true; naming = false }) { Text("Save") }
+            },
+            dismissButton = { TextButton(onClick = { naming = false }) { Text("Cancel") } },
+        )
     }
 }

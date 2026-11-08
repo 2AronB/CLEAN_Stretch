@@ -198,3 +198,11 @@ rechecked on the emulator:
 - Checked: 35/35 tests, lint clean; emulator: backup saved to Downloads (2.3 kB JSON), restore
   picked it, dialog showed "5 sessions…", "Restored 5 sessions.", history intact.
 - Version 0.3.0 (versionCode 3).
+
+## Saved routines (2026-11-08)
+- Review screen → **Save** (name dialog) stores the edited routine (`data/SavedRoutines.kt`,
+  DB v3 via AutoMigration; schema 3.json). Today → "Your routines": Open (goes to review) and
+  Delete (confirm; history untouched). Included in backups as an optional `routines` list, so
+  older v1 backup files still restore.
+- Checked: 35/35 tests (backup round-trip includes a routine), lint clean; emulator: v2→v3
+  upgrade kept data, save → listed on Today, delete → confirm → removed, no crashes.

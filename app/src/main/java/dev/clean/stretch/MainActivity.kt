@@ -22,6 +22,6 @@ class MainActivity : ComponentActivity() {
         val db = StretchDatabase.get(applicationContext)
         val history = db.history()
         val saver = SessionSaver(history, CheckpointStore(applicationContext))
-        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), saver = saver, backup = BackupManager(db, prefs), activity = this) }
+        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), routines = db.routines(), saver = saver, backup = BackupManager(db, prefs), activity = this) }
     }
 }

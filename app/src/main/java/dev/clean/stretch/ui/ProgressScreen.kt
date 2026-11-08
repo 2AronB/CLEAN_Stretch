@@ -18,6 +18,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import dev.clean.stretch.catalog.Region
+import dev.clean.stretch.data.HistoryDao
+import dev.clean.stretch.data.Stats
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -27,9 +37,16 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
-/** Empty state for weekly progress. Real data arrives with sessions (S2) and progress (S6). */
+/** This week's minutes per body area and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen() {
+fun ProgressScreen(history: HistoryDao) {
+    val zone = remember { ZoneId.systemDefault() }
+    val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
+    val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
+    val sessions by remember { history.recentSessions(20) }.collectAsState(initial = emptyList())
+    val minutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
+    val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.secondary)
+
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ScreenTitle("Progress", subtitle = "This week")
         Surface(
@@ -40,27 +57,24 @@ fun ProgressScreen() {
             Column(Modifier.padding(20.dp)) {
                 Text("Weekly goals", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Each focus area aims for about 10 minutes a week.",
+                    "Each area aims for about 10 minutes a week. Minutes count the time you held stretches for that area.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(20.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    listOf("Hamstrings", "Hips", "Calves", "Back").forEachIndexed { i, label ->
-                        val colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.tertiary,
-                            MaterialTheme.colorScheme.secondary,
-                            MaterialTheme.colorScheme.primary,
-                        )
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Ring(fraction = 0f, color = colors[i], modifier = Modifier.size(64.dp))
-                                Text("0", style = MaterialTheme.typography.titleMedium)
+                Region.entries.chunked(3).forEachIndexed { row, regions ->
+                    Spacer(Modifier.height(20.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        regions.forEachIndexed { i, region ->
+                            val m = minutes[region] ?: 0.0
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Ring(fraction = (m / Stats.WEEKLY_GOAL_MINUTES).toFloat(), color = colors[(row * 3 + i) % colors.size], modifier = Modifier.size(64.dp))
+                                    Text(formatMinutes(m), style = MaterialTheme.typography.titleMedium)
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text(region.label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                                Text("of 10 min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Spacer(Modifier.height(6.dp))
-                            Text(label, style = MaterialTheme.typography.labelMedium)
-                            Text("of 10 min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -75,15 +89,39 @@ fun ProgressScreen() {
             Column(Modifier.padding(20.dp)) {
                 Text("Your history", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    "Finished routines will appear here with minutes per area, weekly streaks and range-of-motion check-ins.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (sessions.isEmpty()) {
+                    Text(
+                        "Finished routines will appear here.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                val dateFormat = remember { DateTimeFormatter.ofPattern("EEE d MMM, HH:mm") }
+                sessions.forEach { s ->
+                    val start = Instant.ofEpochMilli(s.startedAt).atZone(zone)
+                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(s.routineTitle, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                start.format(dateFormat) + if (s.completed) "" else " · ended early",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        val mins = ((s.endedAt - s.startedAt) / 60_000).coerceAtLeast(0)
+                        Text(if (mins < 1) "<1 min" else "$mins min", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
             }
         }
         Spacer(Modifier.height(24.dp))
     }
+}
+
+private fun formatMinutes(m: Double): String = when {
+    m <= 0.0 -> "0"
+    m < 1.0 -> "<1"
+    else -> m.toInt().toString()
 }
 
 @Composable

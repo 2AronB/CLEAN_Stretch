@@ -1,5 +1,6 @@
 package dev.clean.stretch.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,11 +22,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -33,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.clean.stretch.R
 import dev.clean.stretch.catalog.SampleCatalog
+import dev.clean.stretch.data.HistoryDao
+import dev.clean.stretch.data.Stats
 import dev.clean.stretch.figure.Easing
 import dev.clean.stretch.figure.MotionPlayer
 import dev.clean.stretch.figure.Timing
@@ -44,6 +51,7 @@ import dev.clean.stretch.ui.figure.rememberReducedMotion
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -56,11 +64,18 @@ private val routineStretches get() = SampleRoutine.keys.mapNotNull { SampleCatal
 @Composable
 fun TodayScreen(
     prefs: AppPreferences,
+    saver: SessionSaver,
+    history: HistoryDao,
     onStart: (Route) -> Unit,
     onOpenStretch: (String) -> Unit,
     onOpenSources: () -> Unit,
 ) {
     val reduced = rememberReducedMotion(prefs.stillFigures)
+    var checkpoint by remember { mutableStateOf(saver.checkpoints.load()) }
+    val zone = remember { ZoneId.systemDefault() }
+    val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
+    val recent by remember { history.recentSessions(50) }.collectAsState(initial = emptyList())
+    val activeDays = remember(recent) { Stats.activeDays(recent.filter { it.startedAt >= weekFrom }, zone) }
     val greeting = remember {
         when (LocalTime.now().hour) {
             in 5..11 -> "Good morning"
@@ -71,13 +86,28 @@ fun TodayScreen(
     val today = remember { LocalDate.now() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ScreenTitle(title = greeting, subtitle = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d")))
+        saver.lastError?.let { error ->
+            NoticeCard(title = "Not saved", body = error)
+            Spacer(Modifier.height(12.dp))
+        }
+        checkpoint?.let { c ->
+            val route = Route.decode(c.route) as? Route.Player
+            if (route != null) {
+                UnfinishedCard(
+                    title = route.title,
+                    onResume = { saver.checkpoints.resumeNext = true; onStart(route) },
+                    onSave = { saver.saveCheckpoint(c); checkpoint = null },
+                )
+                Spacer(Modifier.height(12.dp))
+            }
+        }
         HeroRoutineCard(reduced = reduced, onStart = { onStart(SampleRoutine) })
         Spacer(Modifier.height(20.dp))
         SectionLabel("In this routine")
         RoutineStrip(onOpenStretch)
         Spacer(Modifier.height(20.dp))
         SectionLabel("This week")
-        WeekCard(today)
+        WeekCard(today, activeDays)
         Spacer(Modifier.height(20.dp))
         EvidenceCard(onOpenSources)
         Spacer(Modifier.height(32.dp))
@@ -161,7 +191,7 @@ private fun RoutineStrip(onOpenStretch: (String) -> Unit) {
 }
 
 @Composable
-private fun WeekCard(today: LocalDate) {
+private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>) {
     val monday = today.with(DayOfWeek.MONDAY)
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -184,16 +214,26 @@ private fun WeekCard(today: LocalDate) {
                             Modifier.size(34.dp),
                             contentAlignment = Alignment.Center,
                         ) {
+                            val active = day in activeDays
                             Surface(
                                 shape = CircleShape,
-                                color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                color = when {
+                                    isToday -> MaterialTheme.colorScheme.primary
+                                    active -> MaterialTheme.colorScheme.tertiaryContainer
+                                    else -> MaterialTheme.colorScheme.surfaceContainerHighest
+                                },
+                                border = if (isToday && active) BorderStroke(3.dp, MaterialTheme.colorScheme.tertiary) else null,
                                 modifier = Modifier.size(if (isToday) 34.dp else 28.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
-                                        "${day.dayOfMonth}",
+                                        if (active && !isToday) "✓" else "${day.dayOfMonth}",
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = if (isToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = when {
+                                            isToday -> MaterialTheme.colorScheme.onPrimary
+                                            active -> MaterialTheme.colorScheme.onTertiaryContainer
+                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
                                     )
                                 }
                             }
@@ -203,11 +243,50 @@ private fun WeekCard(today: LocalDate) {
             }
             Spacer(Modifier.height(14.dp))
             Text(
-                "Finish a routine to start your week. Missed days never break your streak — weeks that reach your goal do the counting.",
+                if (activeDays.isEmpty()) {
+                    "Finish a routine to start your week. Missed days never break your streak — weeks that reach your goal do the counting."
+                } else {
+                    "${activeDays.size} ${if (activeDays.size == 1) "day" else "days"} of stretching this week. Missed days never break your streak."
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start,
             )
+        }
+    }
+}
+
+@Composable
+private fun UnfinishedCard(title: String, onResume: () -> Unit, onSave: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Text("Unfinished routine", style = MaterialTheme.typography.labelLarge)
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onResume) { Text("Resume") }
+                OutlinedButton(onClick = onSave) { Text("Save what I did") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoticeCard(title: String, body: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Text(title, style = MaterialTheme.typography.labelLarge)
+            Text(body, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

@@ -74,6 +74,28 @@ fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSource
             )
         }
 
+        SectionLabel("During a routine")
+        Group {
+            SwitchRow(
+                title = "Voice",
+                subtitle = "Announce each stretch and what's next. Uses your phone's offline voice.",
+                checked = prefs.voiceCues,
+                onChange = prefs::updateVoiceCues,
+            )
+            SwitchRow(
+                title = "Chimes",
+                subtitle = "3-2-1 ticks and a chime when each hold ends",
+                checked = prefs.chimeCues,
+                onChange = prefs::updateChimeCues,
+            )
+            SwitchRow(
+                title = "Vibration",
+                subtitle = "A short buzz between steps",
+                checked = prefs.vibrationCues,
+                onChange = prefs::updateVibrationCues,
+            )
+        }
+
         SectionLabel("About")
         Group {
             NavRow("Sources & credits", "The research behind the defaults", onOpenSources)

@@ -29,6 +29,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import dev.clean.stretch.R
+import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.settings.AppPreferences
 import dev.clean.stretch.settings.ThemeMode
 import dev.clean.stretch.ui.theme.StretchTheme
@@ -89,7 +90,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun StretchRoot(prefs: AppPreferences, activity: ComponentActivity) {
+fun StretchRoot(prefs: AppPreferences, history: HistoryDao, saver: SessionSaver, activity: ComponentActivity) {
     val dark = when (prefs.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -103,12 +104,12 @@ fun StretchRoot(prefs: AppPreferences, activity: ComponentActivity) {
         onDispose { }
     }
     StretchTheme(dark = dark, wallpaperColors = prefs.wallpaperColors) {
-        StretchApp(prefs)
+        StretchApp(prefs, history, saver)
     }
 }
 
 @Composable
-fun StretchApp(prefs: AppPreferences) {
+fun StretchApp(prefs: AppPreferences, history: HistoryDao, saver: SessionSaver) {
     val stack: SnapshotStateList<Route> = rememberSaveable(
         saver = listSaver<SnapshotStateList<Route>, String>(
             save = { list -> list.map(Route::encode) },
@@ -156,12 +157,12 @@ fun StretchApp(prefs: AppPreferences) {
         ) { route ->
           screenStates.SaveableStateProvider(Route.encode(route)) {
             when (route) {
-                Route.Today -> TodayScreen(prefs = prefs, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) })
+                Route.Today -> TodayScreen(prefs = prefs, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) })
                 Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
-                Route.Progress -> ProgressScreen()
+                Route.Progress -> ProgressScreen(history)
                 Route.Settings -> SettingsScreen(prefs = prefs, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) })
                 is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) })
-                is Route.Player -> PlayerScreen(route = route, prefs = prefs, onClose = ::pop)
+                is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
                 Route.Studio -> PoseStudioScreen(onBack = ::pop)
                 Route.Sources -> SourcesScreen(onBack = ::pop)
             }

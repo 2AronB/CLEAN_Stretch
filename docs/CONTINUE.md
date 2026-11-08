@@ -1,6 +1,29 @@
 # Continue here
 
-Phase: **implementation — Slices S0 + S1 first draft** (2026-11-08, D-020).
+Phase: **implementation — S0 + S1 done, S2 runner first version** (2026-11-08, D-020, D-025).
+Version 0.2.0-s2-runner.
+
+## S2 runner (2026-11-08, D-025) — what exists
+- Room database `stretch.db` v1 (`data/History.kt`): `sessions` + `session_steps`, insert-only
+  immutable snapshots (name, side, primary regions, muscles, planned/actual seconds, skipped).
+  Schema exported to `app/schemas/`. No destructive migration fallback.
+- Player records each hold, saves on finish ("completed") or End/Back ("ended early"), writes
+  a checkpoint (SharedPreferences "runner") at every step. Today shows **Unfinished routine →
+  Resume / Save what I did**; starting a new routine auto-saves an older unfinished one.
+- Cues (`ui/Cues.kt`): built-in TextToSpeech (step name/side, "Hold for 40 seconds",
+  "Next: …" at 6 s left, "Routine complete"), 3-2-1 ticks + end chime (ToneGenerator),
+  vibration between steps. Settings → "During a routine" switches for each.
+- Progress: six area rings (minutes held this week, Monday start, recomputed from rows) +
+  recent history list. Today's week strip ticks days with a session.
+- Verified on emulator: neck stretch ran to completion and saved; quad run killed with
+  force-stop mid-routine → Unfinished card → Resume continued on the left side → End saved
+  "ended early"; Progress showed both. 19/19 JVM tests (new HistoryTest), lint 0 errors.
+- **Not verified:** how voice and chimes sound (emulator audio not heard by Claude); behavior
+  on a real phone.
+- Gaps vs PLAN §3.1: timer is still frame-based, not an `elapsedRealtime` state machine (a
+  long pause in the background isn't counted, which is fine, but a screen-off run stops);
+  no foreground service; no JVM state-machine tests for pause/skip/back; save errors show on
+  Today only after navigating there (`SessionSaver.lastError` is not observable state).
 
 ## Built
 - S0 shell: Words-matched Gradle setup, `dev.clean.stretch`, display name Stretch,
@@ -79,6 +102,8 @@ rechecked on the emulator:
   implementation. Owner to confirm, then align AGENTS.md.
 
 ## Next
-1. Check cold-start time on a real phone.
-2. Owner reviews the figure and player feel on the phone.
-3. Then S2 (real runner: voice, chimes, sessions, resume) — needs Room + VIBRATE approval.
+1. Owner runs a 5-minute routine hands-free (PLAN S2 acceptance): voice, chimes, vibration.
+2. Check cold-start time on a real phone.
+3. S2 hardening: elapsedRealtime state machine + JVM tests (pause, skip, back, +15 s,
+   kill/resume); make save errors observable.
+4. Owner decision: AGENTS.md still says "discovery, no app code" — align it with D-020.

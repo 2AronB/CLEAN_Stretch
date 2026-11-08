@@ -1,0 +1,12 @@
+.gradle/
+.gradle-user/
+.kotlin/
+**/build/
+local.properties
+*.jks
+*.keystore
+.idea/
+captures/
+*.log
+artifacts/
+tools/pose-preview/out/

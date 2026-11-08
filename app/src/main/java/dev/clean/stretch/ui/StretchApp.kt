@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import dev.clean.stretch.R
 import dev.clean.stretch.data.AppScope
+import dev.clean.stretch.data.BackupManager
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.ProfileDao
 import dev.clean.stretch.data.ProfileMapper
@@ -111,7 +112,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver, activity: ComponentActivity) {
+fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
     val dark = when (prefs.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -125,12 +126,12 @@ fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao
         onDispose { }
     }
     StretchTheme(dark = dark, wallpaperColors = prefs.wallpaperColors) {
-        StretchApp(prefs, history, profiles, saver)
+        StretchApp(prefs, history, profiles, saver, backup)
     }
 }
 
 @Composable
-fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver) {
+fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, saver: SessionSaver, backup: BackupManager) {
     // null until the saved profile has loaded, so first-run cards don't flash.
     val profile by remember { profiles.profile() }.collectAsState(initial = null)
     val stack: SnapshotStateList<Route> = rememberSaveable(
@@ -187,7 +188,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
                     Route.Progress -> ProgressScreen(history, prefs.daysPerWeek)
-                    Route.Settings -> SettingsScreen(prefs = prefs, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
+                    Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
                     Route.Studio -> PoseStudioScreen(onBack = ::pop)

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dev.clean.stretch.data.BackupManager
 import dev.clean.stretch.data.CheckpointStore
 import dev.clean.stretch.data.StretchDatabase
 import dev.clean.stretch.settings.AppPreferences
@@ -21,6 +22,6 @@ class MainActivity : ComponentActivity() {
         val db = StretchDatabase.get(applicationContext)
         val history = db.history()
         val saver = SessionSaver(history, CheckpointStore(applicationContext))
-        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), saver = saver, activity = this) }
+        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), saver = saver, backup = BackupManager(db, prefs), activity = this) }
     }
 }

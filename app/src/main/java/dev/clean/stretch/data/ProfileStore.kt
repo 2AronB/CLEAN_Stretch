@@ -36,6 +36,12 @@ interface ProfileDao {
 
     @Upsert
     suspend fun save(profile: ProfileEntity)
+
+    @Query("SELECT * FROM profile WHERE id = 1")
+    suspend fun getNow(): ProfileEntity?
+
+    @Query("DELETE FROM profile")
+    suspend fun clear()
 }
 
 object ProfileMapper {

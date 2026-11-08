@@ -1,6 +1,23 @@
 package dev.clean.stretch.ui
 
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import dev.clean.stretch.data.BackupCodec
+import dev.clean.stretch.data.BackupData
+import dev.clean.stretch.data.BackupException
+import dev.clean.stretch.data.BackupManager
+import dev.clean.stretch.settings.Reminders
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,8 +51,43 @@ import dev.clean.stretch.settings.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSources: () -> Unit, onOpenSetup: () -> Unit) {
+fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: () -> Unit, onOpenSources: () -> Unit, onOpenSetup: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var backupStatus by remember { mutableStateOf<String?>(null) }
+    var pendingRestore by remember { mutableStateOf<BackupData?>(null) }
+    val createFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            backupStatus = try {
+                val text = backup.export(System.currentTimeMillis())
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: error("Couldn't open the file")
+                }
+                "Backup saved."
+            } catch (e: Exception) {
+                Log.e("StretchBackup", "Backup failed", e)
+                "Backup failed: ${e.message ?: e.javaClass.simpleName}"
+            }
+        }
+    }
+    val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            try {
+                val text = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } ?: error("Couldn't open the file")
+                }
+                pendingRestore = BackupCodec.decode(text)
+                backupStatus = null
+            } catch (e: BackupException) {
+                backupStatus = "Not restored. ${e.message} Your current data is unchanged."
+            } catch (e: Exception) {
+                Log.e("StretchBackup", "Reading backup failed", e)
+                backupStatus = "Not restored: ${e.message ?: e.javaClass.simpleName}. Your current data is unchanged."
+            }
+        }
+    }
     val version = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: ""
     }
@@ -83,7 +135,7 @@ fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSource
         Group {
             SwitchRow(
                 title = "Voice",
-                subtitle = "Announce each stretch and what's next. Uses your phone's offline voice.",
+                subtitle = "Announce each stretch and what's next, in a recorded natural voice.",
                 checked = prefs.voiceCues,
                 onChange = prefs::updateVoiceCues,
             )
@@ -99,6 +151,15 @@ fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSource
                 checked = prefs.vibrationCues,
                 onChange = prefs::updateVibrationCues,
             )
+        }
+
+        SectionLabel("Your data")
+        Group {
+            NavRow("Back up to a file", "History, goals and settings in one file you keep", { createFile.launch("stretch-backup-${java.time.LocalDate.now()}.json") })
+            NavRow("Restore from a backup", "Replaces what's on this phone, after you confirm", { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) })
+            backupStatus?.let {
+                Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
+            }
         }
 
         SectionLabel("About")
@@ -122,6 +183,26 @@ fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSource
             NavRow("Pose Studio", "Tune the animated figure's poses", onOpenStudio)
         }
         Spacer(Modifier.height(24.dp))
+    }
+
+    pendingRestore?.let { data ->
+        RestoreDialog(
+            data = data,
+            onCancel = { pendingRestore = null },
+            onConfirm = {
+                pendingRestore = null
+                scope.launch {
+                    backupStatus = try {
+                        backup.restore(data)
+                        Reminders.sync(context, prefs)
+                        "Restored ${data.sessions.size} sessions."
+                    } catch (e: Exception) {
+                        Log.e("StretchBackup", "Restore failed", e)
+                        "Restore failed: ${e.message ?: e.javaClass.simpleName}. Your history was not changed."
+                    }
+                }
+            },
+        )
     }
 }
 
@@ -160,4 +241,20 @@ private fun NavRow(title: String, subtitle: String, onClick: () -> Unit) {
         }
         Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+}
+
+@Composable
+private fun RestoreDialog(data: BackupData, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("Replace your data?") },
+        text = {
+            Text(
+                "This backup has ${data.sessions.size} sessions${if (data.profile != null) ", your goals" else ""} and settings.\n\n" +
+                    "Restoring replaces the history, goals and settings on this phone. This can't be undone, so back up first if you want to keep them.",
+            )
+        },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("Replace") } },
+        dismissButton = { TextButton(onClick = onCancel) { Text("Cancel") } },
+    )
 }

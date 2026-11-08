@@ -85,6 +85,34 @@ class AppPreferences(context: Context) {
         prefs.edit { putBoolean(KEY_STILL, enabled) }
     }
 
+    /** Settings for a backup file (S7): every saved key as text. */
+    fun exportSettings(): Map<String, String> = prefs.all.mapValues { it.value.toString() }
+
+    /** Restores backed-up settings, ignoring unknown keys, then reloads the visible values. */
+    fun importSettings(values: Map<String, String>) {
+        val ints = setOf(KEY_THEME, KEY_DAYS, KEY_REMINDER_TIME)
+        val bools = setOf(KEY_WALLPAPER, KEY_STILL, KEY_VOICE, KEY_CHIMES, KEY_VIBRATION, KEY_REMINDER)
+        prefs.edit {
+            values.forEach { (k, v) ->
+                when (k) {
+                    in ints -> v.toIntOrNull()?.let { putInt(k, it) }
+                    in bools -> putBoolean(k, v.toBoolean())
+                    KEY_PLAN_CUE -> putString(k, v)
+                }
+            }
+        }
+        themeMode = ThemeMode.entries.getOrElse(prefs.getInt(KEY_THEME, 0)) { ThemeMode.System }
+        wallpaperColors = prefs.getBoolean(KEY_WALLPAPER, true)
+        stillFigures = prefs.getBoolean(KEY_STILL, false)
+        voiceCues = prefs.getBoolean(KEY_VOICE, true)
+        chimeCues = prefs.getBoolean(KEY_CHIMES, true)
+        vibrationCues = prefs.getBoolean(KEY_VIBRATION, true)
+        planCue = PlanCue.entries.firstOrNull { it.name == prefs.getString(KEY_PLAN_CUE, null) } ?: PlanCue.Teeth
+        daysPerWeek = prefs.getInt(KEY_DAYS, 3)
+        reminderOn = prefs.getBoolean(KEY_REMINDER, false)
+        reminderTime = prefs.getInt(KEY_REMINDER_TIME, 19 * 60)
+    }
+
     private companion object {
         const val KEY_THEME = "theme_mode"
         const val KEY_WALLPAPER = "wallpaper_colors"

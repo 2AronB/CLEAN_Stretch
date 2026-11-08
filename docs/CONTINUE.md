@@ -186,3 +186,15 @@ rechecked on the emulator:
 - Checked: 32/32 tests, lint 0 errors/code warnings; emulator: deny path shows the note; allow
   path → alarm registered for 7:00 PM (dumpsys alarm). **Not verified:** the notification
   actually appearing (can't trigger the private receiver from the PC); owner to check on phone.
+
+## S7 backup/restore, first version (2026-11-08) — all first-release slices now exist
+- Settings → "Your data": **Back up to a file** (Android file picker, no permission) writes
+  versioned JSON (`data/Backup.kt`, format `clean-stretch-backup` v1): sessions + steps,
+  profile, settings. **Restore from a backup** reads and fully validates first; newer-version,
+  damaged or foreign files are refused with "Your current data is unchanged". A confirm dialog
+  ("Replace your data?") precedes replacement; history + profile replace in one Room
+  transaction (`BackupManager`). Checkpoint isn't included. Own tiny JSON codec (`data/Json.kt`),
+  no new library. `BackupTest` (3 tests).
+- Checked: 35/35 tests, lint clean; emulator: backup saved to Downloads (2.3 kB JSON), restore
+  picked it, dialog showed "5 sessions…", "Restored 5 sessions.", history intact.
+- Version 0.3.0 (versionCode 3).

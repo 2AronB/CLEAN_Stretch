@@ -77,6 +77,29 @@ abstract class HistoryDao {
     @Query("SELECT * FROM session_steps WHERE sessionId IN (SELECT id FROM sessions WHERE startedAt >= :fromMs)")
     abstract fun stepsSince(fromMs: Long): Flow<List<SessionStepEntity>>
 
+    @Query("SELECT * FROM sessions ORDER BY id")
+    abstract suspend fun allSessionsNow(): List<SessionEntity>
+
+    @Query("SELECT * FROM session_steps ORDER BY id")
+    abstract suspend fun allStepsNow(): List<SessionStepEntity>
+
+    @Query("DELETE FROM sessions")
+    protected abstract suspend fun deleteAllSessions()
+
+    @Insert protected abstract suspend fun insertSessionsExact(sessions: List<SessionEntity>)
+    @Insert protected abstract suspend fun insertStepsExact(steps: List<SessionStepEntity>)
+
+    /**
+     * Restore only (S7): replaces all history with a validated backup in one transaction, so a
+     * failure leaves the old history untouched. Steps go with their sessions (cascade).
+     */
+    @Transaction
+    open suspend fun replaceAll(sessions: List<SessionEntity>, steps: List<SessionStepEntity>) {
+        deleteAllSessions()
+        insertSessionsExact(sessions)
+        insertStepsExact(steps)
+    }
+
     @Query("SELECT startedAt FROM sessions")
     abstract fun startTimes(): Flow<List<Long>>
 

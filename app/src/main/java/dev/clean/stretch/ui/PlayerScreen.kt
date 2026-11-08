@@ -71,23 +71,48 @@ import dev.clean.stretch.ui.figure.figureColors
 import dev.clean.stretch.ui.figure.rememberReducedMotion
 import kotlin.math.ceil
 
-/** Evidence default P-2: 40 s holds for adults, with a 5 s "get into position" step that isn't counted. */
-const val SETUP_MS = 5_000L
+/** Evidence default P-2: 40 s holds for adults. Setup ("get into position") time isn't counted. */
 const val HOLD_MS = 40_000L
+
+/**
+ * Setup time depends on the move (owner feedback 2026-11-08): switching sides is quick, a new
+ * stretch in the same position needs a little longer, and changing position (e.g. getting up
+ * from the floor) needs the most. "I'm ready" in the player starts the hold early.
+ */
+const val SETUP_SIDE_SWITCH_MS = 5_000L
+const val SETUP_FIRST_MS = 10_000L
+const val SETUP_SAME_POSITION_MS = 10_000L
+const val SETUP_NEW_POSITION_MS = 15_000L
 
 enum class Side(val label: String) { Both(""), Right("Right side"), Left("Left side") }
 
-data class Step(val stretch: Stretch, val side: Side, val setup: Boolean) {
-    val baseMs get() = if (setup) SETUP_MS else HOLD_MS
+data class Step(val stretch: Stretch, val side: Side, val setup: Boolean, val setupMs: Long = SETUP_FIRST_MS) {
+    val baseMs get() = if (setup) setupMs else HOLD_MS
 }
 
-fun buildSteps(keys: List<String>, firstSide: Side = Side.Right): List<Step> = keys.mapNotNull { SampleCatalog.byKey(it) }.flatMap { s ->
-    val sides = when {
-        !s.sided -> listOf(Side.Both)
-        firstSide == Side.Left -> listOf(Side.Left, Side.Right)
-        else -> listOf(Side.Right, Side.Left)
+fun buildSteps(keys: List<String>, firstSide: Side = Side.Right): List<Step> {
+    val steps = mutableListOf<Step>()
+    var previous: Stretch? = null
+    keys.mapNotNull { SampleCatalog.byKey(it) }.forEach { s ->
+        val sides = when {
+            !s.sided -> listOf(Side.Both)
+            firstSide == Side.Left -> listOf(Side.Left, Side.Right)
+            else -> listOf(Side.Right, Side.Left)
+        }
+        val before = previous
+        sides.forEachIndexed { i, side ->
+            val setupMs = when {
+                i > 0 -> SETUP_SIDE_SWITCH_MS
+                before == null -> SETUP_FIRST_MS
+                before.position == s.position -> SETUP_SAME_POSITION_MS
+                else -> SETUP_NEW_POSITION_MS
+            }
+            steps += Step(s, side, setup = true, setupMs = setupMs)
+            steps += Step(s, side, setup = false)
+        }
+        previous = s
     }
-    sides.flatMap { side -> listOf(Step(s, side, setup = true), Step(s, side, setup = false)) }
+    return steps
 }
 
 fun estimateMinutes(route: Route.Player): Int =
@@ -341,7 +366,9 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             Modifier.fillMaxWidth().padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
-            if (!step.setup) {
+            if (step.setup) {
+                TextButton(onClick = { goTo(index + 1) }) { Text("I'm ready") }
+            } else {
                 TextButton(onClick = { extraMs += 15_000L }) { Text("+15 s") }
             }
             if (nextStretch != null && (step.setup || duration - t < 8_000L)) {

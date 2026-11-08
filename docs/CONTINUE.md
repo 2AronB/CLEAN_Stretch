@@ -138,3 +138,10 @@ rechecked on the emulator:
   stretch is added/renamed without updating phrases.txt and clips. Kokoro credited on Sources.
 - Checked: 22/22 tests, lint 0 errors; emulator played clips (no "missing clip" fallback).
   Owner still to listen on the phone.
+
+## Setup time done (2026-11-08, owner feedback)
+- Setup now depends on the move (`buildSteps` in PlayerScreen.kt): side switch 5 s, first
+  stretch 10 s, new stretch in the same position 10 s, position change (e.g. floor → standing)
+  15 s. "I'm ready" button during setup starts the hold early. `SetupTimeTest` covers it.
+- Checked: 23/23 tests, lint 0 errors; emulator: "I'm ready" started the hold. Owner to judge
+  the timings on the phone. Possible later: a Short/Normal/Long setting.

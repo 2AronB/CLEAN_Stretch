@@ -15,6 +15,7 @@ object SampleCatalog {
 
     val seatedForwardFold = Stretch(
         key = "seated_forward_fold",
+        spinalFlexion = true,
         name = "Seated forward fold",
         kind = StretchKind.Static,
         sided = false,
@@ -93,6 +94,7 @@ object SampleCatalog {
 
     val childsPose = Stretch(
         key = "childs_pose",
+        spinalFlexion = true,
         name = "Child's pose",
         kind = StretchKind.Static,
         sided = false,
@@ -145,6 +147,7 @@ object SampleCatalog {
 
     val catCow = Stretch(
         key = "cat_cow",
+        spinalFlexion = true,
         name = "Cat–cow",
         kind = StretchKind.Dynamic,
         sided = false,
@@ -173,6 +176,7 @@ object SampleCatalog {
 
     val neckFlexion = Stretch(
         key = "neck_flexion",
+        spinalFlexion = true,
         name = "Chin-to-chest neck stretch",
         kind = StretchKind.Static,
         sided = false,
@@ -253,6 +257,7 @@ object SampleCatalog {
 
     val kneeToChest = Stretch(
         key = "knee_to_chest",
+        spinalFlexion = true,
         name = "Knee-to-chest stretch",
         kind = StretchKind.Static,
         sided = true,
@@ -440,8 +445,6 @@ object SampleCatalog {
         sphinx, lyingHamstring, downwardDog,
     )
 
-    /** The Today screen's "Full-body reset" routine (the original six). */
-    val fullBodyReset: List<String> = listOf(seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow).map { it.key }
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }
 }

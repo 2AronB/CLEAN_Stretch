@@ -21,7 +21,8 @@ object VoiceLines {
 
     /** All lines for the current catalog. */
     fun all(): List<String> {
-        val lines = mutableListOf(COMPLETE, hold(HOLD_MS / 1000))
+        // Hold lengths the generator uses: 30 s (warm-up, quick break), 40 s (default), 60 s (65+).
+        val lines = mutableListOf(COMPLETE, hold(30), hold(HOLD_MS / 1000), hold(60))
         SampleCatalog.all.forEach { s ->
             val sides = if (s.sided) listOf(Side.Left, Side.Right) else listOf(Side.Both)
             sides.forEach { side -> lines += setup(s, side); lines += next(s, side) }

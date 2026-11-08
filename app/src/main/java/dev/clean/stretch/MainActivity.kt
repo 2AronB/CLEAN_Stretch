@@ -15,8 +15,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val prefs = AppPreferences(applicationContext)
-        val history = StretchDatabase.get(applicationContext).history()
+        val db = StretchDatabase.get(applicationContext)
+        val history = db.history()
         val saver = SessionSaver(history, CheckpointStore(applicationContext))
-        setContent { StretchRoot(prefs = prefs, history = history, saver = saver, activity = this) }
+        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), saver = saver, activity = this) }
     }
 }

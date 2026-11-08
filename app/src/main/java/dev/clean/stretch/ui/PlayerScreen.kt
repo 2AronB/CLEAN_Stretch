@@ -86,11 +86,11 @@ const val SETUP_NEW_POSITION_MS = 15_000L
 
 enum class Side(val label: String) { Both(""), Right("Right side"), Left("Left side") }
 
-data class Step(val stretch: Stretch, val side: Side, val setup: Boolean, val setupMs: Long = SETUP_FIRST_MS) {
-    val baseMs get() = if (setup) setupMs else HOLD_MS
+data class Step(val stretch: Stretch, val side: Side, val setup: Boolean, val setupMs: Long = SETUP_FIRST_MS, val holdMs: Long = HOLD_MS) {
+    val baseMs get() = if (setup) setupMs else holdMs
 }
 
-fun buildSteps(keys: List<String>, firstSide: Side = Side.Right): List<Step> {
+fun buildSteps(keys: List<String>, firstSide: Side = Side.Right, holdMs: Long = HOLD_MS): List<Step> {
     val steps = mutableListOf<Step>()
     var previous: Stretch? = null
     keys.mapNotNull { SampleCatalog.byKey(it) }.forEach { s ->
@@ -108,15 +108,13 @@ fun buildSteps(keys: List<String>, firstSide: Side = Side.Right): List<Step> {
                 else -> SETUP_NEW_POSITION_MS
             }
             steps += Step(s, side, setup = true, setupMs = setupMs)
-            steps += Step(s, side, setup = false)
+            steps += Step(s, side, setup = false, holdMs = holdMs)
         }
         previous = s
     }
     return steps
 }
 
-fun estimateMinutes(route: Route.Player): Int =
-    ceil(buildSteps(route.keys).sumOf { it.baseMs } / 60_000.0).toInt().coerceAtLeast(1)
 
 private val recordsSaver = Saver<SnapshotStateMap<Int, StepRecord>, String>(
     save = { StepRecords.encode(it) },
@@ -130,7 +128,7 @@ private val recordsSaver = Saver<SnapshotStateMap<Int, StepRecord>, String>(
  */
 @Composable
 fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver, onClose: () -> Unit) {
-    val steps = remember(route) { buildSteps(route.keys, route.firstSide) }
+    val steps = remember(route) { buildSteps(route.keys, route.firstSide, route.holdSeconds * 1000L) }
     if (steps.isEmpty()) {
         Column(Modifier.fillMaxSize()) {
             BackBar("Routine", onClose)

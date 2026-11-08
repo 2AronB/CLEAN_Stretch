@@ -2,6 +2,7 @@ package dev.clean.stretch.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -30,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +41,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.clean.stretch.R
 import dev.clean.stretch.catalog.SampleCatalog
+import dev.clean.stretch.catalog.Stretch
+import dev.clean.stretch.plan.Generator
+import dev.clean.stretch.plan.Profile
+import dev.clean.stretch.plan.RoutineKind
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.Stats
 import dev.clean.stretch.figure.Easing
@@ -56,19 +63,16 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-/** The S1 sample routine. The generator (Slice S5) replaces this with a personal one. */
-val SampleRoutine = Route.Player(SampleCatalog.fullBodyReset, "Full-body reset")
-
-private val routineStretches get() = SampleRoutine.keys.mapNotNull { SampleCatalog.byKey(it) }
-
 @Composable
 fun TodayScreen(
     prefs: AppPreferences,
+    profile: Profile,
     saver: SessionSaver,
     history: HistoryDao,
     onStart: (Route) -> Unit,
     onOpenStretch: (String) -> Unit,
     onOpenSources: () -> Unit,
+    onOpenSetup: () -> Unit,
 ) {
     val reduced = rememberReducedMotion(prefs.stillFigures)
     var checkpoint by remember { mutableStateOf(saver.checkpoints.load()) }
@@ -76,6 +80,12 @@ fun TodayScreen(
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val recent by remember { history.recentSessions(50) }.collectAsState(initial = emptyList())
     val activeDays = remember(recent) { Stats.activeDays(recent.filter { it.startedAt >= weekFrom }, zone) }
+    val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
+    val weekMinutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
+    var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
+    val kind = RoutineKind.valueOf(kindName)
+    // The recommendation (D-029): the user reviews and changes it before starting.
+    val routine = remember(profile, kind, weekMinutes) { Generator.generate(profile, kind, weekMinutes = weekMinutes) }
     val greeting = remember {
         when (LocalTime.now().hour) {
             in 5..11 -> "Good morning"
@@ -101,10 +111,34 @@ fun TodayScreen(
                 Spacer(Modifier.height(12.dp))
             }
         }
-        HeroRoutineCard(reduced = reduced, onStart = { onStart(SampleRoutine) })
-        Spacer(Modifier.height(20.dp))
-        SectionLabel("In this routine")
-        RoutineStrip(onOpenStretch)
+        if (!profile.setupDone) {
+            SetupCard(onOpenSetup)
+            Spacer(Modifier.height(12.dp))
+        }
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            RoutineKind.entries.forEach { k ->
+                FilterChip(selected = k == kind, onClick = { kindName = k.name }, label = { Text(k.label) })
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        val stretches = routine.keys.mapNotNull { SampleCatalog.byKey(it) }
+        if (stretches.isEmpty()) {
+            NoticeCard(title = "Nothing fits yet", body = routine.notes.joinToString(" "))
+        } else {
+            HeroRoutineCard(
+                title = routine.title,
+                stretches = stretches,
+                minutes = Generator.estimateMinutes(routine.keys, routine.holdSeconds),
+                reduced = reduced,
+                onStart = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
+            )
+            Spacer(Modifier.height(20.dp))
+            SectionLabel("In this routine")
+            RoutineStrip(stretches, onOpenStretch)
+        }
         Spacer(Modifier.height(20.dp))
         SectionLabel("This week")
         WeekCard(today, activeDays)
@@ -115,14 +149,12 @@ fun TodayScreen(
 }
 
 @Composable
-private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
-    val stretches = routineStretches
+private fun HeroRoutineCard(title: String, stretches: List<Stretch>, minutes: Int, reduced: Boolean, onStart: () -> Unit) {
     val time by rememberFigureClock(running = !reduced)
     val index = ((time / Timing.DEMO_LOOP_MS) % stretches.size).toInt()
     val current = stretches[index]
     val frame = remember(current.key) { MotionPlayer.frameFor(current.motion) }
     val container = MaterialTheme.colorScheme.primaryContainer
-    val minutes = estimateMinutes(SampleRoutine)
 
     Surface(
         color = container,
@@ -133,7 +165,7 @@ private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
         Column(Modifier.padding(24.dp)) {
             Text("Suggested for you", style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(4.dp))
-            Text(SampleRoutine.title, style = MaterialTheme.typography.headlineMedium)
+            Text(title, style = MaterialTheme.typography.headlineMedium)
             Text("${stretches.size} stretches · about $minutes min · hands-free", style = MaterialTheme.typography.bodyMedium)
             FigureView(
                 pose = MotionPlayer.demoPose(current.motion, time % Timing.DEMO_LOOP_MS, reduced),
@@ -154,7 +186,7 @@ private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
                 ) {
                     Icon(painterResource(R.drawable.ic_play), contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Start")
+                    Text("Review & start")
                 }
             }
         }
@@ -162,9 +194,9 @@ private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
 }
 
 @Composable
-private fun RoutineStrip(onOpenStretch: (String) -> Unit) {
+private fun RoutineStrip(stretches: List<Stretch>, onOpenStretch: (String) -> Unit) {
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        routineStretches.chunked(2).forEach { pair ->
+        stretches.chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pair.forEach { s ->
                     Surface(
@@ -252,6 +284,23 @@ private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start,
             )
+        }
+    }
+}
+
+@Composable
+private fun SetupCard(onOpenSetup: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Text("Make it yours", style = MaterialTheme.typography.labelLarge)
+            Text("Tell Stretch your goal, focus areas and anything to avoid. About a minute.", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = onOpenSetup) { Text("Set up") }
         }
     }
 }

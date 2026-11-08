@@ -145,3 +145,23 @@ rechecked on the emulator:
   15 s. "I'm ready" button during setup starts the hold early. `SetupTimeTest` covers it.
 - Checked: 23/23 tests, lint 0 errors; emulator: "I'm ready" started the hold. Owner to judge
   the timings on the phone. Possible later: a Short/Normal/Long setting.
+
+## S4 setup + S5 generator, first version (2026-11-08)
+- **Setup** (`ui/SetupScreen.kt`): goal (General/Runner/Lifter/Desk), 65+ (60 s holds), focus
+  areas, areas to avoid, no floor / no kneeling / wall, health conditions (yes → doctor advice
+  dialog → "I understand" → limits on, D-029), usual length 5/10/15. Today shows a "Make it
+  yours" card until done; Settings → "Goal, focus and limits" reopens it.
+- **Profile** stored in Room (`data/ProfileStore.kt`), DB v2 via AutoMigration (schema 2.json).
+  Verified on emulator: upgrade kept all existing history.
+- **Generator** (`plan/Generator.kt`, pure Kotlin): kinds Full / Warm-up (30 s, flowing moves
+  first) / Cool-down / Quick break (standing, ≤4 min); focus areas first, least-stretched this
+  week first; safety filters for avoid areas, floor, kneeling, wall, pregnancy (no lying, level
+  1), osteoporosis (no `spinalFlexion`), hypermobility (level 1); notes explain gaps.
+  `GeneratorTest` (8 tests).
+- **Review screen** (`ui/RoutinePreviewScreen.kt`): reorder, swap (same area, allowed only),
+  remove, shuffle, length; Start replaces the preview with the player.
+- Voice clips for 30 s and 60 s holds added (50 clips).
+- Checked: 31/31 tests, lint 0 errors; emulator walk-through of setup, dialog, Today, preview,
+  player. Owner to review wording of conditions and default limits.
+- Gap seen: with "no floor" + "avoid legs" only 2 stretches qualify → S3 needs more standing
+  and chair stretches. Saving routines and the if-then plan / reminder ask are not built yet.

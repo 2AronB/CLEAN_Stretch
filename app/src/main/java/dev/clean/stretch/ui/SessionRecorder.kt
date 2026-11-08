@@ -25,7 +25,7 @@ object SessionRecorder {
                     side = when (step.side) { Side.Both -> "both"; Side.Left -> "left"; Side.Right -> "right" },
                     primaryRegions = step.stretch.primary.map { it.region.name }.distinct().joinToString(","),
                     muscles = step.stretch.muscles.joinToString(",") { it.name },
-                    plannedSeconds = (HOLD_MS / 1000).toInt(),
+                    plannedSeconds = (step.holdMs / 1000).toInt(),
                     actualSeconds = (r.heldMs / 1000).toInt(),
                     skipped = r.skipped,
                 )
@@ -59,7 +59,7 @@ class SessionSaver(private val history: HistoryDao, val checkpoints: CheckpointS
     /** Saves an interrupted run from its checkpoint as "ended early". */
     fun saveCheckpoint(c: Checkpoint) {
         val route = Route.decode(c.route) as? Route.Player ?: run { checkpoints.clear(); return }
-        val steps = buildSteps(route.keys, route.firstSide)
+        val steps = buildSteps(route.keys, route.firstSide, route.holdSeconds * 1000L)
         save(route.title, steps, StepRecords.decode(c.records), c.startedAt, c.savedAt, completed = false)
     }
 }

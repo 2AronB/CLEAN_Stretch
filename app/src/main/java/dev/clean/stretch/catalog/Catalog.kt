@@ -53,6 +53,8 @@ data class Stretch(
     val sourceIds: List<String>,
     val motion: Motion,
     val prop: Prop? = null,
+    /** Rounds (flexes) the spine, held or repeated. Left out for osteoporosis (EVIDENCE §9, [S32][S33]). */
+    val spinalFlexion: Boolean = false,
 ) {
     val muscles get() = primary + secondary
 }

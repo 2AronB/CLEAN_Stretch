@@ -34,13 +34,18 @@ import dev.clean.stretch.settings.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSources: () -> Unit) {
+fun SettingsScreen(prefs: AppPreferences, onOpenStudio: () -> Unit, onOpenSources: () -> Unit, onOpenSetup: () -> Unit) {
     val context = LocalContext.current
     val version = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: ""
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ScreenTitle("Settings")
+
+        SectionLabel("Your routines")
+        Group {
+            NavRow("Goal, focus and limits", "What routines suggest, what to avoid, health conditions", onOpenSetup)
+        }
 
         SectionLabel("Appearance")
         Group {

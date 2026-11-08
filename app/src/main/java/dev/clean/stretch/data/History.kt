@@ -1,6 +1,7 @@
 package dev.clean.stretch.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -80,9 +81,16 @@ abstract class HistoryDao {
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
 }
 
-@Database(entities = [SessionEntity::class, SessionStepEntity::class], version = 1, exportSchema = true)
+/** v1: sessions. v2: adds the profile table (automatic migration; no existing data changes). */
+@Database(
+    entities = [SessionEntity::class, SessionStepEntity::class, ProfileEntity::class],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
 abstract class StretchDatabase : RoomDatabase() {
     abstract fun history(): HistoryDao
+    abstract fun profile(): ProfileDao
 
     companion object {
         @Volatile private var instance: StretchDatabase? = null

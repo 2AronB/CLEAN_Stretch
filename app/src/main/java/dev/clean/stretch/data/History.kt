@@ -77,6 +77,9 @@ abstract class HistoryDao {
     @Query("SELECT * FROM session_steps WHERE sessionId IN (SELECT id FROM sessions WHERE startedAt >= :fromMs)")
     abstract fun stepsSince(fromMs: Long): Flow<List<SessionStepEntity>>
 
+    @Query("SELECT startedAt FROM sessions")
+    abstract fun startTimes(): Flow<List<Long>>
+
     @Query("SELECT * FROM session_steps")
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
 }

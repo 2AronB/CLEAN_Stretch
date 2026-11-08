@@ -28,6 +28,24 @@ object Stats {
         return totals
     }
 
+    /**
+     * Week streak (P-7): consecutive weeks, Monday start, with at least [daysTarget] days of
+     * stretching. This week only adds to the streak once it hits the target; until then the
+     * streak shows the weeks before it, so an unfinished week never "breaks" anything.
+     */
+    fun weekStreak(activeDays: Set<LocalDate>, today: LocalDate, daysTarget: Int): Int {
+        fun met(weekStart: LocalDate) = activeDays.count { !it.isBefore(weekStart) && it.isBefore(weekStart.plusDays(7)) } >= daysTarget
+        var week = weekStart(today)
+        var streak = 0
+        if (met(week)) streak++
+        week = week.minusWeeks(1)
+        while (met(week)) { streak++; week = week.minusWeeks(1) }
+        return streak
+    }
+
+    fun daysFromStarts(starts: List<Long>, zone: ZoneId): Set<LocalDate> =
+        starts.map { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }.toSet()
+
     /** Local dates (this zone) on which at least one session started. */
     fun activeDays(sessions: List<SessionEntity>, zone: ZoneId): Set<LocalDate> =
         sessions.map { Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }.toSet()

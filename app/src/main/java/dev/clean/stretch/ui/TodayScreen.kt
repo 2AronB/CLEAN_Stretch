@@ -80,6 +80,8 @@ fun TodayScreen(
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val recent by remember { history.recentSessions(50) }.collectAsState(initial = emptyList())
     val activeDays = remember(recent) { Stats.activeDays(recent.filter { it.startedAt >= weekFrom }, zone) }
+    val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
+    val streak = remember(starts, prefs.daysPerWeek) { Stats.weekStreak(Stats.daysFromStarts(starts, zone), LocalDate.now(), prefs.daysPerWeek) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val weekMinutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
     var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
@@ -141,7 +143,7 @@ fun TodayScreen(
         }
         Spacer(Modifier.height(20.dp))
         SectionLabel("This week")
-        WeekCard(today, activeDays)
+        WeekCard(today, activeDays, prefs.daysPerWeek, streak)
         Spacer(Modifier.height(20.dp))
         EvidenceCard(onOpenSources)
         Spacer(Modifier.height(32.dp))
@@ -223,7 +225,7 @@ private fun RoutineStrip(stretches: List<Stretch>, onOpenStretch: (String) -> Un
 }
 
 @Composable
-private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>) {
+private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>, daysTarget: Int, streak: Int) {
     val monday = today.with(DayOfWeek.MONDAY)
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -278,7 +280,9 @@ private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>) {
                 if (activeDays.isEmpty()) {
                     "Finish a routine to start your week. Missed days never break your streak — weeks that reach your goal do the counting."
                 } else {
-                    "${activeDays.size} ${if (activeDays.size == 1) "day" else "days"} of stretching this week. Missed days never break your streak."
+                    "${activeDays.size} of $daysTarget days this week" +
+                        (if (streak > 0) " · $streak-week streak" else "") +
+                        ". Missed days never break your streak."
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

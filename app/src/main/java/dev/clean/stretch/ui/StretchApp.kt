@@ -186,7 +186,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
-                    Route.Progress -> ProgressScreen(history)
+                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek)
                     Route.Settings -> SettingsScreen(prefs = prefs, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
@@ -195,6 +195,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                     Route.Setup -> profile?.let { p ->
                         SetupScreen(
                             initial = p,
+                            prefs = prefs,
                             onSave = { edited ->
                                 AppScope.launch { profiles.save(ProfileMapper.toEntity(edited.copy(setupDone = true), System.currentTimeMillis())) }
                                 pop()

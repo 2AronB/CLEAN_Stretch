@@ -1,6 +1,15 @@
 package dev.clean.stretch.ui
 
 import androidx.activity.compose.BackHandler
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.ui.platform.LocalContext
+import dev.clean.stretch.settings.AppPreferences
+import dev.clean.stretch.settings.PlanCue
+import dev.clean.stretch.settings.Reminders
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,7 +75,7 @@ private val profileSaver = Saver<Profile, String>(
     },
 )
 
-private const val PAGES = 5
+private const val PAGES = 6
 
 /**
  * First-run setup, also opened from Settings (Slice S4). Five short pages: goal, focus,
@@ -74,7 +83,8 @@ private const val PAGES = 5
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SetupScreen(initial: Profile, onSave: (Profile) -> Unit, onBack: () -> Unit) {
+fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Unit, onBack: () -> Unit) {
+    val context = LocalContext.current
     var draft by rememberSaveable(stateSaver = profileSaver) { mutableStateOf(initial) }
     var page by rememberSaveable { mutableIntStateOf(0) }
     var askingAbout by rememberSaveable { mutableStateOf<String?>(null) }
@@ -129,7 +139,7 @@ fun SetupScreen(initial: Profile, onSave: (Profile) -> Unit, onBack: () -> Unit)
                         if (yes) Text(c.limits, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
-                else -> {
+                4 -> {
                     Heading("How long is a usual routine?", "Each routine is a suggestion. You can change it before you start.")
                     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                         listOf(5, 10, 15).forEachIndexed { i, m ->
@@ -142,6 +152,7 @@ fun SetupScreen(initial: Profile, onSave: (Profile) -> Unit, onBack: () -> Unit)
                         }
                     }
                 }
+                else -> PlanPage(prefs)
             }
         }
         Row(
@@ -150,7 +161,7 @@ fun SetupScreen(initial: Profile, onSave: (Profile) -> Unit, onBack: () -> Unit)
         ) {
             if (page > 0) OutlinedButton(onClick = ::back, modifier = Modifier.weight(1f).height(52.dp)) { Text("Back") }
             Button(
-                onClick = { if (page < PAGES - 1) page++ else onSave(draft) },
+                onClick = { if (page < PAGES - 1) page++ else { Reminders.sync(context, prefs); onSave(draft) } },
                 modifier = Modifier.weight(1f).height(52.dp),
             ) { Text(if (page < PAGES - 1) "Next" else "Save") }
         }
@@ -191,7 +202,7 @@ private fun ChoiceRow(title: String, subtitle: String, selected: Boolean, onClic
             RadioButton(selected = selected, onClick = onClick)
             Column {
                 Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (subtitle.isNotEmpty()) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -218,3 +229,56 @@ private fun RegionChips(selected: Set<Region>, onChange: (Set<Region>) -> Unit) 
         }
     }
 }
+
+/** If-then plan (P-7, [S22]), days per week for the week streak, and an optional daily reminder (R-007). */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun PlanPage(prefs: AppPreferences) {
+    val context = LocalContext.current
+    var denied by rememberSaveable { mutableStateOf(false) }
+    var pickingTime by rememberSaveable { mutableStateOf(false) }
+    val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        denied = !granted
+        prefs.updateReminder(granted)
+    }
+
+    Heading("When will you stretch?", "People who pick a moment, like \"after I brush my teeth\", find it easier to stick with.")
+    PlanCue.entries.forEach { cue ->
+        ChoiceRow(cue.label, "", selected = prefs.planCue == cue) { prefs.updatePlanCue(cue) }
+    }
+    Spacer(Modifier.height(16.dp))
+    Text("Days a week", style = MaterialTheme.typography.titleMedium)
+    Text("A week counts toward your streak when you stretch on this many days. Missed days never break it.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+        (2..7).forEach { d -> FilterChip(selected = prefs.daysPerWeek == d, onClick = { prefs.updateDaysPerWeek(d) }, label = { Text("$d") }) }
+    }
+    Spacer(Modifier.height(12.dp))
+    ToggleRow("Daily reminder", "A gentle nudge at ${formatTime(prefs.reminderTime)}.", prefs.reminderOn) { on ->
+        if (on && !Reminders.canNotify(context)) { // only possible on Android 13+
+            askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            denied = false
+            prefs.updateReminder(on)
+        }
+    }
+    if (prefs.reminderOn) TextButton(onClick = { pickingTime = true }) { Text("Change time") }
+    if (denied) {
+        Text(
+            "Notifications are off, so reminders can't show. Everything else works. You can allow notifications for Stretch in Android settings.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+    if (pickingTime) {
+        val state = rememberTimePickerState(initialHour = prefs.reminderTime / 60, initialMinute = prefs.reminderTime % 60)
+        AlertDialog(
+            onDismissRequest = { pickingTime = false },
+            confirmButton = { TextButton(onClick = { prefs.updateReminder(true, state.hour * 60 + state.minute); pickingTime = false }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = { pickingTime = false }) { Text("Cancel") } },
+            text = { TimePicker(state = state) },
+        )
+    }
+}
+
+private fun formatTime(minutes: Int): String =
+    java.time.LocalTime.of(minutes / 60, minutes % 60).format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"))

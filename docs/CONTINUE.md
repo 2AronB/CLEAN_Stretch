@@ -172,3 +172,17 @@ rechecked on the emulator:
   emulator (back-bend arms fixed). 64 voice clips. 31/31 tests, lint 0 errors.
 - Still to do for S3: ~9 more stretches, easier/harder variants (EVIDENCE §5.4), chair
   versions (needs a chair prop in FigureView), wrists/forearms for Desk.
+
+## S6 reminders + week streaks, first version (2026-11-08)
+- Setup page 6 "When will you stretch?": if-then cue (P-7), days per week (streak target, 2–7),
+  daily reminder + time. Stored in AppPreferences. Settings → "Goal, focus and limits" edits it.
+- Reminder (`settings/Reminders.kt`): inexact daily alarm (no exact-alarm permission) →
+  notification "Time to stretch — Your plan: stretch after you brush your teeth…". POST_NOTIFICATIONS
+  asked only when the user turns the reminder on (R-007); if denied, a plain note explains and
+  everything else works. Re-armed on every app launch, because RECEIVE_BOOT_COMPLETED is **not
+  approved** — after a phone restart the reminder resumes only once the app is opened.
+- Week streak (`Stats.weekStreak`, test added): weeks meeting the days target; this week only
+  counts once met, so nothing "breaks". Shown on Progress (top card) and Today's week card.
+- Checked: 32/32 tests, lint 0 errors/code warnings; emulator: deny path shows the note; allow
+  path → alarm registered for 7:00 PM (dumpsys alarm). **Not verified:** the notification
+  actually appearing (can't trigger the private receiver from the PC); owner to check on phone.

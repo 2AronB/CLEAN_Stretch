@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import dev.clean.stretch.data.CheckpointStore
 import dev.clean.stretch.data.StretchDatabase
 import dev.clean.stretch.settings.AppPreferences
+import dev.clean.stretch.settings.Reminders
 import dev.clean.stretch.ui.SessionSaver
 import dev.clean.stretch.ui.StretchRoot
 
@@ -15,6 +16,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val prefs = AppPreferences(applicationContext)
+        // Re-arm the daily reminder each launch (covers phone restarts without a boot permission).
+        Reminders.sync(applicationContext, prefs)
         val db = StretchDatabase.get(applicationContext)
         val history = db.history()
         val saver = SessionSaver(history, CheckpointStore(applicationContext))

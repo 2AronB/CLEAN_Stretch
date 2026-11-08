@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- D-025: short buzz between routine steps (normal permission, no prompt). -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- R-007: daily reminder. Asked only when the user turns a reminder on; all else works without it. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets the app find the phone's built-in text-to-speech engine (Android 11+). No Internet. -->
     <queries>
         <intent>
@@ -19,5 +21,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver android:name=".settings.ReminderReceiver" android:exported="false" />
     </application>
 </manifest>

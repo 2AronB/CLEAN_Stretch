@@ -3,10 +3,20 @@ package dev.clean.stretch.settings
 import android.content.Context
 import androidx.core.content.edit
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 enum class ThemeMode(val label: String) { System("System"), Light("Light"), Dark("Dark") }
+
+/** The "if" in "If [cue], then I stretch" (P-7, [S22]). */
+enum class PlanCue(val label: String, val reminderText: String) {
+    Wake("After I wake up", "after you wake up"),
+    Teeth("After I brush my teeth", "after you brush your teeth"),
+    Workout("After a workout", "after your workout"),
+    Bed("Before bed", "before bed"),
+    SetTime("At a set time", "now"),
+}
 
 /** Small on-device settings. User data (session history) lives in Room (data/History.kt). */
 class AppPreferences(context: Context) {
@@ -25,6 +35,25 @@ class AppPreferences(context: Context) {
         private set
     var vibrationCues by mutableStateOf(prefs.getBoolean(KEY_VIBRATION, true))
         private set
+
+    // If-then plan and reminder (P-7, R-007).
+    var planCue by mutableStateOf(PlanCue.entries.firstOrNull { it.name == prefs.getString(KEY_PLAN_CUE, null) } ?: PlanCue.Teeth)
+        private set
+    var daysPerWeek by mutableIntStateOf(prefs.getInt(KEY_DAYS, 3))
+        private set
+    var reminderOn by mutableStateOf(prefs.getBoolean(KEY_REMINDER, false))
+        private set
+    /** Minutes after midnight. */
+    var reminderTime by mutableIntStateOf(prefs.getInt(KEY_REMINDER_TIME, 19 * 60))
+        private set
+
+    fun updatePlanCue(cue: PlanCue) { planCue = cue; prefs.edit { putString(KEY_PLAN_CUE, cue.name) } }
+    fun updateDaysPerWeek(days: Int) { daysPerWeek = days; prefs.edit { putInt(KEY_DAYS, days) } }
+    fun updateReminder(on: Boolean, time: Int = reminderTime) {
+        reminderOn = on
+        reminderTime = time
+        prefs.edit { putBoolean(KEY_REMINDER, on); putInt(KEY_REMINDER_TIME, time) }
+    }
 
     fun updateVoiceCues(enabled: Boolean) {
         voiceCues = enabled
@@ -60,6 +89,10 @@ class AppPreferences(context: Context) {
         const val KEY_THEME = "theme_mode"
         const val KEY_WALLPAPER = "wallpaper_colors"
         const val KEY_STILL = "still_figures"
+        const val KEY_PLAN_CUE = "plan_cue"
+        const val KEY_DAYS = "plan_days_per_week"
+        const val KEY_REMINDER = "reminder_on"
+        const val KEY_REMINDER_TIME = "reminder_time"
         const val KEY_VOICE = "cue_voice"
         const val KEY_CHIMES = "cue_chimes"
         const val KEY_VIBRATION = "cue_vibration"

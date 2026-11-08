@@ -39,16 +39,42 @@ import androidx.compose.ui.unit.dp
 
 /** This week's minutes per body area and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen(history: HistoryDao) {
+fun ProgressScreen(history: HistoryDao, daysTarget: Int) {
     val zone = remember { ZoneId.systemDefault() }
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val sessions by remember { history.recentSessions(20) }.collectAsState(initial = emptyList())
     val minutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
+    val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
+    val days = remember(starts) { Stats.daysFromStarts(starts, zone) }
+    val today = remember { LocalDate.now() }
+    val streak = remember(days, daysTarget) { Stats.weekStreak(days, today, daysTarget) }
+    val daysThisWeek = days.count { !it.isBefore(Stats.weekStart(today)) }
     val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.secondary)
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ScreenTitle("Progress", subtitle = "This week")
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            shape = RoundedCornerShape(28.dp),
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+        ) {
+            Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        when (streak) { 0 -> "Building your first week"; 1 -> "1 week"; else -> "$streak weeks" },
+                        style = if (streak == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+                    )
+                    Text("Week streak · weeks with $daysTarget or more days of stretching", style = MaterialTheme.typography.bodySmall)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("$daysThisWeek/$daysTarget", style = MaterialTheme.typography.titleLarge)
+                    Text("days this week", style = MaterialTheme.typography.labelSmall)
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerLow,
             shape = RoundedCornerShape(28.dp),

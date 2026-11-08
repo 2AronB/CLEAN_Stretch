@@ -52,4 +52,15 @@ class HistoryTest {
         val s = SessionEntity(startedAt = Stats.weekStartMillis(LocalDate.of(2026, 11, 8), zone), endedAt = 0, routineTitle = "x", completed = true)
         assertEquals(setOf(LocalDate.of(2026, 11, 2)), Stats.activeDays(listOf(s), zone))
     }
+
+    @Test
+    fun weekStreakCountsWeeksThatHitTheTarget() {
+        val today = LocalDate.of(2026, 11, 11) // Wednesday
+        fun d(day: Int, month: Int = 11) = LocalDate.of(2026, month, day)
+        // This week: 1 day (target 2 not yet met). Last week: 2 days. Week before: 3. Before that: 1.
+        val days = setOf(d(9), d(3), d(5), d(26, 10), d(28, 10), d(30, 10), d(20, 10))
+        assertEquals(2, Stats.weekStreak(days, today, daysTarget = 2))
+        assertEquals(3, Stats.weekStreak(days + d(10), today, daysTarget = 2))
+        assertEquals(0, Stats.weekStreak(emptySet(), today, daysTarget = 2))
+    }
 }

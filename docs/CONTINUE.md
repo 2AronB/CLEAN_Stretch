@@ -107,3 +107,14 @@ rechecked on the emulator:
 3. S2 hardening: elapsedRealtime state machine + JVM tests (pause, skip, back, +15 s,
    kill/resume); make save errors observable.
 4. Owner decision: AGENTS.md still says "discovery, no app code" — align it with D-020.
+
+## Owner feedback from phone test (2026-11-08)
+- **Voice:** works, but the owner finds Android's TTS voice too unnatural. Under discussion
+  (natural offline voice options) — don't change until decided.
+- **Screen off (future todo, not now):** timer keeps counting with the screen off, but the next
+  step doesn't start. Decision for now: the runner is **screen-on only**. Revisit with a
+  foreground service + elapsedRealtime state machine (D-010).
+- **Transition time:** 5 s setup is too short for some moves (e.g. standing up from lying down
+  needs 10–15 s). Hold off fixing until the voice is decided; options to discuss: setup time
+  based on the position change between stretches, a Short/Normal/Long setting, and an
+  "I'm ready" tap to start early.

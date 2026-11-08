@@ -118,3 +118,15 @@ rechecked on the emulator:
   needs 10–15 s). Hold off fixing until the voice is decided; options to discuss: setup time
   based on the position change between stretches, a Short/Normal/Long setting, and an
   "I'm ready" tap to start early.
+
+## Voice clips — next session (D-026, voice chosen: Kokoro af_heart)
+- Tools (outside the repo): `C:\Users\Kayli\Desktop\CLEAN Development\kokoro` — Python venv
+  with kokoro-onnx 0.4.7 + model files `kokoro-v1.0.onnx` / `voices-v1.0.bin` (from the
+  kokoro-onnx GitHub release). Samples live in git-ignored `voice-samples/`.
+- To do: a repo script (e.g. `tools/voice/`) that lists every phrase the app speaks (16 stretch
+  names, left/right side, "Get into position", "Hold for N seconds" for each hold length,
+  "Next: …", 3-2-1, "Routine complete"), generates them with af_heart at speed 0.95, converts
+  to small OGG/Opus in `app/src/main/res/raw/`, and a JVM test that fails if a catalog stretch
+  has no clip. `Cues.say` becomes a clip queue (MediaPlayer/SoundPool, built in), falling back
+  to system TTS only for a missing clip. Credit Kokoro (Apache-2.0) on Sources & credits.
+- Then: longer/position-aware setup time + "I'm ready" tap (see owner feedback above).

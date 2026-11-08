@@ -10,3 +10,4 @@ captures/
 *.log
 artifacts/
 tools/pose-preview/out/
+voice-samples/

@@ -11,7 +11,7 @@ Phase: **implementation — Slices S0 + S1 first draft** (2026-11-08, D-020).
   keyframe motion (Hold with breathing deepen, Flow), mirroring, muscle highlight with
   breath glow, reduced motion (system setting or "Still figures"), Pose Studio
   (sliders, mirror, play, copy as Kotlin).
-- Six sample stretches with sources; Today hero card; library with region filters;
+- 16 stretches with sources (6 from S1, 10 added in round 2 — see below); Today hero card; library with region filters;
   detail screens with left/right toggle; hands-free player *preview* (D-023).
 
 ## Verified (in Claude's workspace)
@@ -60,6 +60,17 @@ rechecked on the emulator:
 - Ingram card said 2024 but the citation said 2025 → citation now reads
   "2025;55:597–617 (published online 2024)", matching EVIDENCE.md S2 ("2024/2025").
   The short label stays 2024 so it doesn't clash with S26 "Ingram et al. 2025".
+
+## Round 2 (2026-11-08, D-024): 10 more stretches — 16 total
+- Added: Chin-to-chest neck, Behind-the-back chest opener, Wall lat (wall), Knee-to-chest
+  (lying, each side), Butterfly, Bent-knee calf (wall, each side), Standing hamstring hinge
+  (each side), Sphinx (core), Lying hamstring (each side), Downward dog (level 2).
+- Today's "Full-body reset" stays the original six (`SampleCatalog.fullBodyReset`).
+- Verified: build, 15/15 tests (floor contact, on-screen, sources, Tier C wording now cover all
+  16), lint 0 errors; every new thumbnail checked by eye on the emulator; lying hamstring
+  played in the player; no crashes.
+- Weakest pose: Butterfly (side view hides the feet). Owner review wanted on all new
+  wording and poses.
 
 ## Not yet verified
 - Owner look-and-feel review on phone (the point of S1). First impression

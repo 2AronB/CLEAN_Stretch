@@ -49,7 +49,9 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 /** The S1 sample routine. The generator (Slice S5) replaces this with a personal one. */
-val SampleRoutine = Route.Player(SampleCatalog.all.map { it.key }, "Full-body reset")
+val SampleRoutine = Route.Player(SampleCatalog.fullBodyReset, "Full-body reset")
+
+private val routineStretches get() = SampleRoutine.keys.mapNotNull { SampleCatalog.byKey(it) }
 
 @Composable
 fun TodayScreen(
@@ -84,7 +86,7 @@ fun TodayScreen(
 
 @Composable
 private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
-    val stretches = SampleCatalog.all
+    val stretches = routineStretches
     val time by rememberFigureClock(running = !reduced)
     val index = ((time / Timing.DEMO_LOOP_MS) % stretches.size).toInt()
     val current = stretches[index]
@@ -132,7 +134,7 @@ private fun HeroRoutineCard(reduced: Boolean, onStart: () -> Unit) {
 @Composable
 private fun RoutineStrip(onOpenStretch: (String) -> Unit) {
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SampleCatalog.all.chunked(2).forEach { pair ->
+        routineStretches.chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pair.forEach { s ->
                     Surface(

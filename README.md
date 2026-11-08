@@ -5,7 +5,7 @@ drawn with a single animated figure. CLEAN means no ads, trackers, accounts,
 subscriptions or paywalls, and no Internet permission.
 
 **Status:** first draft (Slices S0 + S1, 2026-11-08). App shell, Material You theme,
-stretch library (6 sample stretches), animated figure engine, Pose Studio and a
+stretch library (16 stretches), animated figure engine, Pose Studio and a
 preview of the hands-free player. Sessions are not saved yet. See
 [docs/CONTINUE.md](docs/CONTINUE.md) for exactly what is built and verified.
 

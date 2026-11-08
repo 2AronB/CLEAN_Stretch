@@ -1,7 +1,9 @@
 package dev.clean.stretch.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.os.Build
 import android.os.VibrationEffect
@@ -37,8 +39,34 @@ class Cues(context: Context, private val prefs: AppPreferences) {
         context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     }
 
+    private val appContext = context.applicationContext
+    private var player: MediaPlayer? = null
+
+    /**
+     * Speaks a [VoiceLines] sentence with its pre-generated clip (Kokoro af_heart, D-026).
+     * Falls back to the phone's own voice only if a clip is missing.
+     */
     fun say(text: String) {
-        if (prefs.voiceCues && ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, text.hashCode().toString())
+        if (!prefs.voiceCues) return
+        @SuppressLint("DiscouragedApi") // clip names are computed from the sentence
+        val id = appContext.resources.getIdentifier(VoiceLines.clipName(text), "raw", appContext.packageName)
+        if (id != 0) {
+            stopClip()
+            player = MediaPlayer.create(appContext, id)?.apply {
+                setOnCompletionListener { it.release(); if (player === it) player = null }
+                start()
+            }
+            if (player != null) return
+            Log.w(TAG, "Could not play clip for \"$text\"; using system voice")
+        } else {
+            Log.w(TAG, "No clip for \"$text\"; using system voice")
+        }
+        if (ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, text.hashCode().toString())
+    }
+
+    private fun stopClip() {
+        player?.let { runCatching { it.stop() }; it.release() }
+        player = null
     }
 
     /** Short tick for the 3-2-1 countdown. */
@@ -58,6 +86,7 @@ class Cues(context: Context, private val prefs: AppPreferences) {
     }
 
     fun release() {
+        stopClip()
         tts.stop()
         tts.shutdown()
         tone?.release()

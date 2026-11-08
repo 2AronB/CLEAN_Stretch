@@ -9,6 +9,7 @@ object Sources {
         Source("S12", "Decoster et al. 2005", "Decoster LC, Cleland J, Altieri C, Russell P. The effects of hamstring stretching on range of motion: a systematic literature review. J Orthop Sports Phys Ther. 2005;35:377–387.", "https://pubmed.ncbi.nlm.nih.gov/16001909/"),
         Source("S13", "Decoster et al. 2004", "Decoster LC, Scanlon RL, Horn KD, Cleland J. Standing and supine hamstring stretching are equally effective. J Athl Train. 2004;39:330–334.", "https://pmc.ncbi.nlm.nih.gov/articles/PMC535525"),
         Source("S15", "ACSM 2011", "Garber CE, et al. American College of Sports Medicine position stand: quantity and quality of exercise. Med Sci Sports Exerc. 2011;43:1334–1359.", "https://www.acsm.org/blog-detail/acsm-certified-blog/2021/03/18/stretching-and-flexibility-guidelines-update"),
+        Source("CREDIT-VOICE", "Voice: Kokoro", "Spoken cues use the af_heart voice of Kokoro-82M by hexgrad, licensed under the Apache License 2.0. Clips are made in advance and play offline.", "https://huggingface.co/hexgrad/Kokoro-82M"),
     )
 
     fun byId(id: String): Source? = all.firstOrNull { it.id == id }

@@ -208,11 +208,10 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
 
     // Voice line at the start of each step.
     LaunchedEffect(index, finished) {
-        if (finished) { cues.say("Routine complete. Nice work."); return@LaunchedEffect }
+        if (finished) { cues.say(VoiceLines.COMPLETE); return@LaunchedEffect }
         val s = steps[index]
-        val side = if (s.side == Side.Both) "" else ", ${s.side.label.lowercase()}"
-        if (s.setup) cues.say("${s.stretch.name}$side. Get into position.")
-        else cues.say("Hold for ${(s.baseMs / 1000)} seconds.")
+        if (s.setup) cues.say(VoiceLines.setup(s.stretch, s.side))
+        else cues.say(VoiceLines.hold(s.baseMs / 1000))
     }
 
     if (finished) {
@@ -236,8 +235,7 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
         if (paused || step.setup) return@LaunchedEffect
         if (remainingSec in 1..3) cues.tick()
         if (remainingSec == 6 && nextStretch != null) {
-            val side = if (nextStretch.side == Side.Both) "" else ", ${nextStretch.side.label.lowercase()}"
-            cues.say("Next: ${nextStretch.stretch.name}$side.")
+            cues.say(VoiceLines.next(nextStretch.stretch, nextStretch.side))
         }
     }
 

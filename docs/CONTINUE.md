@@ -130,3 +130,11 @@ rechecked on the emulator:
   has no clip. `Cues.say` becomes a clip queue (MediaPlayer/SoundPool, built in), falling back
   to system TTS only for a missing clip. Credit Kokoro (Apache-2.0) on Sources & credits.
 - Then: longer/position-aware setup time + "I'm ready" tap (see owner feedback above).
+
+## Voice clips done (2026-11-08, D-026)
+- 48 af_heart clips (1.1 MB Ogg Vorbis) in `app/src/main/res/raw/voice_*.ogg`, kept for release
+  builds by `res/raw/keep.xml`. Lines come from `ui/VoiceLines.kt`; `tools/voice/phrases.txt` +
+  `tools/voice/generate.py` regenerate them (see the script header). `VoiceLinesTest` fails if a
+  stretch is added/renamed without updating phrases.txt and clips. Kokoro credited on Sources.
+- Checked: 22/22 tests, lint 0 errors; emulator played clips (no "missing clip" fallback).
+  Owner still to listen on the phone.

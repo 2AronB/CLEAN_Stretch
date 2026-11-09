@@ -319,3 +319,7 @@ rechecked on the emulator:
   cap 4), cap across all kinds/lengths, met-goal shift, day-to-day variety, warm-up mix.
 - Today passes week minutes, planned days left, week move counts and the date seed. The review
   screen's Shuffle/length still regenerate without week data (fine for now).
+- Generator v2 **not yet seen on the emulator**: the PC ran out of memory (two emulators +
+  builds; 0.5 GB free), so the check was stopped and the Pixel_8 emulator shut down. Verified by
+  46/46 JVM tests, lint clean, and pose-preview images of the 6 new moves. Owner to try on phone.
+- Tip: run one emulator at a time on this 16 GB PC; close it after testing.

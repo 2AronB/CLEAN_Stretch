@@ -999,6 +999,156 @@ object SampleCatalog {
         ),
     )
 
+    // ---- Generator v2: flowing warm-up moves (EVIDENCE §6–7: dynamic before activity [S3]).
+
+    val legSwings = Stretch(
+        key = "leg_swings",
+        name = "Leg swings",
+        kind = StretchKind.Dynamic,
+        sided = true,
+        primary = listOf(Muscle.Hamstrings),
+        secondary = listOf(Muscle.HipFlexors, Muscle.Glutes),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Hold something steady and swing one leg forward and back, a little higher each time.",
+        cues = listOf(
+            "Stand side-on to a wall or chair and hold it lightly.",
+            "Swing the outside leg forward and back, keeping it relaxed.",
+            "Let the swings grow a little bigger as you warm up.",
+            "Keep your body tall. Don't force the end of the swing.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farShoulder = 80f, farElbow = 10f),
+            stretch = Pose(nearShoulder = -20f, nearElbow = 6f, farShoulder = 80f, farElbow = 10f, nearHip = 50f, nearKnee = 6f),
+            deep = Pose(nearShoulder = 20f, nearElbow = 6f, farShoulder = 80f, farElbow = 10f, nearHip = -28f, nearKnee = 4f),
+        ),
+    )
+
+    val armSwings = Stretch(
+        key = "arm_swings",
+        name = "Arm swings",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.Chest, Muscle.UpperBack),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm),
+        summary = "Swing both arms up overhead and back down behind you, smoothly.",
+        cues = listOf(
+            "Stand tall with your knees soft.",
+            "Swing both arms forward and up overhead.",
+            "Let them swing down and a little behind you.",
+            "Keep it smooth and easy, growing the range as you warm up.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(spine = -3f, nearShoulder = 170f, nearElbow = 4f, farShoulder = 168f, farElbow = 4f),
+            deep = Pose(nearShoulder = -35f, nearElbow = 6f, farShoulder = -33f, farElbow = 6f),
+        ),
+    )
+
+    val hipHinge = Stretch(
+        key = "hip_hinge",
+        name = "Hip hinge",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Hamstrings),
+        secondary = listOf(Muscle.Glutes, Muscle.LowerBack),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh, Segment.FarThigh),
+        summary = "Hands on hips, push your hips back and tip forward with a long back, then stand tall.",
+        cues = listOf(
+            "Stand tall with your hands on your hips and knees soft.",
+            "Push your hips back and let your chest tip forward, back long.",
+            "Go until you feel the backs of your thighs, then stand back up.",
+            "Move slowly, breathing out as you tip forward.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearShoulder = -30f, nearElbow = 100f, farShoulder = -28f, farElbow = 100f),
+            stretch = Pose(nearShoulder = -30f, nearElbow = 100f, farShoulder = -28f, farElbow = 100f, nearHip = 3f, nearKnee = 6f, farHip = 3f, farKnee = 6f),
+            deep = Pose(torso = 112f, head = -8f, nearShoulder = -30f, nearElbow = 100f, farShoulder = -28f, farElbow = 100f, nearHip = 5f, nearKnee = 10f, farHip = 5f, farKnee = 10f),
+        ),
+    )
+
+    val ankleRocks = Stretch(
+        key = "ankle_rocks",
+        name = "Ankle rocks",
+        kind = StretchKind.Dynamic,
+        sided = true,
+        primary = listOf(Muscle.Calves),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearShin),
+        summary = "In a short lunge, rock your front knee forward over your toes and back, heel down.",
+        cues = listOf(
+            "Stand in a short lunge, holding a wall or chair if you like.",
+            "Keeping the front heel down, rock that knee forward over your toes.",
+            "Rock back again. Keep it smooth and rhythmic.",
+            "Feel the front ankle and calf loosen as you go.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearShoulder = 75f, nearElbow = 10f, farShoulder = 72f, farElbow = 12f, nearHip = 40f, nearKnee = 50f, nearAnkle = 10f, farHip = -29f, farAnkle = -1f),
+            stretch = Pose(torso = 178f, nearShoulder = 75f, nearElbow = 10f, farShoulder = 72f, farElbow = 12f, nearHip = 40f, nearKnee = 50f, nearAnkle = 10f, farHip = -29f, farAnkle = -1f),
+            deep = Pose(torso = 178f, nearShoulder = 75f, nearElbow = 10f, farShoulder = 72f, farElbow = 12f, nearHip = 40f, nearKnee = 78f, nearAnkle = 38f, farHip = -39f, farAnkle = 9f),
+        ),
+    )
+
+    val lungeReach = Stretch(
+        key = "lunge_reach",
+        name = "Lunge with reach",
+        kind = StretchKind.Dynamic,
+        sided = true,
+        primary = listOf(Muscle.HipFlexors),
+        secondary = listOf(Muscle.Quadriceps, Muscle.Lats),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Step into a lunge and reach the back-leg arm overhead, then return.",
+        cues = listOf(
+            "Stand tall, then take a long step back with one foot.",
+            "Bend the front knee a little and reach the back-leg arm overhead.",
+            "Feel the front of the back hip, then step back to standing.",
+            "Repeat slowly and smoothly.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearElbow = 6f, farElbow = 6f),
+            deep = Pose(torso = 182f, spine = -3f, nearShoulder = 160f, nearElbow = 8f, farShoulder = 30f, farElbow = 20f, nearHip = -25f, nearKnee = 15f, farHip = 25f, farKnee = 30f, farAnkle = 5f),
+        ),
+    )
+
+    val neckNods = Stretch(
+        key = "neck_nods",
+        name = "Slow neck nods",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Neck),
+        position = Position.Standing,
+        highlight = setOf(Segment.Neck),
+        summary = "Slowly nod your chin down toward your chest and back up to level.",
+        cues = listOf(
+            "Stand or sit tall with your shoulders relaxed.",
+            "Slowly lower your chin toward your chest.",
+            "Lift it back to looking straight ahead. Don't tip your head far back.",
+            "Keep the movement slow and easy.",
+        ),
+        sourceIds = listOf("S3"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(head = -30f, spine = 3f, nearElbow = 6f, farElbow = 6f),
+            deep = Pose(head = 5f, nearElbow = 6f, farElbow = 6f),
+        ),
+    )
+
     val all: List<Stretch> = listOf(
         seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow,
         neckFlexion, chestOpener, wallLat, kneeToChest, butterfly, bentKneeCalf, standingHamstring,
@@ -1007,6 +1157,7 @@ object SampleCatalog {
         sideLyingQuad, kneelingQuad, towelCalf, wallChest, cobra, crossBodyShoulder, puppy,
         chinTuck, wallAngel, activeLegRaise, gluteBridge, plank, calfRaiseHold,
         rollUpperBack, rollCalves, rollQuads,
+        legSwings, armSwings, hipHinge, ankleRocks, lungeReach, neckNods,
     )
 
 

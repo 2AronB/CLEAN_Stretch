@@ -97,7 +97,14 @@ fun TodayScreen(
     var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
     val kind = RoutineKind.valueOf(kindName)
     // The recommendation (D-029): the user reviews and changes it before starting.
-    val routine = remember(profile, kind, weekMinutes) { Generator.generate(profile, kind, weekMinutes = weekMinutes) }
+    // Generator v2 inputs: this week's minutes per area, planned days still to come, how often
+    // each move was used this week, and today's date so the suggestion changes day to day.
+    val weekCounts = remember(weekSteps) { weekSteps.groupingBy { it.stretchKey }.eachCount() }
+    val todayDate = remember { LocalDate.now() }
+    val daysLeft = (prefs.daysPerWeek - activeDays.count { it != todayDate }).coerceAtLeast(1)
+    val routine = remember(profile, kind, weekMinutes, weekCounts, daysLeft) {
+        Generator.generate(profile, kind, weekMinutes = weekMinutes, seed = todayDate.toEpochDay() * 7 + kind.ordinal, daysLeft = daysLeft, weekCounts = weekCounts)
+    }
     val greeting = remember {
         when (LocalTime.now().hour) {
             in 5..11 -> "Good morning"

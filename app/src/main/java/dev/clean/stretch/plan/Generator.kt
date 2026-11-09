@@ -71,9 +71,35 @@ object Generator {
         return ((seconds + 59) / 60).coerceAtLeast(1)
     }
 
+    /** P-1: about 10 minutes per area each week is where gains level off [S1][S2]. */
+    const val WEEKLY_GOAL_MINUTES = 10.0
+
+    /** P-1: never more than 4 minutes for one area in a single session. */
+    const val SESSION_CAP_MINUTES = 4.0
+
+    /** Stretch minutes this move gives each of its main areas. */
+    private fun areaMinutes(s: Stretch, hold: Int): Double =
+        if (s.kind.isStretch) (if (s.sided) 2 else 1) * secondsFor(s, hold) / 60.0 else 0.0
+
     /**
-     * Builds a routine. Focus areas come first, least-stretched this week first ([weekMinutes]),
-     * then the rest of the body fills any time left. Warm-ups start with flowing moves.
+     * Today's share of each focus area's weekly goal: what's left of [WEEKLY_GOAL_MINUTES], spread
+     * over the planned days still to come, capped at [SESSION_CAP_MINUTES]. With no focus areas,
+     * every area gets a share.
+     */
+    fun sessionTargets(profile: Profile, weekMinutes: Map<Region, Double>, daysLeft: Int): Map<Region, Double> {
+        val areas = profile.effectiveFocus.ifEmpty { Region.entries.toSet() }
+        return areas.associateWith { r ->
+            ((WEEKLY_GOAL_MINUTES - (weekMinutes[r] ?: 0.0)) / daysLeft.coerceAtLeast(1)).coerceIn(0.0, SESSION_CAP_MINUTES)
+        }
+    }
+
+    /**
+     * Builds a routine (Generator v2, D-032: right on generation).
+     * 1. Each focus area first gets its share of the weekly goal ([sessionTargets]), neediest first.
+     * 2. Leftover time fills from the least-covered areas, never past 4 min per area.
+     * 3. Variety: the order changes day to day ([seed] = date) and moves done often this week
+     *    ([weekCounts]) go to the back of the queue.
+     * Warm-ups use flowing moves first; full routines and cool-downs use holds first.
      */
     fun generate(
         profile: Profile,
@@ -81,6 +107,8 @@ object Generator {
         minutes: Int = profile.minutes,
         weekMinutes: Map<Region, Double> = emptyMap(),
         seed: Long = 0L,
+        daysLeft: Int = 3,
+        weekCounts: Map<String, Int> = emptyMap(),
     ): Routine {
         val hold = holdSeconds(profile, kind)
         val budget = (if (kind == RoutineKind.Quick) minutes.coerceAtMost(4) else minutes) * 60
@@ -91,26 +119,46 @@ object Generator {
         val rolls = if (kind == RoutineKind.WarmUp || kind == RoutineKind.CoolDown) everything.filter { it.kind == StretchKind.Roll }.sortedWith(focusFirst).take(1) else emptyList()
         val strengthCount = if (!profile.strengthenOn || kind == RoutineKind.WarmUp) 0 else if (kind == RoutineKind.Quick || minutes <= 5) 1 else 2
         val strengths = everything.filter { it.kind == StretchKind.Strengthen }.sortedWith(focusFirst).take(strengthCount)
-        val pool = everything.filter { it.kind.isStretch }.toMutableList()
-        if (kind == RoutineKind.WarmUp) pool.sortBy { if (it.kind == StretchKind.Dynamic) 0 else 1 }
 
-        val focus = profile.effectiveFocus
-        val byNeed = compareBy<Region> { weekMinutes[it] ?: 0.0 }
-        val regions = focus.sortedWith(byNeed) + (Region.entries - focus).sortedWith(byNeed)
+        // Preferred move type first, then the least-used this week; the date-seeded shuffle breaks ties.
+        val typeRank: (Stretch) -> Int = { s ->
+            val dynamic = s.kind == StretchKind.Dynamic
+            if (kind == RoutineKind.WarmUp) (if (dynamic) 0 else 1) else (if (dynamic) 1 else 0)
+        }
+        val pool = everything.filter { it.kind.isStretch }
+            .sortedWith(compareBy<Stretch>({ typeRank(it) }, { weekCounts[it.key] ?: 0 }))
+            .toMutableList()
+
+        val targets = sessionTargets(profile, weekMinutes, daysLeft)
+        val given = mutableMapOf<Region, Double>()
         val chosen = mutableListOf<Stretch>()
         var used = (rolls + strengths).sumOf { costSeconds(it, hold) }
-        var added = true
-        while (added) {
-            added = false
-            for (region in regions) {
-                // Only spill into non-focus areas once every focus area has had its turn.
-                if (focus.isNotEmpty() && region !in focus && chosen.isNotEmpty() && pool.any { s -> s.primary.any { it.region in focus } && fits(s, hold, used, budget) }) continue
-                val pick = pool.firstOrNull { s -> s.primary.any { it.region == region } && fits(s, hold, used, budget) } ?: continue
-                pool.remove(pick)
-                chosen += pick
-                used += costSeconds(pick, hold)
-                added = true
-            }
+
+        fun canAdd(s: Stretch): Boolean =
+            fits(s, hold, used, budget) &&
+                s.primary.map { it.region }.distinct().all { (given[it] ?: 0.0) + areaMinutes(s, hold) <= SESSION_CAP_MINUTES + 1e-9 }
+
+        fun take(s: Stretch) {
+            pool.remove(s); chosen += s; used += costSeconds(s, hold)
+            s.primary.map { it.region }.distinct().forEach { given[it] = (given[it] ?: 0.0) + areaMinutes(s, hold) }
+        }
+
+        // 1. Weekly-goal shares for focus areas, neediest first.
+        while (true) {
+            val area = targets.filter { (r, goal) -> (given[r] ?: 0.0) < goal - 1e-9 && pool.any { s -> s.primary.any { it.region == r } && canAdd(s) } }
+                .maxByOrNull { (r, goal) -> goal - (given[r] ?: 0.0) }?.key ?: break
+            take(pool.first { s -> s.primary.any { it.region == area } && canAdd(s) })
+        }
+        // 2. Fill leftover time from the least-covered areas (focus areas whose weekly goal is met come last).
+        val metThisWeek = targets.filterValues { it <= 1e-9 }.keys
+        while (true) {
+            val pick = pool.filter(::canAdd).minWithOrNull(
+                compareBy<Stretch>(
+                    { s -> if (s.primary.all { it.region in metThisWeek }) 1 else 0 },
+                    { s -> s.primary.minOf { given[it.region] ?: 0.0 } },
+                ),
+            ) ?: break
+            take(pick)
         }
         if (chosen.isEmpty()) {
             // Always offer something if anything is allowed, even if it runs a little long.
@@ -126,12 +174,24 @@ object Generator {
         val notes = mutableListOf<String>()
         if (rolls.isNotEmpty()) notes += "Starts with a minute of foam rolling."
         if (strengths.isNotEmpty()) notes += "Ends with a short Strengthen block. Strength through a full range builds flexibility too."
+        val focus = profile.effectiveFocus
+        focus.filter { it in metThisWeek && (weekMinutes[it] ?: 0.0) > 0 }
+            .forEach { notes += "You've reached this week's ${it.label.lowercase()} goal, so today leans on other areas." }
         focus.filter { r -> allowed(profile, kind).none { s -> s.primary.any { it.region == r } } }
             .forEach { notes += "No ${it.label.lowercase()} stretch fits your settings, so it's left out." }
         if (chosen.isEmpty()) notes += "Nothing in the library fits your settings yet. Try changing your limits in Settings."
         profile.conditions.forEach { notes += "${it.label}: ${it.limits}" }
 
         return Routine(kind, kind.title, (rolls + ordered + strengths).map { it.key }, hold, notes)
+    }
+
+    /** Stretch minutes per area for a list of moves (used by tests and the review screen). */
+    fun minutesByArea(keys: List<String>, hold: Int): Map<Region, Double> {
+        val out = mutableMapOf<Region, Double>()
+        keys.mapNotNull { SampleCatalog.byKey(it) }.forEach { s ->
+            s.primary.map { it.region }.distinct().forEach { r -> out[r] = (out[r] ?: 0.0) + areaMinutes(s, hold) }
+        }
+        return out
     }
 
     private fun fits(s: Stretch, hold: Int, used: Int, budget: Int) = used + costSeconds(s, hold) <= budget

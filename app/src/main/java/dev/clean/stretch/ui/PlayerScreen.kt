@@ -242,7 +242,13 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
         if (finished) { cues.say(VoiceLines.COMPLETE); return@LaunchedEffect }
         val s = steps[index]
         if (s.setup) cues.say(VoiceLines.setup(s.stretch, s.side))
-        else cues.say(if (s.stretch.kind == StretchKind.Roll) VoiceLines.roll(s.baseMs / 1000) else VoiceLines.hold(s.baseMs / 1000))
+        else cues.say(
+            when (s.stretch.kind) {
+                StretchKind.Roll -> VoiceLines.roll(s.baseMs / 1000)
+                StretchKind.Dynamic -> VoiceLines.flow(s.baseMs / 1000)
+                else -> VoiceLines.hold(s.baseMs / 1000)
+            },
+        )
     }
 
     if (finished) {

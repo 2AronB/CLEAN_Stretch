@@ -3,6 +3,9 @@ Hold for 30 seconds.
 Hold for 40 seconds.
 Hold for 60 seconds.
 Roll slowly for 60 seconds.
+Keep moving for 30 seconds.
+Keep moving for 40 seconds.
+Keep moving for 60 seconds.
 Seated forward fold. Get into position.
 Next: Seated forward fold.
 Standing quad stretch, left side. Get into position.
@@ -105,3 +108,21 @@ Roll: calves. Get into position.
 Next: Roll: calves.
 Roll: front of thighs. Get into position.
 Next: Roll: front of thighs.
+Leg swings, left side. Get into position.
+Next: Leg swings, left side.
+Leg swings, right side. Get into position.
+Next: Leg swings, right side.
+Arm swings. Get into position.
+Next: Arm swings.
+Hip hinge. Get into position.
+Next: Hip hinge.
+Ankle rocks, left side. Get into position.
+Next: Ankle rocks, left side.
+Ankle rocks, right side. Get into position.
+Next: Ankle rocks, right side.
+Lunge with reach, left side. Get into position.
+Next: Lunge with reach, left side.
+Lunge with reach, right side. Get into position.
+Next: Lunge with reach, right side.
+Slow neck nods. Get into position.
+Next: Slow neck nods.

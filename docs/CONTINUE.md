@@ -301,3 +301,21 @@ rechecked on the emulator:
    health-app declaration, store listing/icon, dependency/SDK updates, condition review (D-031),
    cold start on a real phone, PLAN acceptance walk-through on the phone.
 4. **Later:** "Tender spot" flow, screen-off running (foreground service), sturdier timer.
+
+## Generator v2 (2026-11-09) — "right on generation" (D-032)
+- **Weekly dose (P-1):** each focus area (or every area if none chosen) gets today's share of
+  ~10 min/week = (10 − minutes done this week) ÷ planned days still to come, capped at 4 min;
+  neediest area first. Leftover time fills from the least-covered areas; no area ever passes
+  4 min in a session. A met weekly goal shifts time elsewhere with a note.
+  Region-level for now (e.g. "Legs" covers hamstrings, quads and calves).
+- **Variety:** suggestion seeded by date (+ routine kind) and moves used often this week go to
+  the back, so it changes day to day while keeping the standing → floor order.
+- **Warm-ups:** 6 new flowing moves (leg swings, arm swings, hip hinge, ankle rocks, lunge with
+  reach, slow neck nods) [S3][S4][S5]; warm-ups pick flowing moves first, full routines and
+  cool-downs pick holds first. Voice "Keep moving for N seconds." for flowing moves.
+- **Reminder wording:** "A gentle nudge at *around* 7:00 PM" — "around" opens "Why around?"
+  (minimal permissions; Android may deliver up to ~10 minutes late).
+- Tests: PLAN "Weekly target" acceptance (≈2 min on day 1 of 5; (10−4)/3 = 2 min on day 3;
+  cap 4), cap across all kinds/lengths, met-goal shift, day-to-day variety, warm-up mix.
+- Today passes week minutes, planned days left, week move counts and the date seed. The review
+  screen's Shuffle/length still regenerate without week data (fine for now).

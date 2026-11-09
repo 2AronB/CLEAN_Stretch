@@ -50,6 +50,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import dev.clean.stretch.catalog.Region
 import dev.clean.stretch.plan.Condition
 import dev.clean.stretch.plan.Goal
@@ -262,7 +268,8 @@ private fun PlanPage(prefs: AppPreferences) {
         (2..7).forEach { d -> FilterChip(selected = prefs.daysPerWeek == d, onClick = { prefs.updateDaysPerWeek(d) }, label = { Text("$d") }) }
     }
     Spacer(Modifier.height(12.dp))
-    ToggleRow("Daily reminder", "A gentle nudge at ${formatTime(prefs.reminderTime)}.", prefs.reminderOn) { on ->
+    var explainAround by rememberSaveable { mutableStateOf(false) }
+    val onReminder: (Boolean) -> Unit = { on ->
         if (on && !Reminders.canNotify(context)) { // only possible on Android 13+
             askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
@@ -270,6 +277,39 @@ private fun PlanPage(prefs: AppPreferences) {
             prefs.updateReminder(on)
             Reminders.sync(context, prefs)
         }
+    }
+    Row(Modifier.fillMaxWidth().clickable { onReminder(!prefs.reminderOn) }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).padding(end = 12.dp)) {
+            Text("Daily reminder", style = MaterialTheme.typography.titleMedium)
+            // "around" links to why the time isn't exact (minimal permissions).
+            val linkColor = MaterialTheme.colorScheme.primary
+            Text(
+                buildAnnotatedString {
+                    append("A gentle nudge at ")
+                    withLink(LinkAnnotation.Clickable("around", TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline))) { explainAround = true }) {
+                        append("around")
+                    }
+                    append(" ${formatTime(prefs.reminderTime)}.")
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = prefs.reminderOn, onCheckedChange = onReminder)
+    }
+    if (explainAround) {
+        AlertDialog(
+            onDismissRequest = { explainAround = false },
+            title = { Text("Why \"around\"?") },
+            text = {
+                Text(
+                    "Stretch asks for as few permissions as possible. Without the \"exact alarm\" permission, " +
+                        "Android may deliver your reminder up to about 10 minutes after the time you pick, " +
+                        "so it can save battery. Your routine is ready whenever the nudge arrives.",
+                )
+            },
+            confirmButton = { TextButton(onClick = { explainAround = false }) { Text("Got it") } },
+        )
     }
     if (prefs.reminderOn) TextButton(onClick = { pickingTime = true }) { Text("Change time") }
     if (denied) {

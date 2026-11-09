@@ -19,12 +19,14 @@ object VoiceLines {
 
     fun roll(seconds: Long) = "Roll slowly for $seconds seconds."
 
+    fun flow(seconds: Long) = "Keep moving for $seconds seconds."
+
     fun next(stretch: Stretch, side: Side) = "Next: ${stretch.name}${sideText(side)}."
 
     /** All lines for the current catalog. */
     fun all(): List<String> {
         // Hold lengths the generator uses: 30 s (warm-up, quick break), 40 s (default), 60 s (65+).
-        val lines = mutableListOf(COMPLETE, hold(30), hold(HOLD_MS / 1000), hold(60), roll(60))
+        val lines = mutableListOf(COMPLETE, hold(30), hold(HOLD_MS / 1000), hold(60), roll(60), flow(30), flow(40), flow(60))
         SampleCatalog.all.forEach { s ->
             val sides = if (s.sided) listOf(Side.Left, Side.Right) else listOf(Side.Both)
             sides.forEach { side -> lines += setup(s, side); lines += next(s, side) }

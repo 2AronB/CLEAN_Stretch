@@ -70,6 +70,7 @@ import dev.clean.stretch.figure.MotionPlayer
 import dev.clean.stretch.figure.Timing
 import dev.clean.stretch.settings.AppPreferences
 import dev.clean.stretch.ui.figure.FigureView
+import dev.clean.stretch.ui.figure.rememberFigureStage
 import dev.clean.stretch.ui.figure.figureColors
 import dev.clean.stretch.ui.figure.rememberReducedMotion
 import kotlin.math.ceil
@@ -261,7 +262,9 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
     val holdIndex = steps.take(index + 1).count { !it.setup } - if (step.setup) 0 else 1
     val stage = MaterialTheme.colorScheme.surfaceContainerLow
     val pose = if (step.setup) step.stretch.motion.start else MotionPlayer.sessionPose(step.stretch.motion, t, reduced)
-    val frame = remember(step.stretch.key) { MotionPlayer.frameFor(step.stretch.motion) }
+    var figureView by remember(step.stretch.key) { mutableStateOf(step.stretch.motion.view) }
+    val camera = rememberViewCamera(figureView, reduced)
+    val figureStage = rememberFigureStage(step.stretch.key, MotionPlayer.keyframes(step.stretch.motion), camera, step.stretch.prop)
     // Every stretch-and-side begins with a setup step, so the next setup step is the next new thing
     // (not the hold of the side that is being set up right now).
     val nextStretch = steps.drop(index + 1).firstOrNull { it.setup }
@@ -297,16 +300,16 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             Box {
                 FigureView(
                     pose = pose,
-                    frame = frame,
+                    stage = figureStage,
                     highlight = step.stretch.highlight,
                     mirrored = step.side == Side.Left,
-                    prop = step.stretch.prop,
                     glow = if (reduced || step.setup) 0f else Easing.breath((t - Timing.ENTER_MS).coerceAtLeast(0L)),
                     colors = figureColors(stage),
                     // Extra top room keeps the "Get into position" label clear of the figure's head.
                     modifier = Modifier.fillMaxSize().padding(start = 20.dp, end = 20.dp, bottom = 20.dp, top = 64.dp),
                     description = step.stretch.name,
                 )
+                ViewSwitch(figureView, onChange = { figureView = it }, modifier = Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 20.dp))
                 if (step.setup) {
                     Surface(
                         color = MaterialTheme.colorScheme.primary,

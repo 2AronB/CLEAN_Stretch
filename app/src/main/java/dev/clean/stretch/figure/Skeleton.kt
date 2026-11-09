@@ -103,48 +103,8 @@ class Figure(val points: Map<Joint, Vec>, val spineControl: Vec, val torsoAngle:
     }
 
     companion object {
-        /** Forward kinematics, then drop the figure so its lowest part rests on the floor. */
-        fun solve(pose: Pose, grounded: Boolean = true): Figure {
-            val hip = Vec(pose.shiftX, 0f)
-            val shoulder = hip + Vec.dir(pose.torso) * Body.TORSO
-            val neckAngle = pose.torso + pose.head
-            val neck = shoulder + Vec.dir(neckAngle) * Body.NECK
-            val head = neck + Vec.dir(neckAngle) * Body.HEAD_RADIUS
-
-            val armBase = pose.torso - 180f
-            val nearUpper = armBase + pose.nearShoulder
-            val nearElbow = shoulder + Vec.dir(nearUpper) * Body.UPPER_ARM
-            val nearHand = nearElbow + Vec.dir(nearUpper + pose.nearElbow) * Body.FOREARM
-            val farUpper = armBase + pose.farShoulder
-            val farElbow = shoulder + Vec.dir(farUpper) * Body.UPPER_ARM
-            val farHand = farElbow + Vec.dir(farUpper + pose.farElbow) * Body.FOREARM
-
-            val nearKnee = hip + Vec.dir(pose.nearHip) * Body.THIGH
-            val nearShin = pose.nearHip - pose.nearKnee
-            val nearAnkle = nearKnee + Vec.dir(nearShin) * Body.SHIN
-            val nearToe = nearAnkle + Vec.dir(nearShin + 90f + pose.nearAnkle) * Body.FOOT
-            val farKnee = hip + Vec.dir(pose.farHip) * Body.THIGH
-            val farShin = pose.farHip - pose.farKnee
-            val farAnkle = farKnee + Vec.dir(farShin) * Body.SHIN
-            val farToe = farAnkle + Vec.dir(farShin + 90f + pose.farAnkle) * Body.FOOT
-
-            val mid = (hip + shoulder) * 0.5f
-            val spineControl = mid + Vec.dir(pose.torso + 90f) * pose.spine
-
-            val raw = mapOf(
-                Joint.Hip to hip, Joint.Shoulder to shoulder, Joint.Neck to neck, Joint.Head to head,
-                Joint.NearElbow to nearElbow, Joint.NearHand to nearHand,
-                Joint.FarElbow to farElbow, Joint.FarHand to farHand,
-                Joint.NearKnee to nearKnee, Joint.NearAnkle to nearAnkle, Joint.NearToe to nearToe,
-                Joint.FarKnee to farKnee, Joint.FarAnkle to farAnkle, Joint.FarToe to farToe,
-            )
-            if (!grounded) return Figure(raw, spineControl, pose.torso, neckAngle)
-            // A curved spine bulges past the hip-shoulder line; include its outer edge.
-            val spineBottom = spineMidpoint(hip, spineControl, shoulder).y + Body.width(Segment.Torso) / 2f
-            val lowest = max(raw.maxOf { (j, p) -> p.y + Body.radius(j) }, spineBottom)
-            val drop = Vec(0f, -lowest)
-            return Figure(raw.mapValues { it.value + drop }, spineControl + drop, pose.torso, neckAngle)
-        }
+        /** Solves the 3D figure (see [Figure3d]) and flattens it to the classic side view. */
+        fun solve(pose: Pose, grounded: Boolean = true): Figure = Figure3d.solve(pose, grounded).sideView()
 
         /** Midpoint of the quadratic curve drawn for the back. */
         fun spineMidpoint(hip: Vec, control: Vec, shoulder: Vec): Vec =

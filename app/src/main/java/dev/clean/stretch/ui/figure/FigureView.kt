@@ -10,15 +10,15 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
@@ -26,17 +26,26 @@ import androidx.compose.ui.semantics.semantics
 import dev.clean.stretch.catalog.Equipment
 import dev.clean.stretch.catalog.Prop
 import dev.clean.stretch.figure.Body
-import dev.clean.stretch.figure.Box
-import dev.clean.stretch.figure.Figure
+import dev.clean.stretch.figure.Camera
+import dev.clean.stretch.figure.Figure3d
 import dev.clean.stretch.figure.Joint
 import dev.clean.stretch.figure.Pose
+import dev.clean.stretch.figure.Projected
+import dev.clean.stretch.figure.Scene
 import dev.clean.stretch.figure.Segment
-import dev.clean.stretch.figure.Vec
-import kotlin.math.max
+import dev.clean.stretch.figure.Vec3
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /** Foam roller radius in body units (about a 16 cm roller). */
 const val ROLLER_RADIUS = 8f
+private const val ROLLER_HALF_LENGTH = 24f
+private const val WALL_HALF_WIDTH = 40f
+/** How far a drawn wall reaches above the tallest keyframe. */
+private const val WALL_MARGIN = 6f
+private const val PI_F = Math.PI.toFloat()
 
 /** Colors for one drawing of the figure. Defaults come from the current Material theme. */
 data class FigureColors(val body: Color, val far: Color, val highlight: Color, val halo: Color, val floor: Color, val prop: Color)
@@ -81,110 +90,218 @@ fun rememberReducedMotion(stillFiguresSetting: Boolean): Boolean {
 }
 
 /**
- * Draws the figure in a side view.
- * [frame] should cover every pose the figure will take so the drawing doesn't jump
- * (see MotionPlayer.frameFor). [mirrored] shows the other side of the body.
- * [glow] (0..1) gently pulses the highlighted muscles, e.g. with the breath.
+ * Everything one stretch needs to be drawn from one camera: the [scene] (projection, mat and a
+ * frame covering every keyframe, so the figure doesn't jump) plus its prop.
+ */
+class FigureStage(val scene: Scene, val prop: Prop?, val wallTop: Float)
+
+/** Builds a stage that keeps every pose in [poses] (and the prop) in view from [camera]. */
+fun figureStage(poses: List<Pose>, camera: Camera, prop: Prop?): FigureStage {
+    val wallTop = poses.minOf { Figure3d.solve(it).minY() } - WALL_MARGIN
+    val extra = when (prop?.equipment) {
+        Equipment.FoamRoller -> listOf(
+            Vec3(prop.x - ROLLER_RADIUS, -2f * ROLLER_RADIUS, -ROLLER_HALF_LENGTH),
+            Vec3(prop.x + ROLLER_RADIUS, 0f, ROLLER_HALF_LENGTH),
+        )
+        Equipment.Wall -> listOf(Vec3(prop.x, wallTop, 0f), Vec3(prop.x, 0f, 0f))
+        else -> emptyList()
+    }
+    return FigureStage(Scene.of(poses, camera, extra), prop, wallTop)
+}
+
+@Composable
+fun rememberFigureStage(key: Any, poses: List<Pose>, camera: Camera, prop: Prop?): FigureStage =
+    remember(key, camera, prop) { figureStage(poses, camera, prop) }
+
+/**
+ * Draws the figure in 3D on a floor with an exercise mat, seen from the stage's camera.
+ * [mirrored] shows the other side of the body. [glow] (0..1) gently pulses the highlighted
+ * muscles, e.g. with the breath. [showGrid] adds floor tiles (skip it for tiny thumbnails).
  */
 @Composable
 fun FigureView(
     pose: Pose,
-    frame: Box,
+    stage: FigureStage,
     highlight: Set<Segment>,
     modifier: Modifier = Modifier,
     mirrored: Boolean = false,
-    prop: Prop? = null,
     glow: Float = 0f,
     colors: FigureColors = figureColors(),
+    showGrid: Boolean = true,
     description: String = "Animated figure",
 ) {
     Canvas(modifier.semantics { contentDescription = description }) {
-        drawFigure(Figure.solve(pose), frame, highlight, mirrored, prop, glow, colors)
+        clipRect {
+            drawFigure(Figure3d.solve(pose), stage, highlight, mirrored, glow, colors, showGrid)
+        }
     }
 }
 
+private class Group(val segments: List<Segment>, val withHead: Boolean = false)
+
+/** Drawing groups in side-view order (far arm first); re-sorted by depth for each camera. */
+private val groups = listOf(
+    Group(listOf(Segment.FarUpperArm, Segment.FarForearm)),
+    Group(listOf(Segment.FarThigh, Segment.FarShin, Segment.FarFoot)),
+    Group(listOf(Segment.Torso, Segment.Neck), withHead = true),
+    Group(listOf(Segment.NearThigh, Segment.NearShin, Segment.NearFoot)),
+    Group(listOf(Segment.NearUpperArm, Segment.NearForearm)),
+)
+
 private fun DrawScope.drawFigure(
-    figure: Figure,
-    frame: Box,
+    figure: Figure3d,
+    stage: FigureStage,
     highlight: Set<Segment>,
     mirrored: Boolean,
-    prop: Prop?,
     glow: Float,
     c: FigureColors,
+    showGrid: Boolean,
 ) {
-    // Fit the frame (plus room for a prop and a little air) into the canvas.
+    val scene = stage.scene
+    val proj = scene.projection
+    val frame = scene.frame
+
+    // Fit the frame (plus a little air) into the canvas.
     val pad = 10f
-    val left = min(frame.left, prop?.x?.minus(6f) ?: frame.left) - pad
-    val right = max(frame.right, prop?.x?.plus(6f) ?: frame.right) + pad
+    val left = frame.left - pad
     val top = frame.top - pad
-    val bottom = 6f
-    val scale = min(size.width / (right - left), size.height / (bottom - top))
-    val usedW = (right - left) * scale
-    val usedH = (bottom - top) * scale
-    val ox = (size.width - usedW) / 2f
-    val oy = (size.height - usedH) / 2f
+    val fw = frame.width + 2 * pad
+    val fh = frame.height + 2 * pad
+    val px = min(size.width / fw, size.height / fh)
+    val ox = (size.width - fw * px) / 2f
+    val oy = (size.height - fh * px) / 2f
 
-    fun map(v: Vec): Offset {
-        val x = ox + (v.x - left) * scale
-        val y = oy + (v.y - top) * scale
-        return Offset(if (mirrored) size.width - x else x, y)
+    fun map(p: Projected): Offset {
+        val x = ox + (p.x - left) * px
+        return Offset(if (mirrored) size.width - x else x, oy + (p.y - top) * px)
+    }
+    fun at(w: Vec3) = map(proj.project(w))
+    fun polygon(points: List<Vec3>) = Path().apply {
+        points.forEachIndexed { i, w -> val o = at(w); if (i == 0) moveTo(o.x, o.y) else lineTo(o.x, o.y) }
+        close()
     }
 
-    val floorY = map(Vec(0f, 0f)).y
-    drawLine(c.floor, Offset(size.width * 0.06f, floorY), Offset(size.width * 0.94f, floorY), strokeWidth = 2.5f * scale / 2f, cap = StrokeCap.Round)
+    val floorFill = lerp(c.halo, c.floor, 0.14f)
+    val grid = lerp(c.halo, c.floor, 0.38f)
+    val mat = lerp(c.halo, c.floor, 0.34f)
+    val matEdge = lerp(c.halo, c.floor, 0.62f)
+    val shadow = lerp(c.halo, c.floor, 0.78f)
 
-    prop?.takeIf { it.equipment == Equipment.FoamRoller }?.let {
-        // Foam roller: a circle resting on the floor, drawn behind the body.
-        drawCircle(color = c.prop, radius = ROLLER_RADIUS * scale, center = map(Vec(it.x, -ROLLER_RADIUS)))
+    // Floor: a large tiled plane whose back edge reads as the horizon, then the mat.
+    val cx = proj.center.x
+    val fx0 = cx - 260f
+    val fx1 = cx + 260f
+    val fz0 = -260f
+    val fz1 = 260f
+    drawPath(polygon(listOf(Vec3(fx0, 0f, fz0), Vec3(fx1, 0f, fz0), Vec3(fx1, 0f, fz1), Vec3(fx0, 0f, fz1))), floorFill)
+    if (showGrid) {
+        val gw = 0.7f * px
+        var gx = (fx0 / 20f).toInt() * 20f
+        while (gx <= fx1) { drawLine(grid, at(Vec3(gx, 0f, fz0)), at(Vec3(gx, 0f, fz1)), strokeWidth = gw); gx += 20f }
+        var gz = fz0
+        while (gz <= fz1) { drawLine(grid, at(Vec3(fx0, 0f, gz)), at(Vec3(fx1, 0f, gz)), strokeWidth = gw); gz += 20f }
     }
-    prop?.takeIf { it.equipment == Equipment.Wall }?.let {
-        val p = map(Vec(it.x, 0f))
-        val w = 5f * scale
-        drawRoundRect(
-            color = c.prop,
-            topLeft = Offset(p.x - w / 2f, map(Vec(0f, frame.top - 4f)).y),
-            size = Size(w, floorY - map(Vec(0f, frame.top - 4f)).y),
-            cornerRadius = CornerRadius(w / 2f),
+    val matPath = polygon(scene.matCorners())
+    drawPath(matPath, mat)
+    drawPath(matPath, matEdge, style = Stroke(width = 1.4f * px, join = StrokeJoin.Round))
+
+    // Shadows straight below every part, flattened onto the floor (a light overhead).
+    fun floorCapsule(a: Vec3, b: Vec3, r: Float): Path {
+        var dx = b.x - a.x
+        var dz = b.z - a.z
+        val len = sqrt(dx * dx + dz * dz)
+        if (len < 1e-3f) { dx = 1f; dz = 0f } else { dx /= len; dz /= len }
+        val pts = ArrayList<Vec3>(18)
+        fun arc(cx: Float, cz: Float, from: Float) {
+            for (i in 0..8) {
+                val t = (from + i * 22.5f) * PI_F / 180f
+                pts += Vec3(cx + r * (dx * cos(t) - dz * sin(t)), 0f, cz + r * (dz * cos(t) + dx * sin(t)))
+            }
+        }
+        arc(b.x, b.z, -90f)
+        arc(a.x, a.z, 90f)
+        return polygon(pts)
+    }
+    fun ground(v: Vec3) = Vec3(v.x, 0f, v.z)
+    val outline = figure.torsoOutline()
+    val torsoR = Body.width(Segment.Torso) / 2f
+    drawPath(floorCapsule(ground(outline[0]), ground(outline[1]), torsoR), shadow)
+    drawPath(floorCapsule(ground(outline[3]), ground(outline[2]), torsoR), shadow)
+    drawPath(polygon(outline.take(4).map(::ground)), shadow)
+    Segment.entries.filter { it != Segment.Torso }.forEach { seg ->
+        drawPath(floorCapsule(ground(figure.root(seg)), ground(figure.end(seg)), Body.width(seg) / 2f), shadow)
+    }
+    val headGround = ground(figure[Joint.Head])
+    drawPath(floorCapsule(headGround, headGround, Body.HEAD_RADIUS), shadow)
+
+    // Props.
+    val prop = stage.prop
+    val hipDepth = proj.project(figure[Joint.Hip]).depth
+    var wallInFront: (() -> Unit)? = null
+    if (prop?.equipment == Equipment.FoamRoller) {
+        val a = Vec3(prop.x, -ROLLER_RADIUS, -ROLLER_HALF_LENGTH)
+        val b = Vec3(prop.x, -ROLLER_RADIUS, ROLLER_HALF_LENGTH)
+        drawPath(floorCapsule(Vec3(prop.x, 0f, a.z), Vec3(prop.x, 0f, b.z), ROLLER_RADIUS), shadow)
+        val pa = proj.project(a)
+        val pb = proj.project(b)
+        val w = ROLLER_RADIUS * (pa.scale + pb.scale) * px
+        val oa = map(pa)
+        val ob = map(pb)
+        if ((oa - ob).getDistance() < 0.5f) drawCircle(c.prop, w / 2f, oa)
+        else drawLine(c.prop, oa, ob, strokeWidth = w, cap = StrokeCap.Round)
+    }
+    if (prop?.equipment == Equipment.Wall) {
+        val wall = polygon(
+            listOf(
+                Vec3(prop.x, 0f, -WALL_HALF_WIDTH), Vec3(prop.x, stage.wallTop, -WALL_HALF_WIDTH),
+                Vec3(prop.x, stage.wallTop, WALL_HALF_WIDTH), Vec3(prop.x, 0f, WALL_HALF_WIDTH),
+            ),
         )
+        val draw = { alpha: Float ->
+            drawPath(wall, c.prop.copy(alpha = alpha))
+            drawPath(wall, c.prop.copy(alpha = alpha), style = Stroke(width = 5f * px, join = StrokeJoin.Round))
+        }
+        // A wall between the camera and the figure is drawn last and see-through.
+        if (proj.project(Vec3(prop.x, stage.wallTop / 2f, 0f)).depth > hipDepth + 10f) wallInFront = { draw(0.35f) } else draw(1f)
     }
 
-    // Soft contact shadow under the figure.
-    val b = figure.bounds()
-    val sLeft = map(Vec(b.left + 6f, 0f)).x
-    val sRight = map(Vec(b.right - 6f, 0f)).x
-    val shadowLeft = min(sLeft, sRight)
-    val shadowWidth = kotlin.math.abs(sRight - sLeft)
-    drawOval(c.floor.copy(alpha = 0.45f), topLeft = Offset(shadowLeft, floorY - 3f * scale), size = Size(shadowWidth, 6f * scale))
-
+    // Body: whole limbs sorted far-to-near so nearer parts cover farther ones.
+    fun width(seg: Segment, extra: Float): Float {
+        val s = (proj.project(figure.root(seg)).scale + proj.project(figure.end(seg)).scale) / 2f
+        return (Body.width(seg) + extra) * s * px
+    }
     fun stroke(seg: Segment, color: Color, extra: Float = 0f) {
-        val w = (Body.width(seg) + extra) * scale
         if (seg == Segment.Torso) {
-            val a = map(figure[seg.from]); val ctrl = map(figure.spineControl); val e = map(figure[seg.to])
-            val path = Path().apply { moveTo(a.x, a.y); quadraticTo(ctrl.x, ctrl.y, e.x, e.y) }
-            drawPath(path, color, style = Stroke(width = w, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            val a = at(outline[0]); val b = at(outline[1]); val d = at(outline[2]); val e = at(outline[3])
+            val qn = at(outline[4]); val qf = at(outline[5])
+            val path = Path().apply {
+                moveTo(a.x, a.y); quadraticTo(qn.x, qn.y, b.x, b.y); lineTo(d.x, d.y); quadraticTo(qf.x, qf.y, e.x, e.y); close()
+            }
+            drawPath(path, color, style = Fill)
+            drawPath(path, color, style = Stroke(width = width(seg, extra), cap = StrokeCap.Round, join = StrokeJoin.Round))
         } else {
-            drawLine(color, map(figure[seg.from]), map(figure[seg.to]), strokeWidth = w, cap = StrokeCap.Round)
+            drawLine(color, at(figure.root(seg)), at(figure.end(seg)), strokeWidth = width(seg, extra), cap = StrokeCap.Round)
         }
     }
+    fun points(g: Group) = g.segments.flatMap { listOf(figure.root(it), figure.end(it)) }.map { proj.project(it) }
+    fun depthOf(g: Group): Float = points(g).map { it.depth }.average().toFloat()
+    fun levelOf(g: Group): Float = points(g).map { it.level }.average().toFloat()
 
-    fun colorFor(seg: Segment, base: Color): Color =
-        if (seg in highlight) (if (seg.near == false) lerp(c.highlight, c.halo, 0.35f) else c.highlight) else base
-
-    fun glowFor(segments: List<Segment>) {
-        if (glow <= 0f) return
-        segments.filter { it in highlight }.forEach { stroke(it, c.highlight.copy(alpha = 0.18f * glow), extra = 10f) }
+    val torsoGroup = groups[2]
+    val torsoLevel = levelOf(torsoGroup)
+    groups.sortedBy { depthOf(it) }.forEach { g ->
+        // Parts behind the torso (across the floor, ignoring height) fade toward the background,
+        // like the old "far" limbs.
+        val back = ((torsoLevel - levelOf(g)) / 14f).coerceIn(0f, 1f)
+        val base = if (g === torsoGroup) c.body else lerp(c.body, c.far, back)
+        val hl = lerp(c.highlight, lerp(c.highlight, c.halo, 0.35f), back)
+        if (glow > 0f) g.segments.filter { it in highlight }.forEach { stroke(it, c.highlight.copy(alpha = 0.18f * glow), extra = 10f) }
+        if (g !== torsoGroup && back < 0.3f) g.segments.forEach { stroke(it, c.halo, extra = 5f) }
+        g.segments.forEach { stroke(it, if (it in highlight) hl else base) }
+        if (g.withHead) {
+            val h = proj.project(figure[Joint.Head])
+            drawCircle(c.body, radius = Body.HEAD_RADIUS * h.scale * px, center = map(h))
+        }
     }
-
-    fun group(segments: List<Segment>, base: Color, halo: Boolean) {
-        glowFor(segments)
-        if (halo) segments.forEach { stroke(it, c.halo, extra = 5f) }
-        segments.forEach { stroke(it, colorFor(it, base)) }
-    }
-
-    group(listOf(Segment.FarUpperArm, Segment.FarForearm), c.far, halo = false)
-    group(listOf(Segment.FarThigh, Segment.FarShin, Segment.FarFoot), c.far, halo = false)
-    group(listOf(Segment.Torso, Segment.Neck), c.body, halo = false)
-    drawCircle(c.body, radius = Body.HEAD_RADIUS * scale, center = map(figure[Joint.Head]))
-    group(listOf(Segment.NearThigh, Segment.NearShin, Segment.NearFoot), c.body, halo = true)
-    group(listOf(Segment.NearUpperArm, Segment.NearForearm), c.body, halo = true)
+    wallInFront?.invoke()
 }

@@ -5,6 +5,7 @@ import dev.clean.stretch.figure.MotionKind
 import dev.clean.stretch.figure.Pin
 import dev.clean.stretch.figure.Pose
 import dev.clean.stretch.figure.Segment
+import dev.clean.stretch.figure.View
 
 /**
  * Sample catalog: the six S1 stretches that exercise every part of the figure engine
@@ -303,9 +304,10 @@ object SampleCatalog {
         sourceIds = listOf("S3", "S2"),
         motion = Motion(
             kind = MotionKind.Hold,
-            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
-            stretch = Pose(torso = 165f, spine = 3f, head = -6f, nearShoulder = 3f, nearElbow = 10f, farShoulder = 2f, farElbow = 12f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
-            deep = Pose(torso = 155f, spine = 5f, head = -8f, nearShoulder = 4f, nearElbow = 15f, farShoulder = 3f, farElbow = 17f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
+            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f, farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = 30f, farLegOut = 30f, nearLegTurn = 60f, farLegTurn = 60f),
+            stretch = Pose(torso = 165f, spine = 3f, head = -6f, nearShoulder = 25f, nearElbow = 10f, farShoulder = 25f, farElbow = 12f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f, farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = 55f, farLegOut = 55f, nearLegTurn = 60f, farLegTurn = 60f),
+            deep = Pose(torso = 155f, spine = 5f, head = -8f, nearShoulder = 30f, nearElbow = 15f, farShoulder = 30f, farElbow = 17f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f, farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = 60f, farLegOut = 60f, nearLegTurn = 60f, farLegTurn = 60f),
+            view = View.Angled,
         ),
     )
 
@@ -729,8 +731,9 @@ object SampleCatalog {
         motion = Motion(
             kind = MotionKind.Hold,
             start = Pose(nearElbow = 6f, farElbow = 6f),
-            stretch = Pose(nearShoulder = 90f, nearElbow = 2f, farShoulder = 70f, farElbow = 100f),
-            deep = Pose(nearShoulder = 95f, nearElbow = 2f, farShoulder = 72f, farElbow = 110f),
+            stretch = Pose(nearShoulder = 90f, nearElbow = 2f, farShoulder = 45f, farElbow = 95f, nearArmOut = -55f, farArmOut = -10f),
+            deep = Pose(nearShoulder = 92f, nearElbow = 2f, farShoulder = 48f, farElbow = 100f, nearArmOut = -62f, farArmOut = -12f),
+            view = View.Front,
         ),
     )
 

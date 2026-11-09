@@ -31,10 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.clean.stretch.data.RomCheckDao
 import dev.clean.stretch.data.RomCheckEntity
-import dev.clean.stretch.figure.Figure
 import dev.clean.stretch.plan.RomTest
 import dev.clean.stretch.plan.RomTests
 import dev.clean.stretch.ui.figure.FigureView
+import dev.clean.stretch.ui.figure.figureStage
+import dev.clean.stretch.figure.View
 import dev.clean.stretch.ui.figure.figureColors
 import kotlinx.coroutines.launch
 
@@ -116,7 +117,7 @@ private fun Option(text: String, selected: Boolean, onClick: () -> Unit) {
 /** "Which looks most like you?" — one figure per level, two per row (D-033). */
 @Composable
 private fun PictureChoices(test: RomTest, mirrored: Boolean, selected: Int?, onPick: (Int) -> Unit) {
-    val frame = remember(test.key) { test.pictures.map { Figure.solve(it).bounds() }.reduce { a, b -> a.union(b) } }
+    val stage = remember(test.key) { figureStage(test.pictures, View.Side.camera, prop = null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
         test.levels.indices.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -132,7 +133,8 @@ private fun PictureChoices(test: RomTest, mirrored: Boolean, selected: Int?, onP
                         Column(Modifier.padding(8.dp)) {
                             FigureView(
                                 pose = test.pictures[level],
-                                frame = frame,
+                                stage = stage,
+                                showGrid = false,
                                 highlight = test.highlight,
                                 mirrored = mirrored,
                                 colors = figureColors(bg),

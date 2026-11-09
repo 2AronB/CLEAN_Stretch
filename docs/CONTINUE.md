@@ -388,3 +388,17 @@ Owner asked: some stretches are confusing (is it seen from the top or the side?)
 - Wording avoids Tier C claims (no "releases knots"); "short, gentle routine".
 - Checked: 61/61 tests (2 new), lint clean. Not seen on the emulator (memory); no animation code
   touched (3D work in progress on its branch).
+
+## Play readiness: release build (2026-11-09)
+- `app/build.gradle.kts`: release builds shrink code and resources (R8; `app/proguard-rules.pro`,
+  currently no extra rules). APK 14.3 MB (debug) → 4.2 MB (release).
+- Signing reads `keystore.properties` at the project root (`storeFile`, `storePassword`,
+  `keyAlias`, `keyPassword`); that file and `*.jks`/`*.keystore` are git-ignored. Without it the
+  release APK is built unsigned. **Owner step:** create the upload key in Android Studio (Build →
+  Generate Signed Bundle/APK → Create new) and keep it backed up somewhere safe; losing it means
+  asking Google to reset the upload key.
+- New `staging` build type = release (shrunk) signed with the debug key, installed as a separate
+  app (`dev.clean.stretch.staging`, "-staging" version) so the shrunk build can be tested
+  without touching real data: `.\gradlew.bat :app:assembleStaging`.
+- Checked: `assembleRelease` and `assembleStaging` succeed. **Not yet run:** the shrunk app on a
+  device (the only emulator was the 3D thread's; PC had 1.6 GB free).

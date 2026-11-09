@@ -11,3 +11,4 @@ captures/
 artifacts/
 tools/pose-preview/out/
 voice-samples/
+keystore.properties

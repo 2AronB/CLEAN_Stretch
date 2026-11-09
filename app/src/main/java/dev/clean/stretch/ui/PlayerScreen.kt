@@ -52,6 +52,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -375,9 +377,13 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             }
             Box(contentAlignment = Alignment.Center) {
                 CountdownRing(fraction = 1f - (t.toFloat() / duration).coerceIn(0f, 1f), modifier = Modifier.size(112.dp))
+                val secondsLeft = ceil((duration - t).coerceAtLeast(0L) / 1000.0).toInt()
                 FilledIconButton(
                     onClick = { paused = !paused },
-                    modifier = Modifier.size(84.dp),
+                    // Screen readers: say what the button does, not just the countdown number.
+                    modifier = Modifier.size(84.dp).semantics {
+                        contentDescription = if (paused) "Resume" else "Pause, $secondsLeft seconds left"
+                    },
                     colors = IconButtonDefaults.filledIconButtonColors(),
                 ) {
                     if (paused) {

@@ -14,7 +14,7 @@ Play policy pages. Nothing here is legal advice.
 | App Bundle built (`bundleRelease`) and signed | To do (after the key) |
 | Health-condition wording and limits: final review + current clinical source (D-031, EVIDENCE §9) | **Blocks release** |
 | Catalog wording review (owner) | To do |
-| Accessibility pass (screen reader, large text, touch targets) | In progress |
+| Accessibility pass (screen reader, large text, touch targets) | Code audit done (icon buttons labelled, pause button labelled); **TalkBack + largest font size on a device to do** |
 | Dependency and SDK updates (lint warnings) | To do (after 3D work merges) |
 | Privacy policy published at a public URL | To do (draft below) |
 | Data safety form | Draft below |

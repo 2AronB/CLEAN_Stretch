@@ -1,6 +1,9 @@
 package dev.clean.stretch.ui
 
 import androidx.activity.compose.BackHandler
+import dev.clean.stretch.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -84,6 +87,8 @@ private val profileSaver = Saver<Profile, String>(
 )
 
 private const val PAGES = 6
+private const val MENU = -1
+private val SECTIONS = listOf("Goal", "Focus areas", "Limits and equipment", "Health conditions", "Routine length", "Schedule and reminder")
 
 /**
  * First-run setup, also opened from Settings (Slice S4). Five short pages: goal, focus,
@@ -94,17 +99,28 @@ private const val PAGES = 6
 fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     var draft by rememberSaveable(stateSaver = profileSaver) { mutableStateOf(initial) }
-    var page by rememberSaveable { mutableIntStateOf(0) }
+    // After first setup, editing opens a menu of the six sections instead of walking through all of them.
+    val editing = initial.setupDone
+    var page by rememberSaveable { mutableIntStateOf(if (editing) MENU else 0) }
     var askingAbout by rememberSaveable { mutableStateOf<String?>(null) }
 
-    fun back() { if (page > 0) page-- else onBack() }
+    fun saveAndClose() { Reminders.sync(context, prefs); onSave(draft) }
+    fun back() {
+        when {
+            editing && page == MENU -> saveAndClose()
+            editing -> page = MENU
+            page > 0 -> page--
+            else -> onBack()
+        }
+    }
     BackHandler { back() }
 
     Column(Modifier.fillMaxSize()) {
-        BackBar(if (initial.setupDone) "Goal, focus and limits" else "Set up", ::back)
-        LinearProgressIndicator(progress = { (page + 1f) / PAGES }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+        BackBar(if (!editing) "Set up" else if (page == MENU) "Goal, focus and limits" else SECTIONS[page], ::back)
+        if (!editing) LinearProgressIndicator(progress = { (page + 1f) / PAGES }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp)) {
             when (page) {
+                MENU -> SectionMenu(sectionSummaries(draft, prefs)) { page = it }
                 0 -> {
                     Heading("What's your main goal?", "This picks the areas routines start with. You can change it any time.")
                     Goal.entries.forEach { g ->
@@ -173,11 +189,18 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
             Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (page > 0) OutlinedButton(onClick = ::back, modifier = Modifier.weight(1f).height(52.dp)) { Text("Back") }
-            Button(
-                onClick = { if (page < PAGES - 1) page++ else { Reminders.sync(context, prefs); onSave(draft) } },
-                modifier = Modifier.weight(1f).height(52.dp),
-            ) { Text(if (page < PAGES - 1) "Next" else "Save") }
+            if (editing) {
+                Button(
+                    onClick = { if (page == MENU) saveAndClose() else page = MENU },
+                    modifier = Modifier.weight(1f).height(52.dp),
+                ) { Text(if (page == MENU) "Save and close" else "Done") }
+            } else {
+                if (page > 0) OutlinedButton(onClick = ::back, modifier = Modifier.weight(1f).height(52.dp)) { Text("Back") }
+                Button(
+                    onClick = { if (page < PAGES - 1) page++ else saveAndClose() },
+                    modifier = Modifier.weight(1f).height(52.dp),
+                ) { Text(if (page < PAGES - 1) "Next" else "Save") }
+            }
         }
     }
 
@@ -332,3 +355,41 @@ private fun PlanPage(prefs: AppPreferences) {
 
 private fun formatTime(minutes: Int): String =
     java.time.LocalTime.of(minutes / 60, minutes % 60).format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"))
+
+/** One line per section showing what's set now, so the user can jump straight to it. */
+private fun sectionSummaries(d: Profile, prefs: AppPreferences): List<String> = listOf(
+    d.goal.label + if (d.olderAdult) " · 65 or older" else "",
+    d.focus.joinToString { it.label }.ifEmpty { "Follows your goal" },
+    buildList {
+        if (d.avoid.isNotEmpty()) add("Avoid " + d.avoid.joinToString { it.label.lowercase() })
+        if (d.noFloor) add("no floor")
+        if (d.noKneeling) add("no kneeling")
+        if (d.hasRoller) add("foam roller")
+        add(if (d.strengthenOn) "Strengthen on" else "Strengthen off")
+    }.joinToString(" · "),
+    d.conditions.joinToString { it.label }.ifEmpty { "None" },
+    "${d.minutes} min",
+    prefs.planCue.label + " · " + (if (prefs.reminderOn) "reminder around ${formatTime(prefs.reminderTime)}" else "no reminder") +
+        " · ${prefs.daysPerWeek} days a week",
+)
+
+@Composable
+private fun SectionMenu(summaries: List<String>, onOpen: (Int) -> Unit) {
+    Text("Tap a section to change it.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Spacer(Modifier.height(12.dp))
+    SECTIONS.forEachIndexed { i, name ->
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onOpen(i) },
+        ) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(name, style = MaterialTheme.typography.titleMedium)
+                    Text(summaries[i], style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
+            }
+        }
+    }
+}

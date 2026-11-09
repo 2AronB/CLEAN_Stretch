@@ -323,3 +323,12 @@ rechecked on the emulator:
   builds; 0.5 GB free), so the check was stopped and the Pixel_8 emulator shut down. Verified by
   46/46 JVM tests, lint clean, and pose-preview images of the 6 new moves. Owner to try on phone.
 - Tip: run one emulator at a time on this 16 GB PC; close it after testing.
+
+## Settings → Goal, focus and limits (2026-11-09, owner request)
+- After first setup it opens a **menu of the six sections** (Goal, Focus areas, Limits and
+  equipment, Health conditions, Routine length, Schedule and reminder) with a one-line summary
+  of each; tap one to change it, "Done" returns to the menu, "Save and close" (or Back) saves.
+  First-run setup still walks through all six pages.
+- The Settings entry is now a highlighted card (primary container colour).
+- Checked: build, 46/46 tests, lint clean. **Not seen on the emulator** (kept off to save RAM);
+  owner to check on phone.

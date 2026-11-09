@@ -95,8 +95,20 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
         ScreenTitle("Settings")
 
         SectionLabel("Your routines")
-        Group {
-            NavRow("Goal, focus and limits", "What routines suggest, what to avoid, health conditions", onOpenSetup)
+        // Highlighted: the main place to change routines, the schedule and the reminder.
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clickable(onClick = onOpenSetup),
+        ) {
+            Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Goal, focus and limits", style = MaterialTheme.typography.titleMedium)
+                    Text("Goal, areas, limits, health, length, schedule and reminder", style = MaterialTheme.typography.bodyMedium)
+                }
+                Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
+            }
         }
 
         SectionLabel("Appearance")

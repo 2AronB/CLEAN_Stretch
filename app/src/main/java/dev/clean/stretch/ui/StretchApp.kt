@@ -192,7 +192,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                     Route.Today -> profile?.let { p ->
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines)
                     }
-                    Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
+                    Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) }, profile = profile)
                     Route.Progress -> ProgressScreen(history, prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck) })
                     Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) }, onOpenStretch = { push(Route.Detail(it)) })

@@ -332,3 +332,17 @@ rechecked on the emulator:
 - The Settings entry is now a highlighted card (primary container colour).
 - Checked: build, 46/46 tests, lint clean. **Not seen on the emulator** (kept off to save RAM);
   owner to check on phone.
+
+## Library search and filters (2026-11-09, owner request)
+- `plan/LibraryFilter.kt` (pure Kotlin, `LibraryFilterTest` 6 tests): search + filter groups
+  — type (Holds, Flowing, Strengthen, Foam rolling), body area, muscle, position, equipment,
+  level (Easier/Harder), "Fits my limits" (uses the Setup profile's safety rules). OR within a
+  group, AND between groups. Results easiest first; moves that *mainly* target a chosen muscle
+  or area come before ones that only touch it.
+- Search: every word must match (name, summary, muscles, areas, type, equipment, position);
+  understands everyday words and plurals ("hammies", "roller", "towel", "floor", "warmup",
+  "easy/gentle" → easier, "hard/advanced" → harder; filler like "stretches", "for my" ignored).
+- Library UI: search box, quick chips (types, Easier, Fits my limits, More filters (n)),
+  expandable panel with every group, "x of N shown", Clear all, helpful empty state.
+- Checked: 52/52 tests, lint clean. **Not seen on the emulator** (PC had 1.5 GB free); owner to
+  try on phone.

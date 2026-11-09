@@ -287,3 +287,17 @@ rechecked on the emulator:
 - Reminder wording: "around 7:00 PM" where **around** links to a short explanation (we keep
   permissions minimal, so Android may deliver it up to ~10 minutes late). Owner is fine with
   the delay once explained (no exact-alarm permission).
+
+## Where next (recommendation, 2026-11-08)
+1. **Generator v2 — "right on generation" (D-032).** Weekly dose per focus area (P-1: ~10 min
+   per area per week, ≤4 min per area per session, spread over planned days — PLAN acceptance
+   "Weekly target"); day-to-day variety (no identical routine every day); proper warm-ups with
+   ~6 new dynamic moves (catalog has only cat–cow); keep the current position flow. Plus the
+   "around" reminder wording.
+2. **Content pass toward ~45.** Fill gaps (neck variants, inner thigh, wrists/forearms for Desk,
+   chair versions with a chair prop), owner wording review of the catalog.
+3. **Play readiness track (D-028).** Release build with shrinking + signing key, accessibility
+   pass (TalkBack labels, large text), privacy policy + Data safety ("no data collected"),
+   health-app declaration, store listing/icon, dependency/SDK updates, condition review (D-031),
+   cold start on a real phone, PLAN acceptance walk-through on the phone.
+4. **Later:** "Tender spot" flow, screen-off running (foreground service), sturdier timer.

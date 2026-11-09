@@ -18,6 +18,12 @@ package dev.clean.stretch.figure
  * - Ankles: foot direction is shin + 90 + ankle. 0 = neutral, positive = toes up.
  * - [shiftX]: horizontal offset of the hip in body units.
  *
+ * Sideways values (3D; all 0 keeps the classic side view exactly):
+ * - [sideBend]: torso leans toward the near side (+) or far side (-).
+ * - [twist]: chest turns toward the near side (+) or far side (-) around the spine.
+ * - Arm/leg "out": swings the limb out to its own side (+) or across the body (-).
+ * - Leg "turn": rotates the leg at the hip; + turns the knee out (a bent knee then brings the foot inward).
+ *
  * "Near" limbs face the viewer and are drawn in front; "far" limbs are drawn behind.
  */
 data class Pose(
@@ -35,6 +41,14 @@ data class Pose(
     val farKnee: Float = 0f,
     val farAnkle: Float = 0f,
     val shiftX: Float = 0f,
+    val sideBend: Float = 0f,
+    val twist: Float = 0f,
+    val nearArmOut: Float = 0f,
+    val farArmOut: Float = 0f,
+    val nearLegOut: Float = 0f,
+    val farLegOut: Float = 0f,
+    val nearLegTurn: Float = 0f,
+    val farLegTurn: Float = 0f,
 ) {
     fun lerp(to: Pose, t: Float): Pose = Pose(
         torso = mix(torso, to.torso, t),
@@ -51,6 +65,14 @@ data class Pose(
         farKnee = mix(farKnee, to.farKnee, t),
         farAnkle = mix(farAnkle, to.farAnkle, t),
         shiftX = mix(shiftX, to.shiftX, t),
+        sideBend = mix(sideBend, to.sideBend, t),
+        twist = mix(twist, to.twist, t),
+        nearArmOut = mix(nearArmOut, to.nearArmOut, t),
+        farArmOut = mix(farArmOut, to.farArmOut, t),
+        nearLegOut = mix(nearLegOut, to.nearLegOut, t),
+        farLegOut = mix(farLegOut, to.farLegOut, t),
+        nearLegTurn = mix(nearLegTurn, to.nearLegTurn, t),
+        farLegTurn = mix(farLegTurn, to.farLegTurn, t),
     )
 
     operator fun get(param: PoseParam): Float = param.read(this)
@@ -101,4 +123,12 @@ enum class PoseParam(
     FarKnee("Far knee", "farKnee", 0f, 170f, { it.farKnee }, { p, v -> p.copy(farKnee = v) }),
     FarAnkle("Far ankle", "farAnkle", -110f, 40f, { it.farAnkle }, { p, v -> p.copy(farAnkle = v) }),
     ShiftX("Shift", "shiftX", -60f, 60f, { it.shiftX }, { p, v -> p.copy(shiftX = v) }),
+    SideBend("Side bend", "sideBend", -45f, 45f, { it.sideBend }, { p, v -> p.copy(sideBend = v) }),
+    Twist("Twist", "twist", -60f, 60f, { it.twist }, { p, v -> p.copy(twist = v) }),
+    NearArmOut("Near arm out", "nearArmOut", -60f, 120f, { it.nearArmOut }, { p, v -> p.copy(nearArmOut = v) }),
+    FarArmOut("Far arm out", "farArmOut", -60f, 120f, { it.farArmOut }, { p, v -> p.copy(farArmOut = v) }),
+    NearLegOut("Near leg out", "nearLegOut", -30f, 80f, { it.nearLegOut }, { p, v -> p.copy(nearLegOut = v) }),
+    FarLegOut("Far leg out", "farLegOut", -30f, 80f, { it.farLegOut }, { p, v -> p.copy(farLegOut = v) }),
+    NearLegTurn("Near leg turn", "nearLegTurn", -60f, 80f, { it.nearLegTurn }, { p, v -> p.copy(nearLegTurn = v) }),
+    FarLegTurn("Far leg turn", "farLegTurn", -60f, 80f, { it.farLegTurn }, { p, v -> p.copy(farLegTurn = v) }),
 }

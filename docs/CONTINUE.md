@@ -346,3 +346,34 @@ rechecked on the emulator:
   expandable panel with every group, "x of N shown", Clear all, helpful empty state.
 - Checked: 52/52 tests, lint clean. **Not seen on the emulator** (PC had 1.5 GB free); owner to
   try on phone.
+
+## 3D figure prototype (2026-11-09, owner request) — branch `claude/3d-stretch-models-518e55`
+Owner asked: some stretches are confusing (is it seen from the top or the side?); prototype the
+"own-code 3D" option and add a faux-3D background. No new dependencies (D-007 still holds; D-034).
+- `figure/Figure3d.kt`: 3D skeleton (x forward, y down, z toward the side-view viewer), camera
+  (`Camera` yaw/pitch, named `View`s Side / Angled / Front / Above), gentle perspective
+  (`Projection`), and `Scene` (frame covering every keyframe + exercise-mat extent).
+  `Figure.solve` now = 3D solve flattened to the side view, so IK, catalog tests and ROM checks
+  use one model. A test re-runs the old 2D solver on every catalog pose: identical.
+- New `Pose` values (all default 0, so existing poses are unchanged): `sideBend`, `twist`,
+  `near/farArmOut`, `near/farLegOut`, `near/farLegTurn` (hip rotation). They appear as Pose
+  Studio sliders automatically. `Motion.view` picks the starting viewpoint.
+- Renderer (`ui/figure/FigureView.kt`): floor plane with tiles whose back edge reads as a
+  horizon, an exercise mat, flat shadows straight under every body part, limbs sorted
+  far-to-near, far parts faded by distance across the floor, walls/rollers drawn in 3D
+  (a wall between camera and body is see-through). Side view keeps 12° of height so the floor
+  shows. Thumbnails hide the tiles.
+- "Side view" chip on the stretch detail screen and in the player cycles the view; the camera
+  turns smoothly (instantly with reduced motion). Pose Studio has a view picker; "Copy whole
+  motion" now also copies `pins` and `view` (it used to drop pins).
+- Catalog: butterfly now opens its knees to the sides with soles together (Angled view);
+  cross-body shoulder brings the arm across the chest (Front view). Cues unchanged.
+- Checks run: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` — pass; 7 new tests in
+  `Figure3dTest`; lint has only the existing dependency-version warnings. Seen on emulator
+  `emulator-5556` (owner's phone untouched): Today/library thumbnails, cross-body Front and
+  Above, butterfly Angled.
+- **Not checked / known limits:** player screen view chip not opened on the emulator; IK pins
+  ignore sideways values (fine for current rolling motions); butterfly hands are near, not on,
+  the ankles; side-lying quad is still drawn face-down (could now be rolled onto its side);
+  Above view of standing stretches is hard to read. Owner to judge the look before more
+  stretches get sideways poses.

@@ -30,6 +30,19 @@ import dev.clean.stretch.catalog.Stretch
 import dev.clean.stretch.figure.Easing
 import dev.clean.stretch.figure.MotionPlayer
 import dev.clean.stretch.ui.figure.FigureView
+import dev.clean.stretch.ui.figure.rememberFigureStage
+import dev.clean.stretch.figure.Camera
+import dev.clean.stretch.figure.View
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import dev.clean.stretch.ui.figure.figureColors
 import dev.clean.stretch.ui.figure.rememberFigureClock
 
@@ -105,30 +118,57 @@ fun AnimatedStretch(
     background: Color = MaterialTheme.colorScheme.surface,
 ) {
     val time by rememberFigureClock(running = !reducedMotion)
-    val frame = remember(stretch.key) { MotionPlayer.frameFor(stretch.motion) }
-    FigureView(
-        pose = MotionPlayer.demoPose(stretch.motion, time, reducedMotion),
-        frame = frame,
-        highlight = stretch.highlight,
-        mirrored = mirrored,
-        prop = stretch.prop,
-        glow = if (reducedMotion) 0f else Easing.breath(time),
-        colors = figureColors(background),
-        modifier = modifier,
-        description = "${stretch.name} demonstration",
-    )
+    var view by remember(stretch.key) { mutableStateOf(stretch.motion.view) }
+    val camera = rememberViewCamera(view, reducedMotion)
+    val stage = rememberFigureStage(stretch.key, MotionPlayer.keyframes(stretch.motion), camera, stretch.prop)
+    Box(modifier) {
+        FigureView(
+            pose = MotionPlayer.demoPose(stretch.motion, time, reducedMotion),
+            stage = stage,
+            highlight = stretch.highlight,
+            mirrored = mirrored,
+            glow = if (reducedMotion) 0f else Easing.breath(time),
+            colors = figureColors(background),
+            modifier = Modifier.fillMaxSize(),
+            description = "${stretch.name} demonstration, ${view.label.lowercase()} view",
+        )
+        ViewSwitch(view, onChange = { view = it }, modifier = Modifier.align(Alignment.TopEnd))
+    }
+}
+
+/** Camera for [view], turning smoothly when the view changes (instantly with reduced motion). */
+@Composable
+fun rememberViewCamera(view: View, reducedMotion: Boolean): Camera {
+    val spec: AnimationSpec<Float> = if (reducedMotion) snap() else tween(700)
+    val yaw by animateFloatAsState(view.camera.yaw, spec, label = "yaw")
+    val pitch by animateFloatAsState(view.camera.pitch, spec, label = "pitch")
+    return Camera(yaw, pitch)
+}
+
+/** Small chip that turns the figure to the next viewpoint (Side, Angled, Front, Above). */
+@Composable
+fun ViewSwitch(view: View, onChange: (View) -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = { onChange(view.next()) },
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = modifier.semantics { contentDescription = "${view.label} view. Tap to turn to ${view.next().label.lowercase()} view." },
+    ) {
+        Text("${view.label} view", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+    }
 }
 
 /** Still thumbnail of the stretch position, for lists. */
 @Composable
 fun StretchThumbnail(stretch: Stretch, modifier: Modifier = Modifier, background: Color = MaterialTheme.colorScheme.surface) {
-    val frame = remember(stretch.key) { MotionPlayer.frameFor(stretch.motion) }
+    val stage = rememberFigureStage(stretch.key, MotionPlayer.keyframes(stretch.motion), stretch.motion.view.camera, stretch.prop)
     FigureView(
         pose = stretch.motion.stretch,
-        frame = frame,
+        stage = stage,
         highlight = stretch.highlight,
-        prop = stretch.prop,
         colors = figureColors(background),
+        showGrid = false,
         modifier = modifier,
         description = stretch.name,
     )

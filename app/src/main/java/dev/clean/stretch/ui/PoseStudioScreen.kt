@@ -41,11 +41,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import dev.clean.stretch.catalog.SampleCatalog
-import dev.clean.stretch.figure.Motion
 import dev.clean.stretch.figure.MotionPlayer
 import dev.clean.stretch.figure.Pose
 import dev.clean.stretch.figure.PoseParam
 import dev.clean.stretch.ui.figure.FigureView
+import dev.clean.stretch.ui.figure.figureStage
+import dev.clean.stretch.figure.View
 import dev.clean.stretch.ui.figure.figureColors
 import dev.clean.stretch.ui.figure.rememberFigureClock
 import kotlin.math.roundToInt
@@ -64,6 +65,7 @@ fun PoseStudioScreen(onBack: () -> Unit) {
     var frameIndex by remember { mutableIntStateOf(1) }
     var playing by remember { mutableStateOf(false) }
     var mirrored by remember { mutableStateOf(false) }
+    var view by remember { mutableStateOf(View.Side) }
     val edits = remember { mutableStateMapOf<String, Pose>() }
 
     val stretch = SampleCatalog.byKey(key) ?: SampleCatalog.all.first()
@@ -72,9 +74,10 @@ fun PoseStudioScreen(onBack: () -> Unit) {
     val safeFrame = frameIndex.coerceAtMost(frameCount - 1)
     fun editKey(i: Int) = "${stretch.key}#$i"
     fun poseAt(i: Int): Pose = edits[editKey(i)] ?: original[i]
-    val edited = Motion(stretch.motion.kind, poseAt(0), poseAt(1), if (frameCount > 2) poseAt(2) else null)
+    val edited = stretch.motion.copy(start = poseAt(0), stretch = poseAt(1), deep = if (frameCount > 2) poseAt(2) else null, view = view)
     val pose = poseAt(safeFrame)
-    val frame = MotionPlayer.frameFor(edited)
+    val camera = rememberViewCamera(view, reducedMotion = false)
+    val figureStage = figureStage(MotionPlayer.keyframes(edited), camera, stretch.prop)
     val time by rememberFigureClock(running = playing)
     val stage = MaterialTheme.colorScheme.surfaceContainerLow
 
@@ -89,10 +92,9 @@ fun PoseStudioScreen(onBack: () -> Unit) {
         Surface(color = stage, shape = RoundedCornerShape(28.dp), modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(260.dp)) {
             FigureView(
                 pose = if (playing) MotionPlayer.demoPose(edited, time, reducedMotion = false) else pose,
-                frame = frame,
+                stage = figureStage,
                 highlight = stretch.highlight,
                 mirrored = mirrored,
-                prop = stretch.prop,
                 colors = figureColors(stage),
                 modifier = Modifier.fillMaxSize().padding(12.dp),
                 description = "Pose preview",
@@ -100,7 +102,7 @@ fun PoseStudioScreen(onBack: () -> Unit) {
         }
         LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(SampleCatalog.all, key = { it.key }) { s ->
-                FilterChip(selected = s.key == key, onClick = { key = s.key; frameIndex = 1 }, label = { Text(s.name) })
+                FilterChip(selected = s.key == key, onClick = { key = s.key; frameIndex = 1; view = s.motion.view }, label = { Text(s.name) })
             }
         }
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
@@ -110,6 +112,16 @@ fun PoseStudioScreen(onBack: () -> Unit) {
                     onClick = { frameIndex = i; playing = false },
                     shape = SegmentedButtonDefaults.itemShape(index = i, count = frameCount),
                     label = { Text(frameNames[i]) },
+                )
+            }
+        }
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
+            View.entries.forEach { v ->
+                SegmentedButton(
+                    selected = v == view,
+                    onClick = { view = v },
+                    shape = SegmentedButtonDefaults.itemShape(index = v.ordinal, count = View.entries.size),
+                    label = { Text(v.label) },
                 )
             }
         }
@@ -151,6 +163,8 @@ fun PoseStudioScreen(onBack: () -> Unit) {
                             append("    start = ${edited.start.toKotlin()},\n")
                             append("    stretch = ${edited.stretch.toKotlin()},\n")
                             edited.deep?.let { append("    deep = ${it.toKotlin()},\n") }
+                            if (edited.pins.isNotEmpty()) append("    pins = setOf(${edited.pins.joinToString { "Pin.${it.name}" }}),\n")
+                            if (edited.view != View.Side) append("    view = View.${edited.view.name},\n")
                             append("),")
                         }
                         copy(text, "Motion")

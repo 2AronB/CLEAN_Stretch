@@ -24,6 +24,8 @@ data class Motion(
     val deep: Pose? = null,
     /** Hands/feet that stay planted while the body moves (solved with [Ik]). */
     val pins: Set<Pin> = emptySet(),
+    /** Viewpoint the stretch is shown from first; people can turn the view in the app. */
+    val view: View = View.Side,
 )
 
 object Timing {

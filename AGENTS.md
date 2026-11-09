@@ -9,7 +9,7 @@ eventual Google Play release (D-028), so build with that in mind.
 
 Build, test and lint on the owner's PC (Android Studio's JDK), and run Android tests only on an
 emulator — never the owner's phone; never clear app data. All new stretch development (poses,
-cues, voice clips) is done on the PC (D-030).
+cues, voice clips) is done on the PC (D-030). Follow docs/ADDING_STRETCHES.md when adding or changing a stretch.
 
 Use plain language; the owner is learning app development. At most three focused
 questions per round. Distinguish owner requirements, recommendations,

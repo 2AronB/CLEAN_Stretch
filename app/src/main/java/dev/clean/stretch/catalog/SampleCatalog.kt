@@ -597,9 +597,10 @@ object SampleCatalog {
             kind = MotionKind.Hold,
             // Drawn as the standing quad stretch laid down: thigh pivots back, heel toward buttock,
             // hand reaches back for the ankle. Knee stays within a real range (no >170°).
-            start = Pose(torso = 90f, head = 8f, nearShoulder = 0f, nearElbow = 6f, farShoulder = 178f, farElbow = 4f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
-            stretch = Pose(torso = 90f, head = 8f, nearShoulder = -17f, nearElbow = 10f, farShoulder = 178f, farElbow = 4f, nearHip = -94f, nearKnee = 158f, nearAnkle = -35f, farHip = -90f, farAnkle = -90f),
-            deep = Pose(torso = 90f, head = 8f, nearShoulder = -20f, nearElbow = 8f, farShoulder = 178f, farElbow = 4f, nearHip = -100f, nearKnee = 160f, nearAnkle = -38f, farHip = -90f, farAnkle = -90f),
+            start = Pose(roll = 90f, torso = 90f, head = 8f, nearShoulder = 0f, nearElbow = 6f, farShoulder = 178f, farElbow = 4f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
+            stretch = Pose(roll = 90f, torso = 90f, head = 8f, nearShoulder = -17f, nearElbow = 10f, farShoulder = 178f, farElbow = 4f, nearHip = -94f, nearKnee = 158f, nearAnkle = -35f, farHip = -90f, farAnkle = -90f),
+            deep = Pose(roll = 90f, torso = 90f, head = 8f, nearShoulder = -20f, nearElbow = 8f, farShoulder = 178f, farElbow = 4f, nearHip = -100f, nearKnee = 160f, nearAnkle = -38f, farHip = -90f, farAnkle = -90f),
+            view = View.Above,
         ),
     )
 
@@ -811,9 +812,10 @@ object SampleCatalog {
         prop = Prop(Equipment.Wall, x = -14f),
         motion = Motion(
             kind = MotionKind.Hold,
-            start = Pose(nearShoulder = 90f, nearElbow = 90f, farShoulder = 88f, farElbow = 92f),
-            stretch = Pose(nearShoulder = 168f, nearElbow = 30f, farShoulder = 166f, farElbow = 32f),
-            deep = Pose(nearShoulder = 174f, nearElbow = 24f, farShoulder = 172f, farElbow = 26f),
+            start = Pose(nearElbow = 90f, nearArmOut = 90f, nearArmTurn = 90f, farElbow = 90f, farArmOut = 90f, farArmTurn = 90f),
+            stretch = Pose(nearElbow = 45f, nearArmOut = 128f, nearArmTurn = 90f, farElbow = 45f, farArmOut = 128f, farArmTurn = 90f),
+            deep = Pose(nearElbow = 38f, nearArmOut = 134f, nearArmTurn = 90f, farElbow = 38f, farArmOut = 134f, farArmTurn = 90f),
+            view = View.Front,
         ),
     )
 
@@ -864,6 +866,7 @@ object SampleCatalog {
             start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
             stretch = Pose(torso = -60f, head = -30f, nearShoulder = -35f, nearElbow = 2f, farShoulder = -35f, farElbow = 2f, nearHip = 100f, nearKnee = 129f, nearAnkle = 29f, farHip = 100f, farKnee = 129f, farAnkle = 29f),
             deep = Pose(torso = -62f, head = -28f, nearShoulder = -37f, nearElbow = 2f, farShoulder = -37f, farElbow = 2f, nearHip = 101f, nearKnee = 130f, nearAnkle = 29f, farHip = 101f, farKnee = 130f, farAnkle = 29f),
+            view = View.Angled,
         ),
     )
 
@@ -942,6 +945,7 @@ object SampleCatalog {
             start = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
             stretch = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
             deep = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f, shiftX = 6f),
+            view = View.Angled,
         ),
     )
 
@@ -970,6 +974,7 @@ object SampleCatalog {
             start = Pose(torso = 230f, head = -45f, nearShoulder = -71f, nearElbow = 10f, farShoulder = -71f, farElbow = 10f, nearHip = 90f, farHip = 90f),
             stretch = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f),
             deep = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f, shiftX = -15f),
+            view = View.Angled,
         ),
     )
 
@@ -999,6 +1004,7 @@ object SampleCatalog {
             start = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
             stretch = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
             deep = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f, shiftX = 12f),
+            view = View.Angled,
         ),
     )
 
@@ -1152,6 +1158,329 @@ object SampleCatalog {
         ),
     )
 
+    // ---- Round 5 (2026-11-09): moves that need the 3D figure (sideways, twisting) ----
+
+    val neckSideBend = Stretch(
+        key = "neck_side_bend",
+        name = "Ear-to-shoulder neck stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Neck),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        highlight = setOf(Segment.Neck),
+        summary = "Tip one ear toward your shoulder and let the other shoulder stay heavy.",
+        cues = listOf(
+            "Stand or sit tall with your shoulders relaxed.",
+            "Slowly tip one ear toward the shoulder on that side. Keep your nose facing forward.",
+            "Let the other shoulder stay low, its hand reaching toward the floor.",
+            "Feel the side of your neck. Breathe slowly.",
+        ),
+        cautions = listOf("Keep it gentle. Don't pull on your head with your hand."),
+        sourceIds = listOf("S19", "S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(headTilt = -32f, nearElbow = 4f, farElbow = 6f, nearArmOut = 6f),
+            deep = Pose(headTilt = -38f, nearElbow = 2f, farElbow = 6f, nearArmOut = 8f),
+            view = View.Front,
+        ),
+    )
+
+    val standingSideBend = Stretch(
+        key = "standing_side_bend",
+        name = "Standing side bend",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Lats),
+        secondary = listOf(Muscle.Abdominals),
+        position = Position.Standing,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm),
+        summary = "Reach one arm overhead and lean gently to the other side.",
+        cues = listOf(
+            "Stand tall with your feet hip-width apart.",
+            "Reach one arm up overhead. Rest the other hand on your hip or thigh.",
+            "Lean gently to the side, reaching up and over.",
+            "Feel along your side from hip to fingertips. Keep both feet on the floor.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(sideBend = -20f, nearShoulder = 168f, nearElbow = 10f, nearArmOut = -12f, farElbow = 30f, farArmOut = 24f),
+            deep = Pose(sideBend = -26f, nearShoulder = 170f, nearElbow = 8f, nearArmOut = -16f, farElbow = 30f, farArmOut = 24f),
+            view = View.Front,
+        ),
+    )
+
+    val figureFour = Stretch(
+        key = "figure_four",
+        name = "Lying figure-four stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Glutes),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh),
+        summary = "On your back, cross one ankle over the other knee and draw both legs toward you.",
+        cues = listOf(
+            "Lie on your back with your knees bent and feet flat.",
+            "Cross one ankle over the other knee, letting that knee open out.",
+            "Hold behind the lower thigh and draw both legs gently toward your chest.",
+            "Feel the back and outside of your crossed-leg hip. Keep your head down.",
+        ),
+        cautions = listOf("Leave your foot on the floor instead if that is already enough."),
+        sourceIds = listOf("S3", "S15"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 135f, nearKnee = 100f, farHip = 135f, farKnee = 100f),
+            stretch = Pose(torso = -90f, nearShoulder = 40f, nearElbow = 30f, nearArmOut = -10f, farShoulder = 40f, farElbow = 30f, farArmOut = -10f, nearHip = 150f, nearKnee = 95f, nearLegOut = 30f, nearLegTurn = 70f, farHip = 165f, farKnee = 95f),
+            deep = Pose(torso = -90f, nearShoulder = 46f, nearElbow = 30f, nearArmOut = -10f, farShoulder = 46f, farElbow = 30f, farArmOut = -10f, nearHip = 160f, nearKnee = 95f, nearLegOut = 32f, nearLegTurn = 70f, farHip = 178f, farKnee = 95f),
+            view = View.Angled,
+        ),
+    )
+
+    val kneeDropTwist = Stretch(
+        key = "knee_drop_twist",
+        name = "Lying knee-drop twist",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.LowerBack),
+        secondary = listOf(Muscle.Glutes),
+        position = Position.Lying,
+        spinalTwist = true,
+        highlight = setOf(Segment.Torso),
+        summary = "On your back with knees bent, let both knees fall slowly to one side.",
+        cues = listOf(
+            "Lie on your back with your knees bent and feet flat.",
+            "Stretch your arms out to the sides, palms down.",
+            "Let both knees fall slowly to one side. Keep both shoulders on the floor.",
+            "Feel your lower back and the side of your hip. Breathe slowly.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 75f, farShoulder = 4f, farElbow = 4f, farArmOut = 75f, nearHip = 135f, nearKnee = 100f, farHip = 135f, farKnee = 100f),
+            stretch = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 75f, farShoulder = 4f, farElbow = 4f, farArmOut = 75f, nearHip = 135f, nearKnee = 100f, nearLegOut = 45f, farHip = 135f, farKnee = 100f, farLegOut = -40f),
+            deep = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 75f, farShoulder = 4f, farElbow = 4f, farArmOut = 75f, nearHip = 135f, nearKnee = 100f, nearLegOut = 55f, farHip = 135f, farKnee = 100f, farLegOut = -50f),
+            view = View.Angled,
+        ),
+    )
+
+    val seatedTwist = Stretch(
+        key = "seated_twist",
+        name = "Seated twist",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.LowerBack),
+        secondary = listOf(Muscle.UpperBack),
+        position = Position.Seated,
+        level = 2,
+        spinalTwist = true,
+        highlight = setOf(Segment.Torso),
+        summary = "Sit tall with your legs out and turn your chest to one side.",
+        cues = listOf(
+            "Sit tall with your legs out in front of you.",
+            "Place one hand on the floor behind you and the other on the outside of your knee.",
+            "Grow tall, then turn your chest and head toward the hand behind you.",
+            "Feel your back and sides. Stay tall rather than turning further.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(twist = 32f, nearShoulder = -30f, nearElbow = 4f, nearArmOut = 18f, farShoulder = 50f, farElbow = 30f, farArmOut = -35f, nearHip = 90f, farHip = 90f),
+            deep = Pose(twist = 40f, nearShoulder = -34f, nearElbow = 4f, nearArmOut = 18f, farShoulder = 52f, farElbow = 30f, farArmOut = -40f, nearHip = 90f, farHip = 90f),
+            view = View.Angled,
+        ),
+    )
+
+    val threadNeedle = Stretch(
+        key = "thread_the_needle",
+        name = "Thread the needle",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.UpperBack),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.HandsAndKnees,
+        spinalTwist = true,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm),
+        summary = "On hands and knees, slide one arm under your body and rest that shoulder down.",
+        cues = listOf(
+            "Start on your hands and knees, hands under your shoulders.",
+            "Slide one arm along the floor under your body, palm up.",
+            "Lower that shoulder and the side of your head toward the floor.",
+            "Feel between your shoulder blades. Keep your hips over your knees.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 103f, nearShoulder = 77f, farShoulder = 77f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            stretch = Pose(torso = 112f, twist = -35f, head = -10f, nearShoulder = 80f, nearElbow = 4f, nearArmOut = -62f, farShoulder = 68f, farElbow = 50f, nearHip = -8f, nearKnee = 90f, nearAnkle = -90f, farHip = -8f, farKnee = 90f, farAnkle = -90f),
+            deep = Pose(torso = 116f, twist = -42f, head = -12f, nearShoulder = 82f, nearElbow = 4f, nearArmOut = -70f, farShoulder = 66f, farElbow = 58f, nearHip = -10f, nearKnee = 90f, nearAnkle = -90f, farHip = -10f, farKnee = 90f, farAnkle = -90f),
+            view = View.Front,
+        ),
+    )
+
+    val wideLegFold = Stretch(
+        key = "wide_leg_fold",
+        name = "Wide-leg seated stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Adductors),
+        secondary = listOf(Muscle.Hamstrings),
+        position = Position.Seated,
+        level = 2,
+        spinalFlexion = true,
+        highlight = setOf(Segment.NearThigh, Segment.FarThigh),
+        summary = "Sit with your legs wide and lean forward from your hips.",
+        cues = listOf(
+            "Sit tall and open your legs wide, as far as is comfortable.",
+            "Keep your knees and toes pointing up.",
+            "Walk your hands forward and lean from your hips, keeping your back long.",
+            "Feel your inner thighs. Ease off if your knees complain.",
+        ),
+        cautions = listOf("Sit on a folded towel if you can't sit tall."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 20f, nearElbow = 8f, farShoulder = 20f, farElbow = 8f, nearHip = 90f, nearLegOut = 38f, farHip = 90f, farLegOut = 38f),
+            stretch = Pose(torso = 140f, spine = 6f, head = -8f, nearShoulder = 85f, nearElbow = 8f, farShoulder = 85f, farElbow = 8f, nearHip = 90f, nearLegOut = 40f, farHip = 90f, farLegOut = 40f),
+            deep = Pose(torso = 132f, spine = 8f, head = -10f, nearShoulder = 92f, nearElbow = 6f, farShoulder = 92f, farElbow = 6f, nearHip = 90f, nearLegOut = 42f, farHip = 90f, farLegOut = 42f),
+            view = View.Angled,
+        ),
+    )
+
+    val sideLunge = Stretch(
+        key = "side_lunge",
+        name = "Side lunge stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Adductors),
+        secondary = listOf(Muscle.Glutes),
+        position = Position.Standing,
+        level = 2,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Stand wide, bend one knee and sit your hips toward it to feel the straight leg's inner thigh.",
+        cues = listOf(
+            "Stand with your feet wide apart, toes forward.",
+            "Bend one knee and shift your hips toward it. Keep the other leg straight.",
+            "Keep your chest up and your bent knee over your toes.",
+            "Feel the inner thigh of the straight leg. Rest your hands on the bent thigh.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f, nearLegOut = 22f, farLegOut = 22f),
+            stretch = Pose(torso = 165f, nearShoulder = 30f, nearElbow = 30f, nearArmOut = -20f, farShoulder = 30f, farElbow = 30f, farArmOut = -10f, nearLegOut = 38f, farHip = 55f, farKnee = 85f, farLegOut = 12f, farAnkle = 30f),
+            deep = Pose(torso = 160f, nearShoulder = 34f, nearElbow = 30f, nearArmOut = -20f, farShoulder = 34f, farElbow = 30f, farArmOut = -10f, nearLegOut = 42f, farHip = 62f, farKnee = 95f, farLegOut = 10f, farAnkle = 33f),
+            view = View.Angled,
+        ),
+    )
+
+    val overheadTriceps = Stretch(
+        key = "overhead_triceps",
+        name = "Overhead triceps stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.Lats),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm),
+        summary = "Reach one hand down behind your head and ease that elbow back with the other hand.",
+        cues = listOf(
+            "Stand or sit tall.",
+            "Raise one arm, bend the elbow and let your hand drop behind your head.",
+            "With the other hand, ease that elbow gently back and in.",
+            "Feel the back of your upper arm and under your arm. Keep your head up.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 172f, nearElbow = 145f, nearArmOut = -8f, farShoulder = 150f, farElbow = 120f, farArmOut = -30f),
+            deep = Pose(nearShoulder = 178f, nearElbow = 150f, nearArmOut = -10f, farShoulder = 154f, farElbow = 124f, farArmOut = -32f),
+            view = View.Angled,
+        ),
+    )
+
+    val torsoTurns = Stretch(
+        key = "torso_turns",
+        name = "Standing torso turns",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Abdominals),
+        secondary = listOf(Muscle.LowerBack, Muscle.UpperBack),
+        position = Position.Standing,
+        spinalTwist = true,
+        highlight = setOf(Segment.Torso),
+        summary = "Stand tall and turn your chest slowly from side to side.",
+        cues = listOf(
+            "Stand tall with your feet hip-width apart and knees soft.",
+            "Bring your hands together in front of your chest.",
+            "Turn your chest slowly to one side, then the other. Let your head follow.",
+            "Keep your hips facing forward. Make the turns a little bigger as you warm up.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearShoulder = 80f, nearElbow = 100f, nearArmOut = -15f, farShoulder = 80f, farElbow = 100f, farArmOut = -15f, nearKnee = 6f, farKnee = 6f),
+            stretch = Pose(twist = 35f, nearShoulder = 80f, nearElbow = 100f, nearArmOut = -15f, farShoulder = 80f, farElbow = 100f, farArmOut = -15f, nearKnee = 6f, farKnee = 6f),
+            deep = Pose(twist = -35f, nearShoulder = 80f, nearElbow = 100f, nearArmOut = -15f, farShoulder = 80f, farElbow = 100f, farArmOut = -15f, nearKnee = 6f, farKnee = 6f),
+            view = View.Front,
+        ),
+    )
+
+    val sideLegRaise = Stretch(
+        key = "side_leg_raise",
+        name = "Side leg raise hold",
+        kind = StretchKind.Strengthen,
+        sided = true,
+        primary = listOf(Muscle.Glutes),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Stand tall and hold one straight leg out to the side.",
+        cues = listOf(
+            "Stand tall. Hold a wall or chair lightly for balance if you like.",
+            "Lift one straight leg out to the side, toes facing forward.",
+            "Keep your body upright. Don't lean away from the leg.",
+            "Hold steady and keep breathing. Feel the side of your hip working.",
+        ),
+        sourceIds = listOf("S9", "S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(sideBend = -3f, nearElbow = 6f, nearArmOut = 10f, farElbow = 6f, farArmOut = 30f, nearLegOut = 28f, nearKnee = 2f),
+            deep = Pose(sideBend = -3f, nearElbow = 6f, nearArmOut = 10f, farElbow = 6f, farArmOut = 30f, nearLegOut = 31f, nearKnee = 2f),
+            view = View.Front,
+        ),
+    )
+
+    val recliningButterfly = Stretch(
+        key = "reclining_butterfly",
+        name = "Reclining butterfly",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Adductors),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh, Segment.FarThigh),
+        summary = "Lie on your back with the soles of your feet together and let your knees fall open.",
+        cues = listOf(
+            "Lie on your back with your knees bent and feet flat.",
+            "Bring the soles of your feet together.",
+            "Let your knees fall open to the sides. Let gravity do the work.",
+            "Feel your inner thighs. Rest your arms out to the sides and breathe.",
+        ),
+        cautions = listOf("Put a cushion under each knee if the stretch is too strong."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 30f, farShoulder = 4f, farElbow = 4f, farArmOut = 30f, nearHip = 135f, nearKnee = 100f, farHip = 135f, farKnee = 100f),
+            stretch = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 30f, farShoulder = 4f, farElbow = 4f, farArmOut = 30f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f, farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = 50f, farLegOut = 50f, nearLegTurn = 60f, farLegTurn = 60f),
+            deep = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, nearArmOut = 30f, farShoulder = 4f, farElbow = 4f, farArmOut = 30f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f, farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = 58f, farLegOut = 58f, nearLegTurn = 60f, farLegTurn = 60f),
+            view = View.Front,
+        ),
+    )
+
     val all: List<Stretch> = listOf(
         seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow,
         neckFlexion, chestOpener, wallLat, kneeToChest, butterfly, bentKneeCalf, standingHamstring,
@@ -1161,6 +1490,8 @@ object SampleCatalog {
         chinTuck, wallAngel, activeLegRaise, gluteBridge, plank, calfRaiseHold,
         rollUpperBack, rollCalves, rollQuads,
         legSwings, armSwings, hipHinge, ankleRocks, lungeReach, neckNods,
+        neckSideBend, standingSideBend, figureFour, kneeDropTwist, seatedTwist, threadNeedle,
+        wideLegFold, sideLunge, overheadTriceps, torsoTurns, sideLegRaise, recliningButterfly,
     )
 
 
@@ -1184,6 +1515,9 @@ object SampleCatalog {
         "standing_back_bend" to "sphinx",
         "sphinx" to "cobra",
         "towel_calf" to "wall_calf",
+        "reclining_butterfly" to "butterfly",
+        "butterfly" to "wide_leg_fold",
+        "knee_drop_twist" to "seated_twist",
     )
 
     fun easier(key: String): Stretch? = variantPairs.firstOrNull { it.second == key }?.first?.let(::byKey)

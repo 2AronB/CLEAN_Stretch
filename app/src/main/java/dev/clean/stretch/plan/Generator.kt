@@ -45,6 +45,7 @@ object Generator {
             Condition.Osteoporosis in profile.conditions && s.kind == StretchKind.Roll && s.primary.any { it.region == Region.Back } -> "rolling on the spine (osteoporosis)"
             Condition.Pregnancy in profile.conditions && s.position == Position.Lying -> "lying down (pregnancy)"
             Condition.Osteoporosis in profile.conditions && s.spinalFlexion -> "rounds the spine (osteoporosis)"
+            Condition.Osteoporosis in profile.conditions && s.spinalTwist -> "twists the spine (osteoporosis)"
             (Condition.Hypermobility in profile.conditions || Condition.Pregnancy in profile.conditions) && s.level > 1 -> "a harder stretch"
             kind == RoutineKind.Quick && s.position != Position.Standing -> "quick breaks stay standing"
             else -> null

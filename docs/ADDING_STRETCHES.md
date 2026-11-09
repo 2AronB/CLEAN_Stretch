@@ -31,6 +31,7 @@ Copy a similar entry and fill in every field:
 - **`equipment`**: None / Wall / Strap / FoamRoller. A wall or roller also needs a `prop`.
 - **`level`**: 1 = easy or supported, 2 = harder. Pregnancy and hypermobility only get level 1.
 - **`spinalFlexion = true`** if it rounds the spine, held or repeated. It's left out for osteoporosis.
+- **`spinalTwist = true`** if it twists the spine, held or repeated. Also left out for osteoporosis.
 - **`highlight`**: body segments that glow (the target muscles).
 - **`summary`** (one sentence), **`cues`** (at least 3, spoken-style, plain language),
   **`cautions`** (optional; the "stop for sharp pain…" line is added automatically).
@@ -57,9 +58,43 @@ banned phrases.
 
 ### 3D poses and camera views
 
-_To be written by the 3D work (D-034): sideways values (`sideBend`, `twist`, `armOut`,
-`legOut`, `legTurn`) with direction and sensible ranges, when to pick each starting view
-(Side / Angled / Front / Above), and how to preview them._
+The figure is 3D (D-034). Every pose value above moves the body forward/back in the side view;
+these **sideways values** (all default 0, so old poses never change) move it across the body.
+Directions are given for the **near** side (the side facing you in the Side view); "far" values
+mirror them.
+
+| Value | What it does | Sensible range | Example |
+|---|---|---|---|
+| `sideBend` | Torso leans toward the near side (+) or far side (−) | −30…30 | Standing side bend −20 to −26 |
+| `twist` | Chest turns toward the near side (+) or far side (−) around the spine | −45…45 | Seated twist 32–40; torso turns ±35 |
+| `headTilt` | Ear toward the near shoulder (+) or far shoulder (−) | −40…40 | Ear-to-shoulder −32 to −38 |
+| `nearArmOut` / `farArmOut` | Arm swings out to its own side (+) or across the chest (−) | −70…135 | Cross-body −55; arms out in a T 75–90 |
+| `nearArmTurn` / `farArmTurn` | Turns the arm at the shoulder, which changes which way the elbow bends. With the arm out to the side, +90 bends the forearm **up** | −90…90 | Wall angel goalposts: out 90, turn 90, elbow 90 |
+| `nearLegOut` / `farLegOut` | Leg swings out to its own side (+) or across (−) | −50…65 | Side leg raise 28; knee-drop twist +45 / −40 |
+| `nearLegTurn` / `farLegTurn` | Turns the leg at the hip; + turns the knee out so a bent knee brings the foot **in** | −40…70 | Butterfly: leg out 55 + leg turn 60, knee 140 |
+| `roll` | Turns the whole body about its long axis through the hip; +90 lies on the far side with the near side up | −90…90 | Side-lying quad: roll 90, seen from Above |
+
+Tips:
+- Twists and side bends happen in the torso; the hips stay square. To make knees fall to one
+  side, use leg out (+ on the near leg, − on the far leg), as in the knee-drop twist.
+- A stretch that **twists the spine** (held or repeated) sets `spinalTwist = true`. Like
+  `spinalFlexion`, it's left out for osteoporosis (EVIDENCE §9). `GeneratorTest` checks it.
+- Pins (IK) only know forward/back movement. Don't pin a hand or foot on a limb that also
+  uses sideways values.
+
+**Starting view** (`Motion.view`). People can always turn the view with the chip on the detail
+and player screens; this only picks the first view.
+
+| View | Use it when | Examples |
+|---|---|---|
+| `Side` (default) | The move is forward/back: hinges, lunges, folds, bridges, cat-cow | Most stretches |
+| `Angled` | Limbs would hide each other in the Side view, or a prop needs to look 3D (rollers read as cylinders) | Butterfly, figure-four, seated twist, side lunge, foam rolling |
+| `Front` | The move is sideways: side bends, arms across or out, head tilts, legs out | Cross-body, side bend, ear-to-shoulder, wall angel, reclining butterfly |
+| `Above` | The body lies on its side, so the side profile faces up | Side-lying quad |
+
+**Check it** with `tools/pose-preview`: each image shows every keyframe from all four views,
+the starting view first (marked `*`). It draws with the app's own `FigureDrawing`, so what you
+see is what the app shows. Pose Studio also has a view picker and sliders for every value.
 
 ## 4. Link easier and harder versions
 
@@ -91,8 +126,9 @@ $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
 .\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
 ```
 
-- Look at every keyframe with `tools/pose-preview` (see its README; on Windows use Gradle's
-  bundled Kotlin and `;` in the classpath, and run it from PowerShell).
+- Look at every keyframe from every view with `tools/pose-preview`. On Windows, from the repo
+  root: `powershell -ExecutionPolicy Bypass -File tools\pose-preview\build-and-run.ps1 <key> ...`
+  (no keys = every stretch). Images land in `tools/pose-preview/out/`.
 - Optional: the emulator (one at a time on this PC; never the owner's phone).
 - Add a line to `docs/CONTINUE.md`: what was added, which checks ran, what still needs the
   owner's eyes.

@@ -37,7 +37,7 @@ class LibraryFilterTest {
         val standingHolds = LibraryFilter(types = setOf(MoveType.Holds), positions = setOf(Position.Standing)).apply(all, null)
         assertTrue(standingHolds.isNotEmpty())
         assertTrue(standingHolds.all { it.position == Position.Standing && it.kind.label == "Hold" })
-        assertEquals(listOf("butterfly"), keys(LibraryFilter(query = "butterfly")))
+        assertEquals(listOf("butterfly", "reclining_butterfly"), keys(LibraryFilter(query = "butterfly")))
         assertTrue(keys(LibraryFilter(query = "calves")).contains("wall_calf"))
     }
 

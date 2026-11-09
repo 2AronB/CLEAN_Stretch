@@ -388,3 +388,41 @@ Owner asked: some stretches are confusing (is it seen from the top or the side?)
 - Wording avoids Tier C claims (no "releases knots"); "short, gentle routine".
 - Checked: 61/61 tests (2 new), lint clean. Not seen on the emulator (memory); no animation code
   touched (3D work in progress on its branch).
+
+## Stretch library round 5 + 3D finish (2026-11-09, owner: "in charge of the stretch library")
+Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded to `20d63ce` first).
+- **Outline (owner request, D-035):** every body part, the head and the foam roller get the same
+  near-black outline (`FigureColors.outline`) in every view, so outlines no longer appear and
+  vanish as limbs move. The old background-colored "halo" on near limbs is gone; parts behind
+  the torso still fade a little.
+- **Shared drawing:** `figure/FigureDrawing.kt` turns a pose + `Stage` (scene + prop) into plain
+  shapes (`Shape`, `Ink`); `ui/figure/FigureView.kt` paints them with Compose and
+  `tools/pose-preview` paints the same list with Java2D. Preview images now match the app,
+  from all four views. Windows runner: `tools/pose-preview/build-and-run.ps1` (see README).
+- **New pose values:** `headTilt`, `near/farArmTurn` (shoulder rotation: goalpost arms),
+  `roll` (whole body onto its side). All default 0; a test re-checks every old pose against
+  the original 2D solver.
+- **12 new moves (55 total),** all from S2/S3 (+S4/S5 for the flow, S9 for the strengthen
+  hold, S15/S19 where the similar old entries use them): ear-to-shoulder neck stretch, standing
+  side bend, lying figure-four, lying knee-drop twist, seated twist (level 2), thread the needle,
+  wide-leg seated stretch (level 2), side lunge stretch (level 2), overhead triceps stretch,
+  standing torso turns (flow), side leg raise hold (strengthen), reclining butterfly.
+  Variants: reclining butterfly → butterfly → wide-leg; knee-drop twist → seated twist.
+- **Safety:** new `spinalTwist` flag; `Generator` leaves twisting moves out for osteoporosis
+  (EVIDENCE §9 already said "flexion and twisting"); setup text now says "round or twist".
+- **Existing moves reviewed** from all views with the preview tool. Changed: wall angel arms now
+  go out to the sides like real goalposts (Front view); side-lying quad really lies on its side
+  (`roll`, Above view); foam rolling ×3 and glute bridge start Angled (rollers read as
+  cylinders). Everything else stays Side, which was clearest.
+- Voice clips: 42 new clips (Kokoro af_heart). The generator rewrites every clip, so the 128
+  unchanged existing clips were restored from git to keep the commit small.
+- `docs/ADDING_STRETCHES.md` §3 now has the 3D authoring guide (values, ranges, when to pick
+  each view, previewing).
+- Checks run: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` pass (64 tests, 3 new
+  in `Figure3dTest`; `LibraryFilterTest` updated for the second "butterfly"). Every keyframe of
+  all 55 moves rendered with pose-preview and looked at. **Not seen on the emulator this round:**
+  the shared emulator was in use by another app/session, so it was left alone.
+- **Owner to check:** how the new moves look in motion on the phone; wording of the 12 new cue
+  sets; whether seated twist / side lunge / wide-leg should be level 2 (chosen as "harder").
+  Known limits: IK pins ignore sideways values; torso turns are subtle from the Front view (turn
+  the view to Above to see the twist).

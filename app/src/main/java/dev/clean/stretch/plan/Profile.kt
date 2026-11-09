@@ -17,7 +17,7 @@ enum class Goal(val label: String, val blurb: String, val defaultFocus: Set<Regi
  */
 enum class Condition(val label: String, val limits: String) {
     Pregnancy("Pregnancy", "Leaves out stretches lying on your back or front, and harder stretches."),
-    Osteoporosis("Osteoporosis or low bone density", "Leaves out stretches that round your spine."),
+    Osteoporosis("Osteoporosis or low bone density", "Leaves out stretches that round or twist your spine."),
     Hypermobility("Hypermobility (very flexible joints)", "Keeps to easier stretches and gentle holds."),
     RecentSurgery("Recent surgery or joint replacement", "Leaves out the areas you mark to avoid. Follow your surgeon's advice."),
 }

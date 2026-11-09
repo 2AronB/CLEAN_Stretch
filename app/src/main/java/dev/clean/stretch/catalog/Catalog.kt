@@ -2,6 +2,7 @@ package dev.clean.stretch.catalog
 
 import dev.clean.stretch.figure.Motion
 import dev.clean.stretch.figure.Segment
+import dev.clean.stretch.figure.StageProp
 
 enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
 
@@ -38,6 +39,13 @@ enum class StretchKind(val label: String) { Static("Hold"), Dynamic("Flow"), Str
 /** Where props are drawn, in body units relative to the hip: a wall (vertical) or a foam roller (circle on the floor). */
 data class Prop(val equipment: Equipment, val x: Float)
 
+/** How the figure drawing sees a prop (only walls and foam rollers are drawn). */
+fun Prop.toStageProp(): StageProp? = when (equipment) {
+    Equipment.Wall -> StageProp(StageProp.Kind.Wall, x)
+    Equipment.FoamRoller -> StageProp(StageProp.Kind.Roller, x)
+    else -> null
+}
+
 /**
  * One catalog entry. Health wording must follow docs/EVIDENCE.md §11 (claims tiers).
  * Keys are permanent: history refers to them, so never rename or reuse a key.
@@ -61,6 +69,8 @@ data class Stretch(
     val prop: Prop? = null,
     /** Rounds (flexes) the spine, held or repeated. Left out for osteoporosis (EVIDENCE §9, [S32][S33]). */
     val spinalFlexion: Boolean = false,
+    /** Twists the spine, held or repeated. Also left out for osteoporosis (EVIDENCE §9, [S32][S33]). */
+    val spinalTwist: Boolean = false,
 ) {
     val muscles get() = primary + secondary
 }

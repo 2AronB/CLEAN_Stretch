@@ -63,6 +63,8 @@ class Figure3d(
     val roots: Map<Segment, Vec3>,
     val torsoAngle: Float,
     val neckAngle: Float,
+    /** Unit vector across the hips, toward the near side (changes only when the body rolls). */
+    val pelvisSide: Vec3 = Vec3.Side,
 ) {
     operator fun get(j: Joint): Vec3 = points.getValue(j)
 
@@ -74,7 +76,7 @@ class Figure3d(
     /** Corners of the torso slab: near hip, near shoulder, far shoulder, far hip, plus the two back-curve controls. */
     fun torsoOutline(): List<Vec3> {
         val hip = get(Joint.Hip); val sh = get(Joint.Shoulder)
-        val pelvis = Vec3.Side * Width3d.PELVIS_HALF
+        val pelvis = pelvisSide * Width3d.PELVIS_HALF
         val chest = chestSide * Width3d.CHEST_HALF
         val mid = (pelvis + chest) * 0.5f
         return listOf(hip + pelvis, sh + chest, sh - chest, hip - pelvis, spineControl + mid, spineControl - mid)
@@ -107,14 +109,16 @@ class Figure3d(
 
             val shoulder = hip + up * Body.TORSO
             val neckAngle = pose.torso + pose.head
-            val neckDir = up * cosd(pose.head) - fwd * sind(pose.head)
+            val neckDir = (up * cosd(pose.head) - fwd * sind(pose.head)).let { if (pose.headTilt == 0f) it else it.rotate(fwd, -pose.headTilt) }
             val neck = shoulder + neckDir * Body.NECK
             val head = neck + neckDir * Body.HEAD_RADIUS
 
-            fun arm(root: Vec3, raise: Float, bend: Float, out: Float, outward: Vec3): Pair<Vec3, Vec3> {
+            // [turn] rotates the arm about the upper arm (shoulder rotation), which changes the
+            // direction the elbow bends: with the arm out to the side, +90 bends the forearm up.
+            fun arm(root: Vec3, raise: Float, bend: Float, out: Float, turn: Float, sign: Float, outward: Vec3): Pair<Vec3, Vec3> {
                 val sagittal = -up * cosd(raise) + fwd * sind(raise)
                 val upper = sagittal * cosd(out) + outward * sind(out)
-                val bendDir = up * sind(raise) + fwd * cosd(raise)
+                val bendDir = (up * sind(raise) + fwd * cosd(raise)).let { if (turn == 0f) it else it.rotate(upper, -turn * sign) }
                 val fore = upper * cosd(bend) + bendDir * sind(bend)
                 val elbow = root + upper * Body.UPPER_ARM
                 return elbow to elbow + fore * Body.FOREARM
@@ -136,8 +140,8 @@ class Figure3d(
 
             val nearArmRoot = shoulder + side * Width3d.ARM_ROOT
             val farArmRoot = shoulder - side * Width3d.ARM_ROOT
-            val (nearElbow, nearHand) = arm(nearArmRoot, pose.nearShoulder, pose.nearElbow, pose.nearArmOut, side)
-            val (farElbow, farHand) = arm(farArmRoot, pose.farShoulder, pose.farElbow, pose.farArmOut, -side)
+            val (nearElbow, nearHand) = arm(nearArmRoot, pose.nearShoulder, pose.nearElbow, pose.nearArmOut, pose.nearArmTurn, 1f, side)
+            val (farElbow, farHand) = arm(farArmRoot, pose.farShoulder, pose.farElbow, pose.farArmOut, pose.farArmTurn, -1f, -side)
 
             val nearLegRoot = hip + Vec3.Side * Width3d.LEG_ROOT
             val farLegRoot = hip - Vec3.Side * Width3d.LEG_ROOT
@@ -146,25 +150,36 @@ class Figure3d(
 
             val spineControl = (hip + shoulder) * 0.5f - fwd * pose.spine
 
-            val raw = mapOf(
+            val rawPoints = mapOf(
                 Joint.Hip to hip, Joint.Shoulder to shoulder, Joint.Neck to neck, Joint.Head to head,
                 Joint.NearElbow to nearElbow, Joint.NearHand to nearHand,
                 Joint.FarElbow to farElbow, Joint.FarHand to farHand,
                 Joint.NearKnee to nearKnee, Joint.NearAnkle to nearAnkle, Joint.NearToe to nearToe,
                 Joint.FarKnee to farKnee, Joint.FarAnkle to farAnkle, Joint.FarToe to farToe,
             )
-            val roots = mapOf(
+            val rawRoots = mapOf(
                 Segment.NearUpperArm to nearArmRoot, Segment.FarUpperArm to farArmRoot,
                 Segment.NearThigh to nearLegRoot, Segment.FarThigh to farLegRoot,
             )
-            if (!grounded) return Figure3d(raw, spineControl, side, roots, pose.torso, neckAngle)
+            // Roll: turn the whole body about the forward (x) axis through the hip, e.g. onto its
+            // side for side-lying stretches. + lifts the near side up.
+            val axis = Vec3(1f, 0f, 0f)
+            fun rolled(p: Vec3) = if (pose.roll == 0f) p else hip + (p - hip).rotate(axis, pose.roll)
+            fun rolledDir(v: Vec3) = if (pose.roll == 0f) v else v.rotate(axis, pose.roll)
+            val raw = rawPoints.mapValues { rolled(it.value) }
+            val roots = rawRoots.mapValues { rolled(it.value) }
+            val spine = rolled(spineControl)
+            val chest = rolledDir(side)
+            val pelvisSide = rolledDir(Vec3.Side)
+            val rolledShoulder = raw.getValue(Joint.Shoulder)
+            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide)
             // A curved spine bulges past the hip-shoulder line; include its outer edge.
-            val spineBottom = (hip * 0.25f + spineControl * 0.5f + shoulder * 0.25f).y + Body.width(Segment.Torso) / 2f
+            val spineBottom = (hip * 0.25f + spine * 0.5f + rolledShoulder * 0.25f).y + Body.width(Segment.Torso) / 2f
             val lowest = max(raw.maxOf { (j, p) -> p.y + Body.radius(j) }, spineBottom)
             val drop = Vec3(0f, -lowest, 0f)
             return Figure3d(
-                raw.mapValues { it.value + drop }, spineControl + drop, side,
-                roots.mapValues { it.value + drop }, pose.torso, neckAngle,
+                raw.mapValues { it.value + drop }, spine + drop, chest,
+                roots.mapValues { it.value + drop }, pose.torso, neckAngle, pelvisSide,
             )
         }
     }

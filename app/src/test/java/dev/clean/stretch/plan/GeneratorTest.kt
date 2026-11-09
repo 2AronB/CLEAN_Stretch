@@ -43,7 +43,7 @@ class GeneratorTest {
         val pregnant = Generator.generate(Profile(conditions = setOf(Condition.Pregnancy), minutes = 15), RoutineKind.Full)
         stretches(pregnant).forEach { assertTrue(it.key, it.position != Position.Lying && it.level == 1) }
         val bones = Generator.generate(Profile(conditions = setOf(Condition.Osteoporosis), minutes = 15), RoutineKind.Full)
-        stretches(bones).forEach { assertTrue(it.key, !it.spinalFlexion) }
+        stretches(bones).forEach { assertTrue(it.key, !it.spinalFlexion && !it.spinalTwist) }
         assertTrue(pregnant.notes.any { it.startsWith("Pregnancy") })
     }
 

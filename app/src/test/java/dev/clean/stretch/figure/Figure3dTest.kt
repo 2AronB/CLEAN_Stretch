@@ -9,7 +9,7 @@ import kotlin.math.max
 
 class Figure3dTest {
 
-    private val sideways = listOf(PoseParam.SideBend, PoseParam.Twist, PoseParam.NearArmOut, PoseParam.FarArmOut, PoseParam.NearLegOut, PoseParam.FarLegOut, PoseParam.NearLegTurn, PoseParam.FarLegTurn)
+    private val sideways = listOf(PoseParam.SideBend, PoseParam.Twist, PoseParam.NearArmOut, PoseParam.FarArmOut, PoseParam.NearLegOut, PoseParam.FarLegOut, PoseParam.NearLegTurn, PoseParam.FarLegTurn, PoseParam.HeadTilt, PoseParam.NearArmTurn, PoseParam.FarArmTurn, PoseParam.Roll)
 
     @Test
     fun sideViewMatchesTheOriginal2dFigureForEveryCatalogPose() {
@@ -94,6 +94,32 @@ class Figure3dTest {
         assertTrue("soles together $ankleGap", ankleGap < 20f)
         // Knees stay off the floor but low.
         assertTrue(f[Joint.NearKnee].y < 0f)
+    }
+
+    @Test
+    fun rollLiesTheBodyOnItsSideNearSideUp() {
+        val f = Figure3d.solve(Pose(roll = 90f, torso = 90f, nearHip = -90f, farHip = -90f))
+        assertTrue(f.root(Segment.NearUpperArm).y < f.root(Segment.FarUpperArm).y - 30f)
+        assertEquals(0f, f.points.maxOf { (j, p) -> p.y + Body.radius(j) }, 0.01f)
+    }
+
+    @Test
+    fun armTurnBendsTheForearmUpFromAGoalpost() {
+        val f = Figure3d.solve(Pose(nearArmOut = 90f, nearElbow = 90f, nearArmTurn = 90f, farArmOut = 90f, farElbow = 90f, farArmTurn = 90f), grounded = false)
+        assertTrue(f[Joint.NearHand].y < f[Joint.NearElbow].y - 20f)
+        assertTrue(f[Joint.FarHand].y < f[Joint.FarElbow].y - 20f)
+    }
+
+    @Test
+    fun everyBodyPartGetsTheSameOutlineInEveryView() {
+        val s = SampleCatalog.byKey("seated_twist")!!
+        View.entries.forEach { view ->
+            val stage = Stage.of(MotionPlayer.keyframes(s.motion), view.camera, null)
+            val shapes = FigureDrawing.shapes(s.motion.stretch, stage, s.highlight, 300f, 300f)
+            // One outline per body segment plus the head, whichever parts are in front.
+            assertEquals("$view", Segment.entries.size + 1, shapes.count { it.ink == Ink.Outline })
+            assertTrue(shapes.filter { it.ink == Ink.Outline }.all { it.fade == 0f && it.alpha == 1f })
+        }
     }
 
     private fun assertNear(msg: String, e: Vec, a: Vec) =

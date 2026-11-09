@@ -22,6 +22,9 @@ package dev.clean.stretch.figure
  * - [sideBend]: torso leans toward the near side (+) or far side (-).
  * - [twist]: chest turns toward the near side (+) or far side (-) around the spine.
  * - Arm/leg "out": swings the limb out to its own side (+) or across the body (-).
+ * - Arm "turn": rotates the arm at the shoulder; with the arm out to the side, +90 bends the forearm up.
+ * - [roll]: turns the whole body about its long axis through the hip; +90 lies on the far side, near side up.
+ * - [headTilt]: ear toward the near shoulder (+) or far shoulder (-).
  * - Leg "turn": rotates the leg at the hip; + turns the knee out (a bent knee then brings the foot inward).
  *
  * "Near" limbs face the viewer and are drawn in front; "far" limbs are drawn behind.
@@ -49,6 +52,10 @@ data class Pose(
     val farLegOut: Float = 0f,
     val nearLegTurn: Float = 0f,
     val farLegTurn: Float = 0f,
+    val headTilt: Float = 0f,
+    val nearArmTurn: Float = 0f,
+    val farArmTurn: Float = 0f,
+    val roll: Float = 0f,
 ) {
     fun lerp(to: Pose, t: Float): Pose = Pose(
         torso = mix(torso, to.torso, t),
@@ -73,6 +80,10 @@ data class Pose(
         farLegOut = mix(farLegOut, to.farLegOut, t),
         nearLegTurn = mix(nearLegTurn, to.nearLegTurn, t),
         farLegTurn = mix(farLegTurn, to.farLegTurn, t),
+        headTilt = mix(headTilt, to.headTilt, t),
+        nearArmTurn = mix(nearArmTurn, to.nearArmTurn, t),
+        farArmTurn = mix(farArmTurn, to.farArmTurn, t),
+        roll = mix(roll, to.roll, t),
     )
 
     operator fun get(param: PoseParam): Float = param.read(this)
@@ -131,4 +142,8 @@ enum class PoseParam(
     FarLegOut("Far leg out", "farLegOut", -30f, 80f, { it.farLegOut }, { p, v -> p.copy(farLegOut = v) }),
     NearLegTurn("Near leg turn", "nearLegTurn", -60f, 80f, { it.nearLegTurn }, { p, v -> p.copy(nearLegTurn = v) }),
     FarLegTurn("Far leg turn", "farLegTurn", -60f, 80f, { it.farLegTurn }, { p, v -> p.copy(farLegTurn = v) }),
+    HeadTilt("Head tilt", "headTilt", -50f, 50f, { it.headTilt }, { p, v -> p.copy(headTilt = v) }),
+    NearArmTurn("Near arm turn", "nearArmTurn", -120f, 120f, { it.nearArmTurn }, { p, v -> p.copy(nearArmTurn = v) }),
+    FarArmTurn("Far arm turn", "farArmTurn", -120f, 120f, { it.farArmTurn }, { p, v -> p.copy(farArmTurn = v) }),
+    Roll("Body roll", "roll", -100f, 100f, { it.roll }, { p, v -> p.copy(roll = v) }),
 }

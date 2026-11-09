@@ -420,8 +420,11 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   each view, previewing).
 - Checks run: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` pass (64 tests, 3 new
   in `Figure3dTest`; `LibraryFilterTest` updated for the second "butterfly"). Every keyframe of
-  all 55 moves rendered with pose-preview and looked at. **Not seen on the emulator this round:**
-  the shared emulator was in use by another app/session, so it was left alone.
+  all 55 moves rendered with pose-preview and looked at. Then seen on emulator `Pixel_8`
+  (`emulator-5554`, the only device; shut down afterwards): library shows 55, seated twist
+  detail (Angled) and player, view chip Angled → Front, outlines steady while moving, dark mode
+  readable (light figure, dark outlines). Search fix: "twist" now finds all four twisting moves
+  (thread the needle and torso turns didn't say "twist"); `LibraryFilterTest` checks it.
 - **Owner to check:** how the new moves look in motion on the phone; wording of the 12 new cue
   sets; whether seated twist / side lunge / wide-leg should be level 2 (chosen as "harder").
   Known limits: IK pins ignore sideways values; torso turns are subtle from the Front view (turn

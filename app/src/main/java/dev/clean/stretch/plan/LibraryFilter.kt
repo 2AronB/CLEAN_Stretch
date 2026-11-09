@@ -115,6 +115,7 @@ object SearchWords {
         "floor" to listOf("lying", "seated", "kneeling", "hands & knees"), "ground" to listOf("lying", "seated", "kneeling", "hands & knees"),
         "laying" to listOf("lying"), "sitting" to listOf("seated"), "sit" to listOf("seated"), "stand" to listOf("standing"),
         "kneel" to listOf("kneeling"), "dynamic" to listOf("flow"), "flowing" to listOf("flow"), "moving" to listOf("flow"),
+        "twisting" to listOf("twist"), "rotation" to listOf("twist"), "rotate" to listOf("twist"), "obliques" to listOf("abdominals"),
         "warmup" to listOf("flow"), "strength" to listOf("strengthen"), "strong" to listOf("strengthen"), "hold" to listOf("hold"),
     )
     private val easyWords = setOf("easy", "easier", "easiest", "gentle", "beginner", "simple")
@@ -126,6 +127,8 @@ object SearchWords {
         add(s.name); add(s.summary); add(s.kind.label); add(s.equipment.label); add(s.position.label)
         s.muscles.forEach { add(it.label); add(it.region.label) }
         if (s.sided) add("each side") else add("both sides")
+        // Twisting moves (thread the needle, torso turns) don't all say "twist" in their names.
+        if (s.spinalTwist) add("twist")
     }.joinToString(" ").lowercase()
 
     fun matches(s: Stretch, query: String): Boolean {

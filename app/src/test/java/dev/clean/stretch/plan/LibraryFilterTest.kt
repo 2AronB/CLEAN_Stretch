@@ -38,6 +38,7 @@ class LibraryFilterTest {
         assertTrue(standingHolds.isNotEmpty())
         assertTrue(standingHolds.all { it.position == Position.Standing && it.kind.label == "Hold" })
         assertEquals(listOf("butterfly", "reclining_butterfly"), keys(LibraryFilter(query = "butterfly")))
+        assertEquals(all.filter { it.spinalTwist }.map { it.key }.toSet(), keys(LibraryFilter(query = "twist")).toSet())
         assertTrue(keys(LibraryFilter(query = "calves")).contains("wall_calf"))
     }
 

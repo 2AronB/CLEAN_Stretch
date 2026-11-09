@@ -18,8 +18,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 /**
- * Daily reminder at the user's chosen time (R-007). Uses an inexact repeating alarm, which needs
- * no special permission; Android may deliver it a few minutes late to save battery.
+ * Daily reminder at the user's chosen time (R-007). A one-shot alarm with a 10-minute delivery
+ * window (no special permission; Android may deliver it up to ~10 minutes late to save battery).
+ * Each time it fires it schedules the next day's, and it is re-armed whenever a reminder setting
+ * changes. Inexact repeating alarms were tried first and proved unreliable on the owner's phone.
  * Not yet handled: rescheduling after a phone restart needs RECEIVE_BOOT_COMPLETED (not approved),
  * so the reminder is rescheduled every time the app opens instead.
  */
@@ -27,6 +29,7 @@ object Reminders {
     private const val CHANNEL = "reminders"
     private const val NOTIFICATION_ID = 1
     private const val TAG = "StretchReminders"
+    private const val WINDOW_MS = 10 * 60 * 1000L
 
     fun canNotify(context: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -42,7 +45,7 @@ object Reminders {
         var next = now.toLocalDate().atStartOfDay().plusMinutes(prefs.reminderTime.toLong())
         if (!next.isAfter(now)) next = next.plusDays(1)
         val at = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP, at, AlarmManager.INTERVAL_DAY, pending)
+        alarms.setWindow(AlarmManager.RTC_WAKEUP, at, WINDOW_MS, pending)
         Log.i(TAG, "Daily reminder set for $next")
     }
 
@@ -80,5 +83,9 @@ object Reminders {
 }
 
 class ReminderReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) = Reminders.show(context)
+    override fun onReceive(context: Context, intent: Intent) {
+        Reminders.show(context)
+        // One-shot alarm: arm tomorrow's.
+        Reminders.sync(context, AppPreferences(context))
+    }
 }

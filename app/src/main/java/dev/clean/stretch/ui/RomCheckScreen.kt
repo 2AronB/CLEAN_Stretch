@@ -1,5 +1,6 @@
 package dev.clean.stretch.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -29,7 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.clean.stretch.data.RomCheckDao
 import dev.clean.stretch.data.RomCheckEntity
+import dev.clean.stretch.figure.Figure
+import dev.clean.stretch.plan.RomTest
 import dev.clean.stretch.plan.RomTests
+import dev.clean.stretch.ui.figure.FigureView
+import dev.clean.stretch.ui.figure.figureColors
 import kotlinx.coroutines.launch
 
 /**
@@ -70,9 +76,7 @@ fun RomCheckScreen(checks: RomCheckDao, onDone: () -> Unit) {
                             if (label.isNotEmpty()) Text("$label side", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
                             Spacer(Modifier.height(4.dp))
                             Option("Skip (not measured)", selected = answers[id] == null) { set(id, null) }
-                            test.levels.forEachIndexed { level, text ->
-                                Option(text, selected = answers[id] == level) { set(id, level) }
-                            }
+                            PictureChoices(test, mirrored = side == "left", selected = answers[id]) { set(id, it) }
                         }
                     }
                 }
@@ -106,5 +110,41 @@ private fun Option(text: String, selected: Boolean, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(onClick = onClick), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
         RadioButton(selected = selected, onClick = onClick)
         Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** "Which looks most like you?" — one figure per level, two per row (D-033). */
+@Composable
+private fun PictureChoices(test: RomTest, mirrored: Boolean, selected: Int?, onPick: (Int) -> Unit) {
+    val frame = remember(test.key) { test.pictures.map { Figure.solve(it).bounds() }.reduce { a, b -> a.union(b) } }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+        test.levels.indices.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { level ->
+                    val on = selected == level
+                    val bg = if (on) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLowest
+                    Surface(
+                        color = bg,
+                        shape = RoundedCornerShape(16.dp),
+                        border = if (on) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                        modifier = Modifier.weight(1f).clickable { onPick(level) },
+                    ) {
+                        Column(Modifier.padding(8.dp)) {
+                            FigureView(
+                                pose = test.pictures[level],
+                                frame = frame,
+                                highlight = test.highlight,
+                                mirrored = mirrored,
+                                colors = figureColors(bg),
+                                modifier = Modifier.fillMaxWidth().height(96.dp),
+                                description = test.levels[level],
+                            )
+                            Text(test.levels[level], style = MaterialTheme.typography.labelMedium, minLines = 2, maxLines = 2)
+                        }
+                    }
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
     }
 }

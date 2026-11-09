@@ -144,12 +144,11 @@ fun TodayScreen(
                 title = routine.title,
                 stretches = stretches,
                 minutes = Generator.estimateMinutes(routine.keys, routine.holdSeconds),
-                reduced = reduced,
-                onStart = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
+                notes = routine.notes,
+                onOpenStretch = onOpenStretch,
+                onStart = { onStart(Route.Player(routine.keys, routine.title, holdSeconds = routine.holdSeconds)) },
+                onEdit = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
             )
-            Spacer(Modifier.height(20.dp))
-            SectionLabel("In this routine")
-            RoutineStrip(stretches, onOpenStretch)
         }
         Spacer(Modifier.height(20.dp))
         if (saved.isNotEmpty()) {
@@ -191,75 +190,72 @@ fun TodayScreen(
     }
 }
 
+/**
+ * The day's recommendation (D-032): the stretches as tiles, then Start (straight into the
+ * routine) or Edit (optional changes). Getting it right on generation is the goal.
+ */
 @Composable
-private fun HeroRoutineCard(title: String, stretches: List<Stretch>, minutes: Int, reduced: Boolean, onStart: () -> Unit) {
-    val time by rememberFigureClock(running = !reduced)
-    val index = ((time / Timing.DEMO_LOOP_MS) % stretches.size).toInt()
-    val current = stretches[index]
-    val frame = remember(current.key) { MotionPlayer.frameFor(current.motion) }
+private fun HeroRoutineCard(
+    title: String,
+    stretches: List<Stretch>,
+    minutes: Int,
+    notes: List<String>,
+    onOpenStretch: (String) -> Unit,
+    onStart: () -> Unit,
+    onEdit: () -> Unit,
+) {
     val container = MaterialTheme.colorScheme.primaryContainer
-
     Surface(
         color = container,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         shape = RoundedCornerShape(32.dp),
         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
     ) {
-        Column(Modifier.padding(24.dp)) {
+        Column(Modifier.padding(20.dp)) {
             Text("Suggested for you", style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(4.dp))
             Text(title, style = MaterialTheme.typography.headlineMedium)
-            Text("${stretches.size} stretches · about $minutes min · hands-free", style = MaterialTheme.typography.bodyMedium)
-            FigureView(
-                pose = MotionPlayer.demoPose(current.motion, time % Timing.DEMO_LOOP_MS, reduced),
-                frame = frame,
-                highlight = current.highlight,
-                prop = current.prop,
-                glow = if (reduced) 0f else Easing.breath(time),
-                colors = figureColors(container),
-                modifier = Modifier.fillMaxWidth().aspectRatio(1.5f).padding(vertical = 8.dp),
-                description = "${current.name} demonstration",
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(current.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text("${stretches.size} moves · about $minutes min · hands-free", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                stretches.chunked(3).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { s ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.weight(1f).clickable { onOpenStretch(s.key) },
+                            ) {
+                                Column(Modifier.padding(8.dp)) {
+                                    StretchThumbnail(
+                                        s,
+                                        background = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(s.name, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, minLines = 2)
+                                }
+                            }
+                        }
+                        repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
+            notes.filter { !it.contains(":") }.forEach {
+                Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Button(
                     onClick = onStart,
                     contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                    modifier = Modifier.height(52.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
                 ) {
                     Icon(painterResource(R.drawable.ic_play), contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Review & start")
+                    Text("Start")
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RoutineStrip(stretches: List<Stretch>, onOpenStretch: (String) -> Unit) {
-    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        stretches.chunked(2).forEach { pair ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                pair.forEach { s ->
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.weight(1f).clickable { onOpenStretch(s.key) },
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            StretchThumbnail(
-                                s,
-                                background = MaterialTheme.colorScheme.surfaceContainerLow,
-                                modifier = Modifier.fillMaxWidth().height(84.dp),
-                            )
-                            Spacer(Modifier.height(6.dp))
-                            Text(s.name, style = MaterialTheme.typography.titleSmall, maxLines = 1)
-                            Text(s.primary.joinToString { it.label }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                        }
-                    }
-                }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
+                OutlinedButton(onClick = onEdit, modifier = Modifier.height(52.dp)) { Text("Edit") }
             }
         }
     }

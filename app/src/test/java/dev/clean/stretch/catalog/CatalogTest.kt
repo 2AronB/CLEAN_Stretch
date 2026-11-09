@@ -67,6 +67,29 @@ class CatalogTest {
     }
 
     @Test
+    fun pinnedHandsAndFeetStayPutWhileRolling() {
+        all.filter { it.motion.pins.isNotEmpty() }.forEach { s ->
+            val targets = dev.clean.stretch.figure.Ik.targets(s.motion.stretch, s.motion.pins)
+            (0L..6000L step 250L).forEach { t ->
+                val pose = MotionPlayer.holdPose(s.motion, t)
+                val f = Figure.solve(pose, grounded = false)
+                targets.forEach { (pin, target) ->
+                    val joint = when (pin) {
+                        dev.clean.stretch.figure.Pin.NearHand -> dev.clean.stretch.figure.Joint.NearHand
+                        dev.clean.stretch.figure.Pin.FarHand -> dev.clean.stretch.figure.Joint.FarHand
+                        dev.clean.stretch.figure.Pin.NearFoot -> dev.clean.stretch.figure.Joint.NearAnkle
+                        dev.clean.stretch.figure.Pin.FarFoot -> dev.clean.stretch.figure.Joint.FarAnkle
+                    }
+                    val d = f[joint] - target
+                    assertTrue("${s.key} $pin drifts at $t ms", d.x * d.x + d.y * d.y < 0.25f)
+                }
+                listOf(pose.nearKnee, pose.farKnee).forEach { assertTrue("${s.key} knee $it at $t", it in 0f..170f) }
+                listOf(pose.nearElbow, pose.farElbow).forEach { assertTrue("${s.key} elbow $it at $t", it in 0f..160f) }
+            }
+        }
+    }
+
+    @Test
     fun jointsStayInARealRange() {
         // Knees can't fold past ~170° or hyperextend; past 180° the shin would pass through the thigh.
         all.forEach { s ->

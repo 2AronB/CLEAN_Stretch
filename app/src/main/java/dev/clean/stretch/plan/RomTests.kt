@@ -1,13 +1,21 @@
 package dev.clean.stretch.plan
 
 import dev.clean.stretch.catalog.Region
+import dev.clean.stretch.figure.Ik
+import dev.clean.stretch.figure.Pin
+import dev.clean.stretch.figure.Pose
+import dev.clean.stretch.figure.Segment
+import dev.clean.stretch.figure.Vec
+import kotlin.math.acos
 
 /**
- * Range-of-motion self-checks (Slice S9, R-012). Each check is answered by picking the closest
- * level, so no tape measure is needed. These are for tracking your own progress, not medical
- * tests (Editorial). Regular stretching increases range of motion [S1][S2][S3] (Tier A).
+ * Range-of-motion self-checks (Slice S9, R-012, D-033). Each answer is a picture drawn with the
+ * app's figure: "which looks most like you?". No numbers or tools. These are for tracking your
+ * own progress, not medical tests (Editorial). Regular stretching increases range of motion
+ * [S1][S2][S3] (Tier A).
  *
- * Keys are permanent: saved results refer to them.
+ * Keys are permanent: saved results refer to them. Retired checks (shoulder_reach,
+ * knee_to_wall, deep_squat) keep their saved rows but are no longer shown.
  */
 data class RomTest(
     val key: String,
@@ -17,9 +25,25 @@ data class RomTest(
     val howTo: List<String>,
     /** From least to most range. A result stores the index. */
     val levels: List<String>,
+    /** One picture per level, same order. */
+    val pictures: List<Pose>,
+    val highlight: Set<Segment>,
 )
 
 object RomTests {
+    private val legsStraight = Pose(nearElbow = 4f, farElbow = 4f)
+
+    /** Standing forward fold with both hands reaching [hand] (body units, hip at 0,0). */
+    private fun fold(torso: Float, hand: Vec): Pose {
+        val base = legsStraight.copy(torso = torso, head = -15f)
+        val targets = mapOf(Pin.NearHand to hand, Pin.FarHand to hand + Vec(-2f, 0f))
+        return Ik.pin(base, base, targets)
+    }
+
+    /** Forward fold with both arms hanging straight down. */
+    private fun hang(torso: Float): Pose =
+        legsStraight.copy(torso = torso, head = -15f, nearShoulder = 180f - torso, farShoulder = 178f - torso)
+
     val toeReach = RomTest(
         key = "toe_reach",
         name = "Toe reach",
@@ -28,51 +52,82 @@ object RomTests {
         howTo = listOf(
             "Stand with your feet together and knees straight but not locked.",
             "Breathe out and slowly reach down toward your toes. Don't bounce.",
-            "Note how far your fingertips reach without strain.",
+            "Pick the picture closest to how far you reach without strain.",
         ),
         levels = listOf("Above the knees", "Knees", "Mid-shin", "Ankles", "Toes", "Past the toes", "Palms flat on the floor"),
-    )
-
-    val shoulderReach = RomTest(
-        key = "shoulder_reach",
-        name = "Shoulder reach",
-        region = Region.Shoulders,
-        sided = true,
-        howTo = listOf(
-            "Reach one hand over that shoulder and down your back.",
-            "Reach the other hand up your back from below.",
-            "Note how close your fingertips get. The side named is the arm on top.",
+        // Arms hang straight down until the hands reach the floor; then they reach to the toes or past.
+        pictures = listOf(
+            hang(120f),
+            hang(103f),
+            hang(79f),
+            hang(55f),
+            fold(42f, Vec(18f, 88.5f)),
+            hang(49f),
+            fold(30f, Vec(38f, 88.5f)),
         ),
-        levels = listOf("More than a hand apart", "A few fingers apart", "Fingertips touch", "Fingers overlap"),
+        highlight = setOf(Segment.NearThigh),
     )
 
-    val kneeToWall = RomTest(
-        key = "knee_to_wall",
-        name = "Knee to wall",
+    val overheadReach = RomTest(
+        key = "overhead_reach",
+        name = "Overhead reach",
+        region = Region.Shoulders,
+        sided = false,
+        howTo = listOf(
+            "Stand tall with your arms by your sides.",
+            "Keeping your elbows straight and your back from arching, lift both arms forward and up.",
+            "Pick the picture closest to how high your arms go.",
+        ),
+        levels = listOf("Shoulder height", "Halfway up", "Nearly overhead", "Fully overhead"),
+        pictures = listOf(90f, 125f, 155f, 180f).map { a -> Pose(nearShoulder = a, farShoulder = a - 2f, nearElbow = 2f, farElbow = 2f) },
+        highlight = setOf(Segment.NearUpperArm),
+    )
+
+    /** Front knee drives forward over the toes with the heel down; [shin] = shin angle from vertical. */
+    private fun lunge(shin: Float): Pose {
+        val thigh = 40f
+        val frontAnkleY = 44f * kotlin.math.cos(Math.toRadians(thigh.toDouble())).toFloat() + 43f * kotlin.math.cos(Math.toRadians(shin.toDouble())).toFloat()
+        val back = -Math.toDegrees(acos((frontAnkleY / 87f).toDouble().coerceIn(-1.0, 1.0))).toFloat()
+        return Pose(
+            torso = 178f, nearShoulder = 75f, nearElbow = 10f, farShoulder = 72f, farElbow = 12f,
+            nearHip = thigh, nearKnee = thigh + shin, nearAnkle = shin,
+            farHip = back, farAnkle = 60f - (back + 90f),
+        )
+    }
+
+    val ankleLunge = RomTest(
+        key = "ankle_lunge",
+        name = "Ankle lunge",
         region = Region.Legs,
         sided = true,
         howTo = listOf(
-            "Face a wall with one foot in front, toes pointing at the wall.",
-            "Keeping that heel down, bend the knee forward to touch the wall.",
-            "Slide the foot back until the knee only just reaches. Note the toe-to-wall gap.",
+            "Stand in a short lunge, hands on a wall or chair if you like.",
+            "Keeping your front heel on the floor, bend that knee forward as far as it goes.",
+            "Pick the picture closest to where your knee ends up. The side named is the front leg.",
         ),
-        levels = listOf("Knee can't reach with toes touching the wall", "Under 5 cm (2 in)", "5–9 cm (2–3½ in)", "10–14 cm (4–5½ in)", "15 cm (6 in) or more"),
+        levels = listOf("Knee stays behind the toes", "Knee over the toes", "Knee a little past the toes", "Knee well past the toes"),
+        pictures = listOf(10f, 20f, 30f, 40f).map(::lunge),
+        highlight = setOf(Segment.NearShin),
     )
 
-    val deepSquat = RomTest(
-        key = "deep_squat",
-        name = "Deep squat",
-        region = Region.Hips,
-        sided = false,
+    val legRaise = RomTest(
+        key = "leg_raise",
+        name = "Straight-leg raise",
+        region = Region.Legs,
+        sided = true,
         howTo = listOf(
-            "Stand with your feet a little wider than your hips. Hold something steady if you like.",
-            "Slowly squat as low as is comfortable, heels on the floor.",
-            "Note how low you can go without your heels lifting.",
+            "Lie on your back with both legs long.",
+            "Keeping the knee straight, lift one leg as high as you comfortably can. The other leg stays down.",
+            "Pick the picture closest to how high the leg goes.",
         ),
-        levels = listOf("A quarter of the way", "Halfway", "Thighs level with the floor", "Below level, heels up", "All the way down, heels flat"),
+        levels = listOf("Just off the floor", "A third of the way up", "Halfway up", "Most of the way up", "Straight up"),
+        pictures = listOf(20f, 35f, 50f, 70f, 90f).map { a ->
+            Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 90f + a, nearKnee = 2f, farHip = 90f)
+        },
+        highlight = setOf(Segment.NearThigh),
     )
 
-    val all: List<RomTest> = listOf(toeReach, shoulderReach, kneeToWall, deepSquat)
+    val all: List<RomTest> = listOf(toeReach, overheadReach, ankleLunge, legRaise)
 
     fun byKey(key: String): RomTest? = all.firstOrNull { it.key == key }
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -335,8 +336,28 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp),
         )
 
+        // Step actions and "Next" sit above the controls, clear of the system gesture bar.
         Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
+            Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (step.setup) {
+                FilledTonalButton(onClick = { goTo(index + 1) }) { Text("I'm ready") }
+            } else {
+                TextButton(onClick = { extraMs += 15_000L }) { Text("+15 s") }
+            }
+            if (nextStretch != null && (step.setup || duration - t < 8_000L)) {
+                Text(
+                    "Next: ${nextStretch.stretch.name}${if (nextStretch.side != Side.Both) " · ${nextStretch.side.label.lowercase()}" else ""}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+                )
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -365,24 +386,6 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
                 modifier = Modifier.size(56.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_skip_next), contentDescription = "Skip")
-            }
-        }
-        Row(
-            Modifier.fillMaxWidth().padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            if (step.setup) {
-                TextButton(onClick = { goTo(index + 1) }) { Text("I'm ready") }
-            } else {
-                TextButton(onClick = { extraMs += 15_000L }) { Text("+15 s") }
-            }
-            if (nextStretch != null && (step.setup || duration - t < 8_000L)) {
-                Text(
-                    "Next: ${nextStretch.stretch.name}${if (nextStretch.side != Side.Both) " · ${nextStretch.side.label.lowercase()}" else ""}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
-                )
             }
         }
     }

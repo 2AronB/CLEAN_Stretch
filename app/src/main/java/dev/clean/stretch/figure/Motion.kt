@@ -22,6 +22,8 @@ data class Motion(
     val start: Pose,
     val stretch: Pose,
     val deep: Pose? = null,
+    /** Hands/feet that stay planted while the body moves (solved with [Ik]). */
+    val pins: Set<Pin> = emptySet(),
 )
 
 object Timing {
@@ -63,7 +65,8 @@ object MotionPlayer {
             val half = Timing.FLOW_HALF_MS
             val cycle = tMs % (half * 2)
             val t = if (cycle < half) cycle.toFloat() / half else 1f - (cycle - half).toFloat() / half
-            motion.stretch.lerp(other, Easing.inOutCubic(t))
+            val pose = motion.stretch.lerp(other, Easing.inOutCubic(t))
+            if (motion.pins.isEmpty()) pose else Ik.pin(pose, motion.stretch, Ik.targets(motion.stretch, motion.pins))
         }
     }
 

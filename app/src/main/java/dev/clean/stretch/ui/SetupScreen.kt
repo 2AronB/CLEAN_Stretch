@@ -248,6 +248,7 @@ private fun PlanPage(prefs: AppPreferences) {
     val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         denied = !granted
         prefs.updateReminder(granted)
+        Reminders.sync(context, prefs)
     }
 
     Heading("When will you stretch?", "People who pick a moment, like \"after I brush my teeth\", find it easier to stick with.")
@@ -267,6 +268,7 @@ private fun PlanPage(prefs: AppPreferences) {
         } else {
             denied = false
             prefs.updateReminder(on)
+            Reminders.sync(context, prefs)
         }
     }
     if (prefs.reminderOn) TextButton(onClick = { pickingTime = true }) { Text("Change time") }
@@ -281,7 +283,7 @@ private fun PlanPage(prefs: AppPreferences) {
         val state = rememberTimePickerState(initialHour = prefs.reminderTime / 60, initialMinute = prefs.reminderTime % 60)
         AlertDialog(
             onDismissRequest = { pickingTime = false },
-            confirmButton = { TextButton(onClick = { prefs.updateReminder(true, state.hour * 60 + state.minute); pickingTime = false }) { Text("OK") } },
+            confirmButton = { TextButton(onClick = { prefs.updateReminder(true, state.hour * 60 + state.minute); Reminders.sync(context, prefs); pickingTime = false }) { Text("OK") } },
             dismissButton = { TextButton(onClick = { pickingTime = false }) { Text("Cancel") } },
             text = { TimePicker(state = state) },
         )

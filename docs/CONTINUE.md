@@ -267,3 +267,23 @@ rechecked on the emulator:
 - pose-preview on Windows: compile with Gradle's bundled Kotlin
   (`~/.gradle/wrapper/dists/gradle-9.3.1-bin/*/gradle-9.3.1/lib`), classpath separator `;`,
   run `PosePreviewKt` from PowerShell (Git Bash mangles the classpath). Props draw as lines there.
+
+## Round of owner feedback (2026-11-08 evening) — built, tested
+- Today card (D-032): stretch tiles inside the card, **Start** (straight to the player) and
+  **Edit** (review screen). Separate "In this routine" grid removed.
+- Player: "I'm ready" / "+15 s" / "Next" moved above the controls, clear of the gesture bar.
+- Rolling: `figure/Ik.kt` two-bone IK; `Motion.pins` keeps hands (calf, thigh rolls) or feet
+  (upper-back roll) planted while the body slides; arms pivot at the shoulders.
+  `CatalogTest.pinnedHandsAndFeetStayPutWhileRolling` samples every 250 ms. Frame-by-frame
+  emulator capture of the calf roll was interrupted — owner to eyeball.
+- ROM checks (D-033): picture choices drawn with the figure. Toe reach (7, hanging arms),
+  overhead reach (4), ankle lunge (4 per side), straight-leg raise (5 per side). Retired
+  shoulder_reach / knee_to_wall / deep_squat (saved rows kept, not shown).
+- Reminder: one-shot `setWindow` alarm (10-min window) that re-arms itself daily and on every
+  reminder-setting change. Emulator: set 20:56, fired 20:59:58, next day armed.
+- Decisions D-031 (conditions: final review before Play), D-032, D-033.
+
+## Next batch (owner-requested, not built yet)
+- Reminder wording: "around 7:00 PM" where **around** links to a short explanation (we keep
+  permissions minimal, so Android may deliver it up to ~10 minutes late). Owner is fine with
+  the delay once explained (no exact-alarm permission).

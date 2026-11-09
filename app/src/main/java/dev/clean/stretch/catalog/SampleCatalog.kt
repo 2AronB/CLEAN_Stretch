@@ -2,6 +2,7 @@ package dev.clean.stretch.catalog
 
 import dev.clean.stretch.figure.Motion
 import dev.clean.stretch.figure.MotionKind
+import dev.clean.stretch.figure.Pin
 import dev.clean.stretch.figure.Pose
 import dev.clean.stretch.figure.Segment
 
@@ -934,6 +935,7 @@ object SampleCatalog {
         prop = Prop(Equipment.FoamRoller, x = -35f),
         motion = Motion(
             kind = MotionKind.Flow,
+            pins = setOf(Pin.NearFoot, Pin.FarFoot),
             start = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
             stretch = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
             deep = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f, shiftX = 6f),
@@ -961,6 +963,7 @@ object SampleCatalog {
         prop = Prop(Equipment.FoamRoller, x = 60f),
         motion = Motion(
             kind = MotionKind.Flow,
+            pins = setOf(Pin.NearHand, Pin.FarHand),
             start = Pose(torso = 230f, head = -45f, nearShoulder = -71f, nearElbow = 10f, farShoulder = -71f, farElbow = 10f, nearHip = 90f, farHip = 90f),
             stretch = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f),
             deep = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f, shiftX = -15f),
@@ -989,6 +992,7 @@ object SampleCatalog {
         prop = Prop(Equipment.FoamRoller, x = -22f),
         motion = Motion(
             kind = MotionKind.Flow,
+            pins = setOf(Pin.NearHand, Pin.FarHand),
             start = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
             stretch = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
             deep = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f, shiftX = 12f),

@@ -12,6 +12,7 @@ class BackupManager(private val db: StretchDatabase, private val prefs: AppPrefe
             profile = db.profile().getNow(),
             settings = prefs.exportSettings(),
             routines = db.routines().allNow(),
+            romChecks = db.romChecks().allNow(),
         ),
         exportedAt = now,
     )
@@ -24,6 +25,8 @@ class BackupManager(private val db: StretchDatabase, private val prefs: AppPrefe
             data.profile?.let { db.profile().save(it) }
             db.routines().clear()
             db.routines().insertAll(data.routines)
+            db.romChecks().clear()
+            db.romChecks().insertAll(data.romChecks)
         }
         prefs.importSettings(data.settings)
     }

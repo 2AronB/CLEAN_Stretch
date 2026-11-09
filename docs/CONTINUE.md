@@ -229,3 +229,16 @@ rechecked on the emulator:
   pivots back, knee 158–160°, heel to buttock, hand reaches back to the ankle); checked frame by
   frame on the emulator. New `CatalogTest.jointsStayInARealRange` (knees 0–170°, elbows
   0–160°) caught the butterfly at 175° too — lowered to 168° with knees raised.
+
+## S9 range-of-motion checks, first version (2026-11-08)
+- Four self-checks (`plan/RomTests.kt`): toe reach, shoulder reach (each side), knee to wall
+  (each side), deep squat. Answers are levels (no tape measure). Skipped checks save nothing,
+  so "not measured" never looks like a low score. Wording: "for tracking your own progress,
+  not medical tests" (Editorial); stop-at-mild-tension cue.
+- Stored insert-only in Room v4 (`rom_checks`, AutoMigration 3→4, schema 4.json); included in
+  backups (optional `romChecks`, older files still restore).
+- Progress → "Range of motion" card: latest answer per check/side, "+N steps since <date>",
+  "Not measured yet", re-check suggestion after 28 days; "Check now / Check again" opens the
+  check-in screen. `RomChecksTest` (trend math, never-measured is absent).
+- Checked: 39/39 tests, lint clean; emulator: first check saved "Mid-shin", second "Ankles" →
+  "+1 since 8 Nov" (now reads "+1 step"), no crashes. Owner to review check wording/levels.

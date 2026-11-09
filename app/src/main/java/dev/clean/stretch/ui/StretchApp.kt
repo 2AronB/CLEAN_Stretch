@@ -34,6 +34,7 @@ import dev.clean.stretch.data.BackupManager
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.ProfileDao
 import dev.clean.stretch.data.ProfileMapper
+import dev.clean.stretch.data.RomCheckDao
 import dev.clean.stretch.data.SavedRoutineDao
 import dev.clean.stretch.data.SavedRoutineEntity
 import dev.clean.stretch.data.profile
@@ -58,6 +59,7 @@ sealed interface Route {
     data object Studio : Route
     data object Sources : Route
     data object Setup : Route
+    data object RomCheck : Route
     /** Review a recommended routine before starting it (D-029). */
     data class Preview(val kind: RoutineKind, val holdSeconds: Int, val keys: List<String>) : Route
 
@@ -72,6 +74,7 @@ sealed interface Route {
             Studio -> "studio"
             Sources -> "sources"
             Setup -> "setup"
+            RomCheck -> "romcheck"
             is Preview -> "preview|${r.kind.name}|${r.holdSeconds}|${r.keys.joinToString(",")}"
             is Detail -> "detail|${r.key}"
             is Player -> "player|${r.title}|${r.keys.joinToString(",")}|${if (r.firstSide == Side.Left) "L" else "R"}|${r.holdSeconds}"
@@ -93,6 +96,7 @@ sealed interface Route {
                     holdSeconds = parts.getOrNull(4)?.toIntOrNull() ?: (HOLD_MS / 1000).toInt(),
                 )
                 "setup" -> Setup
+                "romcheck" -> RomCheck
                 "preview" -> Preview(
                     kind = RoutineKind.entries.firstOrNull { it.name == parts.getOrNull(1) } ?: RoutineKind.Full,
                     holdSeconds = parts.getOrNull(2)?.toIntOrNull() ?: (HOLD_MS / 1000).toInt(),
@@ -114,7 +118,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
+fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
     val dark = when (prefs.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -128,12 +132,12 @@ fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao
         onDispose { }
     }
     StretchTheme(dark = dark, wallpaperColors = prefs.wallpaperColors) {
-        StretchApp(prefs, history, profiles, routines, saver, backup)
+        StretchApp(prefs, history, profiles, routines, romChecks, saver, backup)
     }
 }
 
 @Composable
-fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, saver: SessionSaver, backup: BackupManager) {
+fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager) {
     // null until the saved profile has loaded, so first-run cards don't flash.
     val profile by remember { profiles.profile() }.collectAsState(initial = null)
     val stack: SnapshotStateList<Route> = rememberSaveable(
@@ -189,12 +193,13 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines)
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) })
-                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek)
+                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck) })
                     Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) }, onOpenStretch = { push(Route.Detail(it)) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
                     Route.Studio -> PoseStudioScreen(onBack = ::pop)
                     Route.Sources -> SourcesScreen(onBack = ::pop)
+                    Route.RomCheck -> RomCheckScreen(romChecks, onDone = ::pop)
                     Route.Setup -> profile?.let { p ->
                         SetupScreen(
                             initial = p,

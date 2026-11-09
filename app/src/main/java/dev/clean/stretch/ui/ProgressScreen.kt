@@ -22,7 +22,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import dev.clean.stretch.catalog.Region
+import androidx.compose.material3.Button
 import dev.clean.stretch.data.HistoryDao
+import dev.clean.stretch.data.RomCheckDao
+import dev.clean.stretch.plan.RomEntry
+import dev.clean.stretch.plan.RomTests
+import dev.clean.stretch.plan.RomTrends
 import dev.clean.stretch.data.Stats
 import java.time.Instant
 import java.time.LocalDate
@@ -39,7 +44,8 @@ import androidx.compose.ui.unit.dp
 
 /** This week's minutes per body area and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen(history: HistoryDao, daysTarget: Int) {
+fun ProgressScreen(history: HistoryDao, daysTarget: Int, romChecks: RomCheckDao, onCheck: () -> Unit) {
+    val romRows by remember { romChecks.observe() }.collectAsState(initial = emptyList())
     val zone = remember { ZoneId.systemDefault() }
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
@@ -107,6 +113,8 @@ fun ProgressScreen(history: HistoryDao, daysTarget: Int) {
             }
         }
         Spacer(Modifier.height(16.dp))
+        RomCard(romRows.map { it.toEntry() }, onCheck)
+        Spacer(Modifier.height(16.dp))
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerLow,
             shape = RoundedCornerShape(28.dp),
@@ -160,6 +168,63 @@ fun Ring(fraction: Float, color: Color, modifier: Modifier = Modifier) {
         drawArc(track, 0f, 360f, useCenter = false, topLeft = Offset(inset, inset), size = arc, style = Stroke(stroke))
         if (fraction > 0f) {
             drawArc(color, -90f, 360f * fraction.coerceIn(0f, 1f), useCenter = false, topLeft = Offset(inset, inset), size = arc, style = Stroke(stroke, cap = StrokeCap.Round))
+        }
+    }
+}
+
+/** Range-of-motion check results (S9): latest answer and change since the first check. */
+@Composable
+private fun RomCard(entries: List<RomEntry>, onCheck: () -> Unit) {
+    val trends = remember(entries) { RomTrends.of(entries) }
+    val days = remember(entries) { RomTrends.daysSinceLast(entries, System.currentTimeMillis()) }
+    val dateFormat = remember { DateTimeFormatter.ofPattern("d MMM") }
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(28.dp),
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Text("Range of motion", style = MaterialTheme.typography.titleMedium)
+            Text(
+                when {
+                    days == null -> "Check how far you can reach today, then again in a few weeks to see what's changed."
+                    days >= RomTests.RECHECK_DAYS -> "Last checked $days days ago. A good time to check again."
+                    days == 0L -> "Checked today. Check again in about 4 weeks."
+                    else -> "Last checked $days ${if (days == 1L) "day" else "days"} ago. Check again in about 4 weeks."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            RomTests.all.forEach { test ->
+                val sides = if (test.sided) listOf("left" to " (left)", "right" to " (right)") else listOf("both" to "")
+                sides.forEach { (side, label) ->
+                    val trend = trends[test.key to side]
+                    Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(test.name + label, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                trend?.let { test.levels.getOrElse(it.latest.level) { "?" } } ?: "Not measured yet",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (trend != null && trend.count > 1) {
+                            val since = Instant.ofEpochMilli(trend.first.takenAt).atZone(ZoneId.systemDefault()).format(dateFormat)
+                            Text(
+                                when {
+                                    trend.change > 0 -> "+${trend.change} ${if (trend.change == 1) "step" else "steps"} since $since"
+                                    trend.change < 0 -> "${trend.change} ${if (trend.change == -1) "step" else "steps"} since $since"
+                                    else -> "Same as $since"
+                                },
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (trend.change > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = onCheck) { Text(if (days == null) "Check now" else "Check again") }
         }
     }
 }

@@ -223,3 +223,9 @@ rechecked on the emulator:
   automation was unreliable this round); owner to try.
 - Still open for S3: adductor and neck variants, chair versions (needs a chair prop),
   wrists/forearms for Desk.
+
+## Pose fix (2026-11-08, owner feedback)
+- Side-lying quad looped the knee past 180°. Rebuilt as the standing quad laid down (thigh
+  pivots back, knee 158–160°, heel to buttock, hand reaches back to the ankle); checked frame by
+  frame on the emulator. New `CatalogTest.jointsStayInARealRange` (knees 0–170°, elbows
+  0–160°) caught the butterfly at 175° too — lowered to 168° with knees raised.

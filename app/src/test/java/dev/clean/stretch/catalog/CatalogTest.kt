@@ -66,6 +66,17 @@ class CatalogTest {
     }
 
     @Test
+    fun jointsStayInARealRange() {
+        // Knees can't fold past ~170° or hyperextend; past 180° the shin would pass through the thigh.
+        all.forEach { s ->
+            MotionPlayer.keyframes(s.motion).forEach { p ->
+                listOf(p.nearKnee, p.farKnee).forEach { assertTrue("${s.key} knee $it", it in 0f..170f) }
+                listOf(p.nearElbow, p.farElbow).forEach { assertTrue("${s.key} elbow $it", it in 0f..160f) }
+            }
+        }
+    }
+
+    @Test
     fun variantPairsResolveAndShareAnArea() {
         SampleCatalog.variantPairs.forEach { (easy, hard) ->
             val e = SampleCatalog.byKey(easy)

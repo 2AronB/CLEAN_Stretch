@@ -302,9 +302,9 @@ object SampleCatalog {
         sourceIds = listOf("S3", "S2"),
         motion = Motion(
             kind = MotionKind.Hold,
-            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 110f, nearKnee = 175f, nearAnkle = 65f, farHip = 108f, farKnee = 172f, farAnkle = 62f),
-            stretch = Pose(torso = 165f, spine = 3f, head = -6f, nearShoulder = 3f, nearElbow = 10f, farShoulder = 2f, farElbow = 12f, nearHip = 110f, nearKnee = 175f, nearAnkle = 65f, farHip = 108f, farKnee = 172f, farAnkle = 62f),
-            deep = Pose(torso = 155f, spine = 5f, head = -8f, nearShoulder = 4f, nearElbow = 15f, farShoulder = 3f, farElbow = 17f, nearHip = 110f, nearKnee = 175f, nearAnkle = 65f, farHip = 108f, farKnee = 172f, farAnkle = 62f),
+            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
+            stretch = Pose(torso = 165f, spine = 3f, head = -6f, nearShoulder = 3f, nearElbow = 10f, farShoulder = 2f, farElbow = 12f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
+            deep = Pose(torso = 155f, spine = 5f, head = -8f, nearShoulder = 4f, nearElbow = 15f, farShoulder = 3f, farElbow = 17f, nearHip = 118f, nearKnee = 168f, nearAnkle = 50f, farHip = 116f, farKnee = 166f, farAnkle = 50f),
         ),
     )
 
@@ -592,9 +592,11 @@ object SampleCatalog {
         sourceIds = listOf("S3", "S2"),
         motion = Motion(
             kind = MotionKind.Hold,
-            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 170f, farElbow = 100f, nearHip = 90f, farHip = 90f),
-            stretch = Pose(torso = -90f, nearShoulder = 16f, nearElbow = 6f, farShoulder = 170f, farElbow = 100f, nearHip = 100f, nearKnee = 200f, farHip = 90f),
-            deep = Pose(torso = -90f, nearShoulder = 18f, nearElbow = 6f, farShoulder = 170f, farElbow = 100f, nearHip = 104f, nearKnee = 205f, farHip = 90f),
+            // Drawn as the standing quad stretch laid down: thigh pivots back, heel toward buttock,
+            // hand reaches back for the ankle. Knee stays within a real range (no >170°).
+            start = Pose(torso = 90f, head = 8f, nearShoulder = 0f, nearElbow = 6f, farShoulder = 178f, farElbow = 4f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
+            stretch = Pose(torso = 90f, head = 8f, nearShoulder = -17f, nearElbow = 10f, farShoulder = 178f, farElbow = 4f, nearHip = -94f, nearKnee = 158f, nearAnkle = -35f, farHip = -90f, farAnkle = -90f),
+            deep = Pose(torso = 90f, head = 8f, nearShoulder = -20f, nearElbow = 8f, farShoulder = 178f, farElbow = 4f, nearHip = -100f, nearKnee = 160f, nearAnkle = -38f, farHip = -90f, farAnkle = -90f),
         ),
     )
 

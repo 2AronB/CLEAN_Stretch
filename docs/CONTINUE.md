@@ -377,3 +377,14 @@ Owner asked: some stretches are confusing (is it seen from the top or the side?)
   the ankles; side-lying quad is still drawn face-down (could now be rolled onto its side);
   Above view of standing stretches is hard to read. Owner to judge the look before more
   stretches get sideways poses.
+
+## Tender spot flow (2026-11-09) — P-10 item 4
+- Today → "Sore spot?" card → pick a muscle, answer two questions ("sore for more than 2
+  weeks?", "hurts at rest, at night, or after an injury or fall?"). Any yes → "Best to get this
+  checked" (EVIDENCE §13) and no routine. Otherwise `Generator.tenderSpot`: roll that spot (only
+  with a roller and if allowed), the 1–2 easiest stretches for it, a strengthen move for the area
+  if one fits; gentle 30 s holds; trimmed to ≤ 6 min. All limits apply; an avoided area gets a
+  note and no moves. Start goes straight to the player ("Tender spot: calves").
+- Wording avoids Tier C claims (no "releases knots"); "short, gentle routine".
+- Checked: 61/61 tests (2 new), lint clean. Not seen on the emulator (memory); no animation code
+  touched (3D work in progress on its branch).

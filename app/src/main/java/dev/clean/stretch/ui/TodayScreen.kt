@@ -80,6 +80,7 @@ fun TodayScreen(
     onOpenSources: () -> Unit,
     onOpenSetup: () -> Unit,
     savedRoutines: SavedRoutineDao,
+    onOpenTender: () -> Unit,
 ) {
     val saved by remember { savedRoutines.observe() }.collectAsState(initial = emptyList())
     var deleting by remember { mutableStateOf<SavedRoutineEntity?>(null) }
@@ -156,6 +157,21 @@ fun TodayScreen(
                 onStart = { onStart(Route.Player(routine.keys, routine.title, holdSeconds = routine.holdSeconds)) },
                 onEdit = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
             )
+        }
+        Spacer(Modifier.height(12.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clickable(onClick = onOpenTender),
+        ) {
+            Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Sore spot?", style = MaterialTheme.typography.titleMedium)
+                    Text("Build a short, gentle routine for it", style = MaterialTheme.typography.bodyMedium)
+                }
+                Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
+            }
         }
         Spacer(Modifier.height(20.dp))
         if (saved.isNotEmpty()) {

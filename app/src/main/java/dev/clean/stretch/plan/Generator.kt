@@ -1,6 +1,7 @@
 package dev.clean.stretch.plan
 
 import dev.clean.stretch.catalog.Equipment
+import dev.clean.stretch.catalog.Muscle
 import dev.clean.stretch.catalog.Position
 import dev.clean.stretch.catalog.Region
 import dev.clean.stretch.catalog.SampleCatalog
@@ -195,6 +196,46 @@ object Generator {
     }
 
     private fun fits(s: Stretch, hold: Int, used: Int, budget: Int) = used + costSeconds(s, hold) <= budget
+
+    /** Hold length for tender-spot routines: gentle 30 s holds. */
+    const val TENDER_HOLD_SECONDS = 30
+
+    /**
+     * "Tender spot" mini-routine (P-10 item 4): roll the spot (if the user has a roller and it's
+     * allowed), then the easiest stretches for it, then a strengthen move for the area if one
+     * fits. About 3–6 minutes. Every limit and safety rule applies; an area the user avoids gets a
+     * note and no moves. The screen asks the "see a clinician" questions before calling this.
+     */
+    fun tenderSpot(profile: Profile, muscle: Muscle): Routine {
+        val hold = TENDER_HOLD_SECONDS
+        val title = "Tender spot: ${muscle.label.lowercase()}"
+        if (muscle.region in profile.avoid) {
+            return Routine(RoutineKind.CoolDown, title, emptyList(), hold,
+                listOf("You've marked ${muscle.region.label.lowercase()} as an area to avoid, so Stretch won't suggest moves for it. Follow your clinician's advice."))
+        }
+        val allowed = allowed(profile, RoutineKind.CoolDown)
+        fun forSpot(list: List<Stretch>) = list.filter { muscle in it.primary }.ifEmpty { list.filter { muscle in it.muscles } }
+        val roll = forSpot(allowed.filter { it.kind == StretchKind.Roll }).take(1)
+        val stretches = forSpot(allowed.filter { it.kind.isStretch })
+            .sortedWith(compareBy({ it.level }, { if (it.kind == StretchKind.Static) 0 else 1 }))
+            .take(2)
+        val strengthen = allowed.filter { it.kind == StretchKind.Strengthen }
+            .sortedWith(compareBy { if (muscle in it.primary) 0 else 1 })
+            .filter { s -> s.primary.any { it.region == muscle.region } }
+            .take(1)
+        var picked = roll + stretches + strengthen
+        // Keep it short: drop the second stretch, then the strengthen move, if it runs past 6 min.
+        while (estimateMinutes(picked.map { it.key }, hold) > 6 && picked.size > 1) {
+            picked = if (stretches.size > 1 && stretches[1] in picked) picked - stretches[1] else picked.dropLast(1)
+        }
+        val notes = mutableListOf<String>()
+        if (picked.isEmpty()) notes += "Nothing in the library fits this spot with your settings yet."
+        if (roll.isEmpty() && !profile.hasRoller && allowedRollExists(muscle)) notes += "Have a foam roller? Turn it on in Settings and this will start with a minute of rolling."
+        notes += "Gentle pressure and mild tension only. Stop for sharp pain, numbness or tingling."
+        return Routine(RoutineKind.CoolDown, title, picked.map { it.key }, hold, notes)
+    }
+
+    private fun allowedRollExists(muscle: Muscle) = SampleCatalog.all.any { it.kind == StretchKind.Roll && muscle in it.muscles }
 
     /** Other allowed stretches for the same body area, for the Swap button. */
     fun alternatives(profile: Profile, kind: RoutineKind, key: String, inRoutine: List<String>): List<Stretch> {

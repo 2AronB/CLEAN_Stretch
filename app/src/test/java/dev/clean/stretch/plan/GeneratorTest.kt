@@ -152,4 +152,33 @@ class GeneratorTest {
         val full = Generator.generate(Profile(minutes = 10), RoutineKind.Full).keys.mapNotNull { SampleCatalog.byKey(it) }
         assertTrue(full.count { it.kind == dev.clean.stretch.catalog.StretchKind.Static } > full.count { it.kind == dev.clean.stretch.catalog.StretchKind.Dynamic })
     }
+
+    @Test
+    fun tenderSpotRollsStretchesAndStrengthensTheArea() {
+        val calves = dev.clean.stretch.catalog.Muscle.Calves
+        val withRoller = Generator.tenderSpot(Profile(hasRoller = true), calves)
+        assertEquals("roll_calves", withRoller.keys.first())
+        val moves = withRoller.keys.map { SampleCatalog.byKey(it)!! }
+        assertTrue(moves.any { it.kind.isStretch && calves in it.primary })
+        assertTrue(Generator.estimateMinutes(withRoller.keys, withRoller.holdSeconds) <= 6)
+        // No roller: no rolling, and a hint about it.
+        val noRoller = Generator.tenderSpot(Profile(), calves)
+        assertTrue(noRoller.keys.none { it.startsWith("roll_") })
+        assertTrue(noRoller.notes.any { it.contains("foam roller") })
+        // Easiest stretches first.
+        val ham = Generator.tenderSpot(Profile(), dev.clean.stretch.catalog.Muscle.Hamstrings)
+        assertTrue(ham.keys.mapNotNull { SampleCatalog.byKey(it) }.filter { it.kind.isStretch }.all { it.level == 1 })
+    }
+
+    @Test
+    fun tenderSpotRespectsLimits() {
+        val back = dev.clean.stretch.catalog.Muscle.UpperBack
+        val avoided = Generator.tenderSpot(Profile(avoid = setOf(Region.Back)), back)
+        assertTrue(avoided.keys.isEmpty())
+        assertTrue(avoided.notes.any { it.contains("avoid") })
+        val bones = Generator.tenderSpot(Profile(hasRoller = true, conditions = setOf(Condition.Osteoporosis)), back)
+        assertTrue(bones.keys.none { it == "roll_upper_back" })
+        val noFloor = Generator.tenderSpot(Profile(noFloor = true, hasRoller = true), dev.clean.stretch.catalog.Muscle.Quadriceps)
+        assertTrue(noFloor.keys.all { SampleCatalog.byKey(it)!!.position == dev.clean.stretch.catalog.Position.Standing })
+    }
 }

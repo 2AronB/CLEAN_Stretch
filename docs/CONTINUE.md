@@ -242,3 +242,28 @@ rechecked on the emulator:
   check-in screen. `RomChecksTest` (trend math, never-measured is absent).
 - Checked: 39/39 tests, lint clean; emulator: first check saved "Mid-shin", second "Ankles" →
   "+1 since 8 Nov" (now reads "+1 step"), no crashes. Owner to review check wording/levels.
+
+## S8 Strengthen + foam rolling, first version (2026-11-08)
+- New exercise kinds (`StretchKind.Strengthen`, `StretchKind.Roll`; `isStretch` for stretches).
+- **Strengthen (P-5):** timed 30 s holds, no rep counting: chin tuck [S19], wall angel (wall)
+  [S19][S9], active leg raise (each side) [S9], glute bridge [S9][S30], forearm plank (level 2),
+  calf raise hold [S9][S10]. Block of 1–2 moves at the end of Full, Cool-down and Quick
+  routines when on. Profile `strengthen` = automatic (on for Desk or hypermobility) unless the
+  user flips the Setup switch.
+- **Foam rolling (P-10):** roll upper back, calves, front of thighs. Only if "I have a foam
+  roller" (Setup). One area (60 s, Flow ≈ 2.6 s per pass) opens warm-ups and cool-downs.
+  Osteoporosis leaves out rolling on the spine. Cautions per [S44] + Editorial; pressure cue
+  "firm where you can still breathe slowly". Roller drawn as a circle (`ROLLER_RADIUS`).
+- Strengthen/rolling time counts toward minutes and streaks, **not** per-area stretch rings
+  (recorded with empty primaryRegions).
+- Sources added: S9, S10, S19, S30, S34, S36, S44 (text taken from EVIDENCE.md).
+- Profile DB v5 (AutoMigration 4→5, new columns with defaults); backups carry the new fields
+  (optional on read). GeneratorTest +2 (roller gating, osteoporosis, strengthen switch and
+  placement, still fits the budget).
+- Poses checked with tools/pose-preview (now runnable on Windows — see below) and on the
+  emulator (rollers, Today routine ends with the Strengthen block for a Desk profile).
+- Not built yet: the "Tender spot" flow, massage ball / roller stick, rolling pass ticks/voice
+  per pass, an Advanced toggle to count rolling toward rings.
+- pose-preview on Windows: compile with Gradle's bundled Kotlin
+  (`~/.gradle/wrapper/dists/gradle-9.3.1-bin/*/gradle-9.3.1/lib`), classpath separator `;`,
+  run `PosePreviewKt` from PowerShell (Git Bash mangles the classpath). Props draw as lines there.

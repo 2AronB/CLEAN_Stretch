@@ -61,6 +61,7 @@ private val profileSaver = Saver<Profile, String>(
         listOf(
             p.goal.name, p.olderAdult, p.focus.joinToString(",") { it.name }, p.avoid.joinToString(",") { it.name },
             p.noFloor, p.noKneeling, p.hasWall, p.conditions.joinToString(",") { it.name }, p.minutes, p.setupDone,
+            p.hasRoller, p.strengthen?.toString() ?: "auto",
         ).joinToString("|")
     },
     restore = { text ->
@@ -71,6 +72,7 @@ private val profileSaver = Saver<Profile, String>(
             noFloor = f[4].toBoolean(), noKneeling = f[5].toBoolean(), hasWall = f[6].toBoolean(),
             conditions = f[7].split(",").mapNotNull { n -> Condition.entries.firstOrNull { it.name == n } }.toSet(),
             minutes = f[8].toInt(), setupDone = f[9].toBoolean(),
+            hasRoller = f.getOrNull(10).toBoolean(), strengthen = f.getOrNull(11)?.takeIf { it != "auto" }?.toBoolean(),
         )
     },
 )
@@ -116,6 +118,12 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
                     ToggleRow("No floor exercises", "Standing stretches only.", draft.noFloor) { draft = draft.copy(noFloor = it) }
                     ToggleRow("No kneeling", "Leaves out kneeling and hands-and-knees.", draft.noKneeling) { draft = draft.copy(noKneeling = it) }
                     ToggleRow("I have a wall to use", "Some stretches lean on a wall.", draft.hasWall) { draft = draft.copy(hasWall = it) }
+                    ToggleRow("I have a foam roller", "Adds a minute of rolling to warm-ups and cool-downs.", draft.hasRoller) { draft = draft.copy(hasRoller = it) }
+                    ToggleRow(
+                        "Strengthen block",
+                        "Short strength holds at the end of routines. On by default for Desk and hypermobility.",
+                        draft.strengthenOn,
+                    ) { draft = draft.copy(strengthen = it) }
                 }
                 3 -> {
                     Heading("Do any of these apply to you?", "Your answers stay on this phone. Stretch is not medical advice.")

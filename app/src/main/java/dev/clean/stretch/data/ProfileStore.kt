@@ -1,5 +1,6 @@
 package dev.clean.stretch.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -27,6 +28,9 @@ data class ProfileEntity(
     val minutes: Int,
     val setupDone: Boolean,
     val updatedAt: Long,
+    @ColumnInfo(defaultValue = "0") val hasRoller: Boolean = false,
+    /** 1 = on, 0 = off, null = automatic. */
+    val strengthen: Boolean? = null,
 )
 
 @Dao
@@ -59,6 +63,8 @@ object ProfileMapper {
         conditions = decodeSet<Condition>(e.conditions),
         minutes = e.minutes,
         setupDone = e.setupDone,
+        hasRoller = e.hasRoller,
+        strengthen = e.strengthen,
     )
 
     fun toEntity(p: Profile, now: Long) = ProfileEntity(
@@ -73,6 +79,8 @@ object ProfileMapper {
         minutes = p.minutes,
         setupDone = p.setupDone,
         updatedAt = now,
+        hasRoller = p.hasRoller,
+        strengthen = p.strengthen,
     )
 }
 

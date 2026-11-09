@@ -27,9 +27,15 @@ enum class Position(val label: String) {
 
 enum class Equipment(val label: String) { None("No equipment"), Wall("Wall"), Chair("Chair"), Strap("Strap or towel"), FoamRoller("Foam roller") }
 
-enum class StretchKind(val label: String) { Static("Hold"), Dynamic("Flow") }
+/**
+ * Static and Dynamic are stretches. Strengthen = timed strength/control holds (P-5).
+ * Roll = paced foam rolling (P-10). Neither counts toward per-area stretch targets.
+ */
+enum class StretchKind(val label: String) { Static("Hold"), Dynamic("Flow"), Strengthen("Strengthen"), Roll("Roll");
+    val isStretch get() = this == Static || this == Dynamic
+}
 
-/** Where props are drawn, in body units relative to the hip (only walls for now). */
+/** Where props are drawn, in body units relative to the hip: a wall (vertical) or a foam roller (circle on the floor). */
 data class Prop(val equipment: Equipment, val x: Float)
 
 /**

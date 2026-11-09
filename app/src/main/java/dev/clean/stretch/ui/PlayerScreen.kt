@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import dev.clean.stretch.R
 import dev.clean.stretch.catalog.SampleCatalog
 import dev.clean.stretch.catalog.Stretch
+import dev.clean.stretch.catalog.StretchKind
+import dev.clean.stretch.plan.Generator
 import dev.clean.stretch.data.Checkpoint
 import dev.clean.stretch.data.StepRecord
 import dev.clean.stretch.data.StepRecords
@@ -108,7 +110,12 @@ fun buildSteps(keys: List<String>, firstSide: Side = Side.Right, holdMs: Long = 
                 else -> SETUP_NEW_POSITION_MS
             }
             steps += Step(s, side, setup = true, setupMs = setupMs)
-            steps += Step(s, side, setup = false, holdMs = holdMs)
+            val ms = when (s.kind) {
+                StretchKind.Roll -> Generator.ROLL_SECONDS * 1000L
+                StretchKind.Strengthen -> Generator.STRENGTHEN_SECONDS * 1000L
+                else -> holdMs
+            }
+            steps += Step(s, side, setup = false, holdMs = ms)
         }
         previous = s
     }
@@ -234,7 +241,7 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
         if (finished) { cues.say(VoiceLines.COMPLETE); return@LaunchedEffect }
         val s = steps[index]
         if (s.setup) cues.say(VoiceLines.setup(s.stretch, s.side))
-        else cues.say(VoiceLines.hold(s.baseMs / 1000))
+        else cues.say(if (s.stretch.kind == StretchKind.Roll) VoiceLines.roll(s.baseMs / 1000) else VoiceLines.hold(s.baseMs / 1000))
     }
 
     if (finished) {
@@ -385,6 +392,8 @@ private fun cueFor(step: Step, t: Long, reduced: Boolean): String {
     val s = step.stretch
     if (step.setup) return s.cues.firstOrNull() ?: s.summary
     if (t < Timing.ENTER_MS) return s.cues.getOrElse(1) { s.summary }
+    if (s.kind == StretchKind.Roll) return "Roll slowly, about 3 seconds each way. Firm, but you can still breathe slowly."
+    if (s.kind == StretchKind.Strengthen) return "Hold steady and keep breathing."
     if (s.motion.kind == MotionKind.Flow) return "Move slowly with your breath."
     if (reduced) return "Hold at mild tension. Breathe slowly."
     val inBreath = (t - Timing.ENTER_MS) % Timing.BREATH_MS

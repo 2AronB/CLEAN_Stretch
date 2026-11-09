@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import dev.clean.stretch.catalog.Equipment
 import dev.clean.stretch.catalog.Prop
 import dev.clean.stretch.figure.Body
 import dev.clean.stretch.figure.Box
@@ -33,6 +34,9 @@ import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.Vec
 import kotlin.math.max
 import kotlin.math.min
+
+/** Foam roller radius in body units (about a 16 cm roller). */
+const val ROLLER_RADIUS = 8f
 
 /** Colors for one drawing of the figure. Defaults come from the current Material theme. */
 data class FigureColors(val body: Color, val far: Color, val highlight: Color, val halo: Color, val floor: Color, val prop: Color)
@@ -129,7 +133,11 @@ private fun DrawScope.drawFigure(
     val floorY = map(Vec(0f, 0f)).y
     drawLine(c.floor, Offset(size.width * 0.06f, floorY), Offset(size.width * 0.94f, floorY), strokeWidth = 2.5f * scale / 2f, cap = StrokeCap.Round)
 
-    prop?.let {
+    prop?.takeIf { it.equipment == Equipment.FoamRoller }?.let {
+        // Foam roller: a circle resting on the floor, drawn behind the body.
+        drawCircle(color = c.prop, radius = ROLLER_RADIUS * scale, center = map(Vec(it.x, -ROLLER_RADIUS)))
+    }
+    prop?.takeIf { it.equipment == Equipment.Wall }?.let {
         val p = map(Vec(it.x, 0f))
         val w = 5f * scale
         drawRoundRect(

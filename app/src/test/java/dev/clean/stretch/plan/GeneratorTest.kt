@@ -73,4 +73,28 @@ class GeneratorTest {
         assertTrue(alts.isNotEmpty())
         assertTrue(alts.none { it.key == "standing_quad" })
     }
+
+    @Test
+    fun rollingOnlyWithARollerAndNotOnTheSpineForOsteoporosis() {
+        fun keys(p: Profile, k: RoutineKind) = Generator.generate(p, k, minutes = 15).keys
+        assertTrue(keys(Profile(), RoutineKind.CoolDown).none { it.startsWith("roll_") })
+        val withRoller = keys(Profile(hasRoller = true, focus = setOf(Region.Back)), RoutineKind.CoolDown)
+        assertEquals("roll_upper_back", withRoller.first())
+        val bones = Profile(hasRoller = true, focus = setOf(Region.Back), conditions = setOf(Condition.Osteoporosis))
+        assertTrue(keys(bones, RoutineKind.CoolDown).none { it == "roll_upper_back" })
+    }
+
+    @Test
+    fun strengthenBlockFollowsTheGoalAndSwitch() {
+        fun strengths(p: Profile) = Generator.generate(p, RoutineKind.Full).keys.mapNotNull { SampleCatalog.byKey(it) }.filter { it.kind == dev.clean.stretch.catalog.StretchKind.Strengthen }
+        assertTrue(strengths(Profile()).isEmpty())
+        assertTrue(strengths(Profile(goal = Goal.Desk)).isNotEmpty())
+        assertTrue(strengths(Profile(conditions = setOf(Condition.Hypermobility))).isNotEmpty())
+        assertTrue(strengths(Profile(goal = Goal.Desk, strengthen = false)).isEmpty())
+        assertTrue(strengths(Profile(strengthen = true)).isNotEmpty())
+        // The block comes last and still fits the time budget.
+        val r = Generator.generate(Profile(goal = Goal.Desk, minutes = 10), RoutineKind.Full)
+        assertTrue(Generator.estimateMinutes(r.keys, r.holdSeconds) <= 10)
+        assertEquals(dev.clean.stretch.catalog.StretchKind.Strengthen, SampleCatalog.byKey(r.keys.last())!!.kind)
+    }
 }

@@ -39,7 +39,8 @@ class CatalogTest {
 
     @Test
     fun wallPropsAreOnlyUsedWithWallEquipment() {
-        all.filter { it.prop != null }.forEach { assertEquals(it.key, Equipment.Wall, it.equipment) }
+        all.filter { it.prop != null }.forEach { assertEquals(it.key, it.prop!!.equipment, it.equipment) }
+        all.filter { it.kind == StretchKind.Roll }.forEach { assertEquals(it.key, Equipment.FoamRoller, it.equipment) }
     }
 
     @Test

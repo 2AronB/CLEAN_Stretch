@@ -42,7 +42,12 @@ data class Profile(
     val conditions: Set<Condition> = emptySet(),
     val minutes: Int = 10,
     val setupDone: Boolean = false,
+    val hasRoller: Boolean = false,
+    /** Strengthen block: null = automatic (on for Desk or hypermobility, P-5). */
+    val strengthen: Boolean? = null,
 ) {
+    val strengthenOn: Boolean get() = strengthen ?: (goal == Goal.Desk || Condition.Hypermobility in conditions)
+
     /** Focus areas the user picked, or the goal's defaults. Empty means whole body. */
     val effectiveFocus: Set<Region> get() = focus.ifEmpty { goal.defaultFocus }
 }

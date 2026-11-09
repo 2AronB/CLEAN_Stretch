@@ -107,12 +107,12 @@ abstract class HistoryDao {
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
 }
 
-/** v1: sessions. v2: adds profile. v3: adds saved routines. v4: adds ROM checks. Automatic migrations; existing data is kept. */
+/** v1: sessions. v2: adds profile. v3: adds saved routines. v4: adds ROM checks. v5: profile gets foam roller + strengthen columns. Automatic migrations; existing data is kept. */
 @Database(
     entities = [SessionEntity::class, SessionStepEntity::class, ProfileEntity::class, SavedRoutineEntity::class, RomCheckEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)],
 )
 abstract class StretchDatabase : RoomDatabase() {
     abstract fun history(): HistoryDao

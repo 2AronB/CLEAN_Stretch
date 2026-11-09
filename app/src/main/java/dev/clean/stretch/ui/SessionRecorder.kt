@@ -23,7 +23,8 @@ object SessionRecorder {
                     stretchKey = step.stretch.key,
                     stretchName = step.stretch.name,
                     side = when (step.side) { Side.Both -> "both"; Side.Left -> "left"; Side.Right -> "right" },
-                    primaryRegions = step.stretch.primary.map { it.region.name }.distinct().joinToString(","),
+                    // Strengthen and rolling time counts toward minutes and streaks, not per-area stretch targets (P-5, P-10).
+                    primaryRegions = if (step.stretch.kind.isStretch) step.stretch.primary.map { it.region.name }.distinct().joinToString(",") else "",
                     muscles = step.stretch.muscles.joinToString(",") { it.name },
                     plannedSeconds = (step.holdMs / 1000).toInt(),
                     actualSeconds = (r.heldMs / 1000).toInt(),

@@ -759,12 +759,250 @@ object SampleCatalog {
         ),
     )
 
+    // ---- S8: Strengthen holds (P-5, timed, no rep counting) and foam rolling (P-10).
+
+    val chinTuck = Stretch(
+        key = "chin_tuck",
+        name = "Chin tuck hold",
+        kind = StretchKind.Strengthen,
+        sided = false,
+        primary = listOf(Muscle.Neck),
+        secondary = listOf(Muscle.UpperBack),
+        position = Position.Standing,
+        highlight = setOf(Segment.Neck),
+        summary = "Glide your head straight back, making a gentle double chin, and hold.",
+        cues = listOf(
+            "Stand or sit tall and look straight ahead.",
+            "Glide your head straight back, as if making a double chin.",
+            "Keep your eyes level. Don't tip your head down.",
+            "Hold gently and keep breathing.",
+        ),
+        sourceIds = listOf("S19", "S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(head = -8f, spine = -2f, nearElbow = 6f, farElbow = 6f),
+            deep = Pose(head = -10f, spine = -3f, nearElbow = 6f, farElbow = 6f),
+        ),
+    )
+
+    val wallAngel = Stretch(
+        key = "wall_angel",
+        name = "Wall angel hold",
+        kind = StretchKind.Strengthen,
+        sided = false,
+        primary = listOf(Muscle.UpperBack),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        equipment = Equipment.Wall,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm),
+        summary = "Back against a wall, slide your arms up the wall and hold them there.",
+        cues = listOf(
+            "Stand with your back, head and bottom against a wall.",
+            "Bend your elbows and rest your arms on the wall, like goalposts.",
+            "Slide your arms up as far as you can while keeping them touching the wall.",
+            "Hold there and breathe. Keep your lower back gently against the wall.",
+        ),
+        sourceIds = listOf("S19", "S9"),
+        prop = Prop(Equipment.Wall, x = -14f),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 90f, nearElbow = 90f, farShoulder = 88f, farElbow = 92f),
+            stretch = Pose(nearShoulder = 168f, nearElbow = 30f, farShoulder = 166f, farElbow = 32f),
+            deep = Pose(nearShoulder = 174f, nearElbow = 24f, farShoulder = 172f, farElbow = 26f),
+        ),
+    )
+
+    val activeLegRaise = Stretch(
+        key = "active_leg_raise",
+        name = "Active leg raise",
+        kind = StretchKind.Strengthen,
+        sided = true,
+        primary = listOf(Muscle.HipFlexors),
+        secondary = listOf(Muscle.Hamstrings, Muscle.Abdominals),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Lying on your back, lift one straight leg using your own muscles and hold it.",
+        cues = listOf(
+            "Lie on your back with both legs long.",
+            "Tighten your stomach gently and lift one straight leg as high as you can without help.",
+            "Keep the other leg relaxed on the floor.",
+            "Hold steady and keep breathing.",
+        ),
+        sourceIds = listOf("S9", "S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 145f, nearKnee = 3f, farHip = 90f),
+            deep = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 150f, nearKnee = 3f, farHip = 90f),
+        ),
+    )
+
+    val gluteBridge = Stretch(
+        key = "glute_bridge",
+        name = "Glute bridge hold",
+        kind = StretchKind.Strengthen,
+        sided = false,
+        primary = listOf(Muscle.Glutes),
+        secondary = listOf(Muscle.Hamstrings, Muscle.LowerBack),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh, Segment.Torso),
+        summary = "Lying on your back with knees bent, lift your hips and hold.",
+        cues = listOf(
+            "Lie on your back with your knees bent and feet flat.",
+            "Squeeze your buttocks and lift your hips until your body is a straight line from shoulders to knees.",
+            "Don't arch your lower back.",
+            "Hold steady and keep breathing.",
+        ),
+        sourceIds = listOf("S9", "S30"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
+            stretch = Pose(torso = -60f, head = -30f, nearShoulder = -35f, nearElbow = 2f, farShoulder = -35f, farElbow = 2f, nearHip = 100f, nearKnee = 129f, nearAnkle = 29f, farHip = 100f, farKnee = 129f, farAnkle = 29f),
+            deep = Pose(torso = -62f, head = -28f, nearShoulder = -37f, nearElbow = 2f, farShoulder = -37f, farElbow = 2f, nearHip = 101f, nearKnee = 130f, nearAnkle = 29f, farHip = 101f, farKnee = 130f, farAnkle = 29f),
+        ),
+    )
+
+    val plank = Stretch(
+        key = "plank",
+        name = "Forearm plank",
+        kind = StretchKind.Strengthen,
+        sided = false,
+        primary = listOf(Muscle.Abdominals),
+        secondary = listOf(Muscle.Shoulders, Muscle.Glutes),
+        position = Position.HandsAndKnees,
+        level = 2,
+        highlight = setOf(Segment.Torso),
+        summary = "On your forearms and toes, hold your body in one straight line.",
+        cues = listOf(
+            "Start on your forearms and knees, elbows under your shoulders.",
+            "Step your feet back so your body is one straight line from head to heels.",
+            "Gently tighten your stomach and buttocks. Don't let your hips sag.",
+            "Hold steady and keep breathing. Drop to your knees if you need to.",
+        ),
+        sourceIds = listOf("S9", "S30"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 103f, nearShoulder = 77f, farShoulder = 77f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            stretch = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -6f, farHip = -84f, farAnkle = -6f),
+            deep = Pose(torso = 96f, spine = -1f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -6f, farHip = -84f, farAnkle = -6f),
+        ),
+    )
+
+    val calfRaiseHold = Stretch(
+        key = "calf_raise_hold",
+        name = "Calf raise hold",
+        kind = StretchKind.Strengthen,
+        sided = false,
+        primary = listOf(Muscle.Calves),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearShin, Segment.FarShin),
+        summary = "Rise onto the balls of your feet and hold.",
+        cues = listOf(
+            "Stand tall, lightly holding a wall or chair for balance.",
+            "Rise slowly onto the balls of your feet.",
+            "Hold at the top, keeping your ankles straight rather than rolling out.",
+            "Breathe steadily. Lower slowly when the time is up.",
+        ),
+        sourceIds = listOf("S9", "S10"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearElbow = 6f, farElbow = 6f, nearAnkle = -50f, farAnkle = -50f),
+            deep = Pose(nearElbow = 6f, farElbow = 6f, nearAnkle = -55f, farAnkle = -55f),
+        ),
+    )
+
+    val rollUpperBack = Stretch(
+        key = "roll_upper_back",
+        name = "Roll: upper back",
+        kind = StretchKind.Roll,
+        sided = false,
+        primary = listOf(Muscle.UpperBack),
+        position = Position.Lying,
+        equipment = Equipment.FoamRoller,
+        highlight = setOf(Segment.Torso),
+        summary = "Lie with the roller across your upper back and roll slowly between your shoulder blades.",
+        cues = listOf(
+            "Sit in front of the roller, then lie back so it's across your upper back.",
+            "Support your head with your hands, knees bent and feet flat.",
+            "Lift your hips a little and roll slowly, about 3 seconds each way.",
+            "Use firm pressure where you can still breathe slowly. Ease off if it feels sharp.",
+        ),
+        cautions = listOf("Don't roll over joints, bones or your lower spine. Stop for numbness, tingling or sharp pain.", "Keep the roller between your shoulder blades, not on your neck or lower back."),
+        sourceIds = listOf("S34", "S36", "S44"),
+        prop = Prop(Equipment.FoamRoller, x = -35f),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
+            stretch = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f),
+            deep = Pose(torso = -115f, nearShoulder = 160f, nearElbow = 140f, farShoulder = 158f, farElbow = 140f, nearHip = 130f, nearKnee = 90f, nearAnkle = -40f, farHip = 130f, farKnee = 90f, farAnkle = -40f, shiftX = 6f),
+        ),
+    )
+
+    val rollCalves = Stretch(
+        key = "roll_calves",
+        name = "Roll: calves",
+        kind = StretchKind.Roll,
+        sided = false,
+        primary = listOf(Muscle.Calves),
+        position = Position.Seated,
+        equipment = Equipment.FoamRoller,
+        highlight = setOf(Segment.NearShin),
+        summary = "Sit with the roller under your calves, lift your hips and roll from ankle to knee.",
+        cues = listOf(
+            "Sit with your legs long and the roller under your calves.",
+            "Put your hands on the floor behind you and lift your hips.",
+            "Roll slowly from just above the ankles to just below the knees, about 3 seconds each way.",
+            "Use firm pressure where you can still breathe slowly. Ease off if it feels sharp.",
+        ),
+        cautions = listOf("Don't roll over joints, bones or your lower spine. Stop for numbness, tingling or sharp pain."),
+        sourceIds = listOf("S34", "S36", "S44"),
+        prop = Prop(Equipment.FoamRoller, x = 60f),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(torso = 230f, head = -45f, nearShoulder = -71f, nearElbow = 10f, farShoulder = -71f, farElbow = 10f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f),
+            deep = Pose(torso = 230f, head = -45f, nearShoulder = -71f, farShoulder = -71f, nearHip = 90f, farHip = 90f, shiftX = -15f),
+        ),
+    )
+
+    val rollQuads = Stretch(
+        key = "roll_quads",
+        name = "Roll: front of thighs",
+        kind = StretchKind.Roll,
+        sided = false,
+        primary = listOf(Muscle.Quadriceps),
+        secondary = listOf(Muscle.HipFlexors),
+        position = Position.Lying,
+        equipment = Equipment.FoamRoller,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Face down on your forearms with the roller under your thighs, and roll from hip to knee.",
+        cues = listOf(
+            "Lie face down on your forearms with the roller under the front of your thighs.",
+            "Keep your stomach gently tight so your back doesn't sag.",
+            "Roll slowly from just below the hips to just above the knees, about 3 seconds each way.",
+            "Use firm pressure where you can still breathe slowly. Ease off if it feels sharp.",
+        ),
+        cautions = listOf("Don't roll over joints, bones or your lower spine. Stop for numbness, tingling or sharp pain."),
+        sourceIds = listOf("S34", "S36", "S44"),
+        prop = Prop(Equipment.FoamRoller, x = -22f),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
+            stretch = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f),
+            deep = Pose(torso = 96f, nearShoulder = 84f, nearElbow = 90f, farShoulder = 84f, farElbow = 90f, nearHip = -84f, nearAnkle = -90f, farHip = -84f, farAnkle = -90f, shiftX = 12f),
+        ),
+    )
+
     val all: List<Stretch> = listOf(
         seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow,
         neckFlexion, chestOpener, wallLat, kneeToChest, butterfly, bentKneeCalf, standingHamstring,
         sphinx, lyingHamstring, downwardDog,
         upperBack, standingLunge, overheadReach, standingBackBend, standingKneeHug,
         sideLyingQuad, kneelingQuad, towelCalf, wallChest, cobra, crossBodyShoulder, puppy,
+        chinTuck, wallAngel, activeLegRaise, gluteBridge, plank, calfRaiseHold,
+        rollUpperBack, rollCalves, rollQuads,
     )
 
 

@@ -40,7 +40,7 @@ object BackupCodec {
                 mapOf(
                     "goal" to p.goal, "olderAdult" to p.olderAdult, "focus" to p.focus, "avoid" to p.avoid, "noFloor" to p.noFloor,
                     "noKneeling" to p.noKneeling, "hasWall" to p.hasWall, "conditions" to p.conditions, "minutes" to p.minutes,
-                    "setupDone" to p.setupDone, "updatedAt" to p.updatedAt,
+                    "setupDone" to p.setupDone, "updatedAt" to p.updatedAt, "hasRoller" to p.hasRoller, "strengthen" to p.strengthen,
                 )
             },
             "settings" to data.settings,
@@ -88,6 +88,7 @@ object BackupCodec {
                 goal = it.str("goal"), olderAdult = it.bool("olderAdult"), focus = it.str("focus"), avoid = it.str("avoid"),
                 noFloor = it.bool("noFloor"), noKneeling = it.bool("noKneeling"), hasWall = it.bool("hasWall"),
                 conditions = it.str("conditions"), minutes = it.int("minutes"), setupDone = it.bool("setupDone"), updatedAt = it.long("updatedAt"),
+                hasRoller = it["hasRoller"] as? Boolean ?: false, strengthen = it["strengthen"] as? Boolean,
             )
         }
         val settings = (root["settings"] as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v.toString() } ?: emptyMap()

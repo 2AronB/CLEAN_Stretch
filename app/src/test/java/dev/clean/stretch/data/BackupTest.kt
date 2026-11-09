@@ -16,7 +16,7 @@ class BackupTest {
                 primaryRegions = "Back", muscles = "UpperBack,LowerBack", plannedSeconds = 40, actualSeconds = 40, skipped = false),
         ),
         profile = ProfileEntity(goal = "Desk", olderAdult = true, focus = "Neck,Back", avoid = "", noFloor = true, noKneeling = false,
-            hasWall = true, conditions = "Pregnancy", minutes = 10, setupDone = true, updatedAt = 5L),
+            hasWall = true, conditions = "Pregnancy", minutes = 10, setupDone = true, updatedAt = 5L, hasRoller = true, strengthen = false),
         settings = mapOf("theme_mode" to "2", "cue_voice" to "false"),
         routines = listOf(SavedRoutineEntity(id = 3, name = "Morning, mine", kind = "Quick", holdSeconds = 30, keys = "neck_flexion,overhead_reach", createdAt = 7L)),
         romChecks = listOf(RomCheckEntity(id = 4, testKey = "toe_reach", side = "both", level = 3, takenAt = 8L)),

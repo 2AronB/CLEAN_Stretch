@@ -65,6 +65,20 @@ class CatalogTest {
         }
     }
 
+    @Test
+    fun variantPairsResolveAndShareAnArea() {
+        SampleCatalog.variantPairs.forEach { (easy, hard) ->
+            val e = SampleCatalog.byKey(easy)
+            val h = SampleCatalog.byKey(hard)
+            assertNotNull(easy, e); assertNotNull(hard, h)
+            assertTrue("$easy/$hard self", easy != hard)
+            assertTrue("$easy/$hard area", e!!.primary.map { it.region }.intersect(h!!.primary.map { it.region }.toSet()).isNotEmpty())
+            assertTrue("$easy/$hard level", e.level <= h.level)
+        }
+        assertEquals("seated_forward_fold", SampleCatalog.harder("standing_hamstring")?.key)
+        assertEquals("lying_hamstring", SampleCatalog.easier("standing_hamstring")?.key)
+    }
+
     @Suppress("unused")
     private val bodyLoaded = Body.TORSO
 }

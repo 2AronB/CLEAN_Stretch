@@ -2,6 +2,8 @@ package dev.clean.stretch.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +48,7 @@ import kotlin.random.Random
  * Review a recommended routine before starting (D-029): reorder, swap, remove, shuffle or change
  * the length. Only stretches allowed by the user's limits are ever offered.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RoutinePreviewScreen(
     route: Route.Preview,
@@ -110,7 +112,10 @@ fun RoutinePreviewScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        val allowedKeys = Generator.allowed(profile, route.kind).map { it.key }.toSet()
+                        val easier = SampleCatalog.easier(key)?.takeIf { it.key in allowedKeys && it.key !in keys }
+                        val harder = SampleCatalog.harder(key)?.takeIf { it.key in allowedKeys && it.key !in keys }
+                        FlowRow(verticalArrangement = Arrangement.Center) {
                             TextButton(onClick = {
                                 val alts = Generator.alternatives(profile, route.kind, key, keys)
                                 if (alts.isNotEmpty()) {
@@ -119,7 +124,8 @@ fun RoutinePreviewScreen(
                                 }
                             }) { Text("Swap") }
                             TextButton(onClick = { set(keys - key) }, enabled = keys.size > 1) { Text("Remove") }
-                            Spacer(Modifier.weight(1f))
+                            easier?.let { e -> TextButton(onClick = { set(keys.toMutableList().also { it[i] = e.key }) }) { Text("Easier") } }
+                            harder?.let { h -> TextButton(onClick = { set(keys.toMutableList().also { it[i] = h.key }) }) { Text("Harder") } }
                             TextButton(onClick = { set(keys.toMutableList().also { it.add(i - 1, it.removeAt(i)) }) }, enabled = i > 0) { Text("Up") }
                             TextButton(onClick = { set(keys.toMutableList().also { it.add(i + 1, it.removeAt(i)) }) }, enabled = i < keys.lastIndex) { Text("Down") }
                         }

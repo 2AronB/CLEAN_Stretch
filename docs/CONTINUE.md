@@ -206,3 +206,20 @@ rechecked on the emulator:
   older v1 backup files still restore.
 - Checked: 35/35 tests (backup round-trip includes a routine), lint clean; emulator: v2→v3
   upgrade kept data, save → listed on Today, delete → confirm → removed, no crashes.
+
+## S3 round 4 (2026-11-08): variants + 7 stretches — 28 total
+- New: Side-lying quad, Kneeling quad (level 2), Seated towel calf (strap), Wall chest (wall
+  behind), Cobra (level 2), Cross-body shoulder, Puppy. Poses checked on the emulator
+  (side-lying quad leg angles fixed).
+- Easier → harder pairs (`SampleCatalog.variantPairs`, EVIDENCE §5.4): hamstrings lying →
+  standing → seated fold → downward dog; quads side-lying → standing → kneeling; hip flexors
+  standing lunge → half-kneeling; chest opener → wall chest; overhead reach → wall lat → puppy;
+  standing back bend → sphinx → cobra; towel calf → wall calf. CatalogTest checks pairs
+  resolve, share a main area and never go down in level.
+- Detail screen shows "Other versions" links; review screen offers Easier/Harder per stretch
+  (only versions the user's limits allow and not already in the routine).
+- 86 voice clips (2.0 MB). Checked: 36/36 tests, lint clean, detail links on emulator.
+  **Not checked on emulator:** the Easier/Harder buttons on the review screen (the UI
+  automation was unreliable this round); owner to try.
+- Still open for S3: adductor and neck variants, chair versions (needs a chair prop),
+  wrists/forearms for Desk.

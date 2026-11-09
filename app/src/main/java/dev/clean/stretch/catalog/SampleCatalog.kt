@@ -570,13 +570,225 @@ object SampleCatalog {
         ),
     )
 
+    // ---- Round 4 (S3): easier/harder versions and remaining gaps (quads, chest, shoulders, core).
+
+    val sideLyingQuad = Stretch(
+        key = "side_lying_quad",
+        name = "Side-lying quad stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Quadriceps),
+        secondary = listOf(Muscle.HipFlexors),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Lie on your side and pull your top heel toward your buttock. No balancing needed.",
+        cues = listOf(
+            "Lie on your side with your head resting on your lower arm.",
+            "Bend your top knee and hold that ankle behind you.",
+            "Keep your knees close together and gently push your hips forward.",
+            "Feel the front of your thigh. Breathe slowly.",
+        ),
+        cautions = listOf("Loop a towel around your ankle if you can't reach it."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 170f, farElbow = 100f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(torso = -90f, nearShoulder = 16f, nearElbow = 6f, farShoulder = 170f, farElbow = 100f, nearHip = 100f, nearKnee = 200f, farHip = 90f),
+            deep = Pose(torso = -90f, nearShoulder = 18f, nearElbow = 6f, farShoulder = 170f, farElbow = 100f, nearHip = 104f, nearKnee = 205f, farHip = 90f),
+        ),
+    )
+
+    val kneelingQuad = Stretch(
+        key = "kneeling_quad",
+        name = "Kneeling quad stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Quadriceps),
+        secondary = listOf(Muscle.HipFlexors),
+        position = Position.Kneeling,
+        level = 2,
+        highlight = setOf(Segment.NearThigh),
+        summary = "From a half-kneel, reach back and draw your back foot up toward your buttock.",
+        cues = listOf(
+            "Kneel on one knee with the other foot flat in front of you.",
+            "Tuck your hips under, as if zipping up tight jeans.",
+            "Reach back with the same-side hand and lift your back foot.",
+            "Feel the front of the back thigh. Ease off if your knee complains.",
+        ),
+        cautions = listOf("Put a folded towel under your knee. Use a towel around the foot if you can't reach it."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 40f, nearElbow = 30f, farShoulder = 46f, farElbow = 34f, nearHip = -5f, nearKnee = 85f, nearAnkle = -95f, farHip = 88f, farKnee = 88f),
+            stretch = Pose(torso = 182f, nearShoulder = -26f, nearElbow = 5f, farShoulder = 50f, farElbow = 40f, nearHip = -30f, nearKnee = 150f, nearAnkle = -20f, farHip = 92f, farKnee = 117f, farAnkle = 25f),
+            deep = Pose(torso = 184f, nearShoulder = -22f, nearElbow = 5f, farShoulder = 52f, farElbow = 42f, nearHip = -35f, nearKnee = 155f, nearAnkle = -20f, farHip = 95f, farKnee = 123f, farAnkle = 28f),
+        ),
+    )
+
+    val towelCalf = Stretch(
+        key = "towel_calf",
+        name = "Seated towel calf stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Calves),
+        secondary = listOf(Muscle.Hamstrings),
+        position = Position.Seated,
+        equipment = Equipment.Strap,
+        highlight = setOf(Segment.NearShin),
+        summary = "Sit with legs long, loop a towel around your feet and draw your toes toward you.",
+        cues = listOf(
+            "Sit tall with your legs straight out in front.",
+            "Loop a towel or strap around the balls of your feet.",
+            "Gently pull the towel so your toes come toward you.",
+            "Keep your back tall. Feel your calves.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 38f, nearElbow = 28f, farShoulder = 34f, farElbow = 30f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(torso = 168f, spine = 2f, head = -6f, nearShoulder = 80f, nearElbow = 10f, farShoulder = 78f, farElbow = 12f, nearHip = 90f, nearAnkle = 25f, farHip = 90f, farAnkle = 25f),
+            deep = Pose(torso = 162f, spine = 3f, head = -8f, nearShoulder = 84f, nearElbow = 8f, farShoulder = 82f, farElbow = 10f, nearHip = 90f, nearAnkle = 30f, farHip = 90f, farAnkle = 30f),
+        ),
+    )
+
+    val wallChest = Stretch(
+        key = "wall_chest",
+        name = "Wall chest stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Chest),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        equipment = Equipment.Wall,
+        highlight = setOf(Segment.NearUpperArm, Segment.Torso),
+        summary = "Rest one arm on a wall behind you and turn your chest gently away.",
+        cues = listOf(
+            "Stand beside a wall and place one palm on it, a little behind you at shoulder height.",
+            "Keep the arm long and your shoulder down.",
+            "Turn your chest slowly away from the wall.",
+            "Feel the front of your chest and shoulder. Breathe slowly.",
+        ),
+        cautions = listOf("Lower your arm if you feel tingling down the arm."),
+        sourceIds = listOf("S3", "S2"),
+        prop = Prop(Equipment.Wall, x = -60f),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = -40f, nearElbow = 10f, farElbow = 6f),
+            stretch = Pose(torso = 176f, head = 4f, nearShoulder = -85f, nearElbow = 4f, farShoulder = 10f, farElbow = 10f),
+            deep = Pose(torso = 173f, head = 5f, nearShoulder = -95f, nearElbow = 2f, farShoulder = 12f, farElbow = 10f),
+        ),
+    )
+
+    val cobra = Stretch(
+        key = "cobra",
+        name = "Cobra stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Abdominals),
+        secondary = listOf(Muscle.HipFlexors),
+        position = Position.Lying,
+        level = 2,
+        highlight = setOf(Segment.Torso),
+        summary = "Like the sphinx, but press up on your hands for a stronger stretch.",
+        cues = listOf(
+            "Lie on your front with your hands under your shoulders.",
+            "Press up slowly, keeping your hips on the floor.",
+            "Straighten your arms only as far as feels comfortable.",
+            "Feel the front of your body. Keep your shoulders down.",
+        ),
+        cautions = listOf("Stay in the sphinx instead if you feel pinching in your lower back."),
+        sourceIds = listOf("S3"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 100f, head = 10f, nearShoulder = 130f, nearElbow = 40f, farShoulder = 130f, farElbow = 40f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
+            stretch = Pose(torso = 140f, spine = -12f, head = 25f, nearShoulder = 73f, farShoulder = 73f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
+            deep = Pose(torso = 145f, spine = -14f, head = 28f, nearShoulder = 62f, farShoulder = 62f, nearHip = -90f, nearAnkle = -90f, farHip = -90f, farAnkle = -90f),
+        ),
+    )
+
+    val crossBodyShoulder = Stretch(
+        key = "cross_body_shoulder",
+        name = "Cross-body shoulder stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.UpperBack),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm),
+        summary = "Bring one arm across your chest and hug it in with the other.",
+        cues = listOf(
+            "Stand or sit tall with your shoulders relaxed.",
+            "Bring one arm straight across your chest.",
+            "Hold it above the elbow with your other hand and draw it in.",
+            "Feel the back of that shoulder. Keep the shoulder down.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 90f, nearElbow = 2f, farShoulder = 70f, farElbow = 100f),
+            deep = Pose(nearShoulder = 95f, nearElbow = 2f, farShoulder = 72f, farElbow = 110f),
+        ),
+    )
+
+    val puppy = Stretch(
+        key = "puppy",
+        name = "Puppy stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Lats),
+        secondary = listOf(Muscle.Shoulders, Muscle.UpperBack),
+        position = Position.HandsAndKnees,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm),
+        summary = "From hands and knees, walk your hands forward and let your chest sink.",
+        cues = listOf(
+            "Start on hands and knees, hips over your knees.",
+            "Walk your hands forward, keeping your hips where they are.",
+            "Let your chest sink toward the floor and rest your forehead down.",
+            "Feel under your arms and along your back. Breathe slowly.",
+        ),
+        cautions = listOf("Put a folded towel under your knees if the floor is hard."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 103f, nearShoulder = 77f, farShoulder = 77f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            stretch = Pose(torso = 60f, spine = -6f, head = -10f, nearShoulder = 186f, farShoulder = 184f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            deep = Pose(torso = 55f, spine = -8f, head = -12f, nearShoulder = 195f, farShoulder = 193f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+        ),
+    )
+
     val all: List<Stretch> = listOf(
         seatedForwardFold, standingQuad, halfKneelingHipFlexor, childsPose, wallCalf, catCow,
         neckFlexion, chestOpener, wallLat, kneeToChest, butterfly, bentKneeCalf, standingHamstring,
         sphinx, lyingHamstring, downwardDog,
         upperBack, standingLunge, overheadReach, standingBackBend, standingKneeHug,
+        sideLyingQuad, kneelingQuad, towelCalf, wallChest, cobra, crossBodyShoulder, puppy,
     )
 
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }
+
+
+    /**
+     * Easier → harder pairs for the same body area (EVIDENCE §5.4). Used for the Easier/Harder
+     * buttons; CatalogTest checks every pair resolves and shares a main area.
+     */
+    val variantPairs: List<Pair<String, String>> = listOf(
+        "lying_hamstring" to "standing_hamstring",
+        "standing_hamstring" to "seated_forward_fold",
+        "seated_forward_fold" to "downward_dog",
+        "side_lying_quad" to "standing_quad",
+        "standing_quad" to "kneeling_quad",
+        "standing_lunge_hip_flexor" to "half_kneeling_hip_flexor",
+        "chest_opener" to "wall_chest",
+        "overhead_reach" to "wall_lat",
+        "wall_lat" to "puppy",
+        "standing_back_bend" to "sphinx",
+        "sphinx" to "cobra",
+        "towel_calf" to "wall_calf",
+    )
+
+    fun easier(key: String): Stretch? = variantPairs.firstOrNull { it.second == key }?.first?.let(::byKey)
+
+    fun harder(key: String): Stretch? = variantPairs.firstOrNull { it.first == key }?.second?.let(::byKey)
 }

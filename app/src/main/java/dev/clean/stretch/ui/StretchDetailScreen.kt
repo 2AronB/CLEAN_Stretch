@@ -50,6 +50,7 @@ fun StretchDetailScreen(
     onBack: () -> Unit,
     onTry: (Route) -> Unit,
     onOpenSources: () -> Unit,
+    onOpenStretch: (String) -> Unit,
 ) {
     val stretch = SampleCatalog.byKey(key)
     if (stretch == null) {
@@ -139,6 +140,14 @@ fun StretchDetailScreen(
             }
 
             Spacer(Modifier.height(20.dp))
+            val easier = SampleCatalog.easier(stretch.key)
+            val harder = SampleCatalog.harder(stretch.key)
+            if (easier != null || harder != null) {
+                Spacer(Modifier.height(20.dp))
+                Text("Other versions", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                easier?.let { e -> VariantLink("Easier", e.name) { onOpenStretch(e.key) } }
+                harder?.let { h -> VariantLink("Harder", h.name) { onOpenStretch(h.key) } }
+            }
             Text(
                 "Sources: " + stretch.sourceIds.mapNotNull { Sources.byId(it)?.short }.joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
@@ -157,5 +166,17 @@ fun StretchDetailScreen(
                 Text(if (stretch.sided) "Try it · both sides" else "Try it")
             }
         }
+    }
+}
+
+@Composable
+private fun VariantLink(label: String, name: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.width(72.dp))
+        Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
     }
 }

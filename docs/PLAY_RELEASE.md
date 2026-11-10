@@ -9,7 +9,7 @@ Play policy pages. Nothing here is legal advice.
 | Item | Status |
 |---|---|
 | Release build with code/resource shrinking | Done (`assembleRelease`, 4.2 MB APK) |
-| Shrunk build tested on a device (`assembleStaging`, separate app) | **To do** |
+| Shrunk build tested on a device (`assembleStaging`, separate app) | Done on emulator 2026-11-09: setup, routine, player (3D), history, delete flow |
 | Upload key created and backed up (owner) | **To do** — see `docs/CONTINUE.md` |
 | App Bundle built (`bundleRelease`) and signed | To do (after the key) |
 | Health-condition wording and limits: final review + current clinical source (D-031, EVIDENCE §9) | **Blocks release** |
@@ -35,8 +35,8 @@ Play policy pages. Nothing here is legal advice.
   to avoid, health-condition yes/no answers, equipment, routine length), range-of-motion check
   answers, saved routines, settings. Android auto-backup is turned off. Users can export a
   backup file themselves; it goes wherever they choose and the app never uploads it.
-- **Deleting data:** uninstalling the app or clearing its storage removes everything. (An
-  in-app "delete my data" button isn't built yet; worth adding before release.)
+- **Deleting data:** Settings → Your data → **Delete my data** (confirm + "can't be undone"
+  tick) erases everything; uninstalling or clearing storage does too.
 
 ## 3. Privacy policy (draft)
 
@@ -59,7 +59,7 @@ Play policy pages. Nothing here is legal advice.
 > **Permissions:** vibration (a short buzz between steps) and notifications (only if you turn on
 > the daily reminder).
 >
-> **Deleting your information:** uninstall Stretch or clear its storage in Android settings.
+> **Deleting your information:** use Settings → Your data → Delete my data, or uninstall Stretch.
 >
 > **Health information:** Stretch is not medical advice and is not a medical device. Answers
 > about health conditions are used only on your phone, to leave out moves that may not suit

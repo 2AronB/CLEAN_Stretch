@@ -443,3 +443,15 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   without touching real data: `.\gradlew.bat :app:assembleStaging`.
 - Checked: `assembleRelease` and `assembleStaging` succeed. **Not yet run:** the shrunk app on a
   device (the only emulator was the 3D thread's; PC had 1.6 GB free).
+
+## Delete my data + shrunk build on a device (2026-11-09)
+- Settings → Your data → **Delete my data** (red). Dialog lists what's erased, suggests a
+  backup first, and "Delete everything" stays disabled until "I understand this can't be
+  undone" is ticked. `BackupManager.deleteEverything()` clears history, profile, saved routines
+  and ROM checks in one transaction, then the unfinished-routine checkpoint and all settings
+  (`AppPreferences.clearAll`), and the reminder is cancelled.
+- Emulator (Pixel_8, staging = shrunk release build, separate app): launched, setup saved,
+  routine started (3D player) and ended → history showed it; delete with box unticked did
+  nothing; ticked → "All your Stretch data has been deleted.", history empty, setup card back.
+  No crashes. 64/64 tests, lint clean.
+- Memory tip: `.\gradlew.bat --stop` after building frees ~5 GB of idle Gradle daemons.

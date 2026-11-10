@@ -85,6 +85,12 @@ class AppPreferences(context: Context) {
         prefs.edit { putBoolean(KEY_STILL, enabled) }
     }
 
+    /** "Delete my data": removes every saved setting and goes back to the defaults. */
+    fun clearAll() {
+        prefs.edit { clear() }
+        importSettings(emptyMap())
+    }
+
     /** Settings for a backup file (S7): every saved key as text. */
     fun exportSettings(): Map<String, String> = prefs.all.mapValues { it.value.toString() }
 

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,7 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
     val scope = rememberCoroutineScope()
     var backupStatus by remember { mutableStateOf<String?>(null) }
     var pendingRestore by remember { mutableStateOf<BackupData?>(null) }
+    var confirmDelete by remember { mutableStateOf(false) }
     val createFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
@@ -169,6 +171,15 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
         Group {
             NavRow("Back up to a file", "History, goals and settings in one file you keep", { createFile.launch("stretch-backup-${java.time.LocalDate.now()}.json") })
             NavRow("Restore from a backup", "Replaces what's on this phone, after you confirm", { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) })
+            Row(
+                Modifier.fillMaxWidth().clickable { confirmDelete = true }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Delete my data", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
+                    Text("Erase everything Stretch has saved on this phone", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             backupStatus?.let {
                 Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
             }
@@ -195,6 +206,25 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             NavRow("Pose Studio", "Tune the animated figure's poses", onOpenStudio)
         }
         Spacer(Modifier.height(24.dp))
+    }
+
+    if (confirmDelete) {
+        DeleteDialog(
+            onCancel = { confirmDelete = false },
+            onConfirm = {
+                confirmDelete = false
+                scope.launch {
+                    backupStatus = try {
+                        backup.deleteEverything()
+                        Reminders.sync(context, prefs)
+                        "All your Stretch data has been deleted."
+                    } catch (e: Exception) {
+                        Log.e("StretchBackup", "Delete failed", e)
+                        "Couldn't delete everything: ${e.message ?: e.javaClass.simpleName}. Nothing was partly removed from your history."
+                    }
+                }
+            },
+        )
     }
 
     pendingRestore?.let { data ->
@@ -267,6 +297,35 @@ private fun RestoreDialog(data: BackupData, onConfirm: () -> Unit, onCancel: () 
             )
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("Replace") } },
+        dismissButton = { TextButton(onClick = onCancel) { Text("Cancel") } },
+    )
+}
+
+@Composable
+private fun DeleteDialog(onConfirm: () -> Unit, onCancel: () -> Unit) {
+    var understood by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("Delete all your data?") },
+        text = {
+            Column {
+                Text(
+                    "This erases your stretching history, goals and limits (including health answers), saved routines, " +
+                        "range-of-motion check-ins, settings, your reminder and any unfinished routine. " +
+                        "Stretch goes back to how it was when first installed.\n\n" +
+                        "If you might want them later, use \"Back up to a file\" first.",
+                )
+                Row(Modifier.fillMaxWidth().clickable { understood = !understood }.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = understood, onCheckedChange = { understood = it })
+                    Text("I understand this can't be undone")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = understood) {
+                Text("Delete everything", color = if (understood) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
         dismissButton = { TextButton(onClick = onCancel) { Text("Cancel") } },
     )
 }

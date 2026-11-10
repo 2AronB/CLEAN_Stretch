@@ -4,7 +4,7 @@ import androidx.room.withTransaction
 import dev.clean.stretch.settings.AppPreferences
 
 /** Reads everything into a backup, and restores a validated backup (S7, R-009). */
-class BackupManager(private val db: StretchDatabase, private val prefs: AppPreferences) {
+class BackupManager(private val db: StretchDatabase, private val prefs: AppPreferences, private val checkpoints: CheckpointStore) {
     suspend fun export(now: Long): String = BackupCodec.encode(
         BackupData(
             sessions = db.history().allSessionsNow(),
@@ -16,6 +16,22 @@ class BackupManager(private val db: StretchDatabase, private val prefs: AppPrefe
         ),
         exportedAt = now,
     )
+
+    /**
+     * "Delete my data" (Play readiness): erases history, profile, saved routines and check-ins in
+     * one transaction, then settings and any unfinished routine. Only ever called after the user
+     * confirms in Settings; the app returns to its first-run state.
+     */
+    suspend fun deleteEverything() {
+        db.withTransaction {
+            db.history().replaceAll(emptyList(), emptyList())
+            db.profile().clear()
+            db.routines().clear()
+            db.romChecks().clear()
+        }
+        checkpoints.clear()
+        prefs.clearAll()
+    }
 
     /** Replaces history and profile in one database transaction, then settings. */
     suspend fun restore(data: BackupData) {

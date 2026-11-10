@@ -21,7 +21,8 @@ class MainActivity : ComponentActivity() {
         Reminders.sync(applicationContext, prefs)
         val db = StretchDatabase.get(applicationContext)
         val history = db.history()
-        val saver = SessionSaver(history, CheckpointStore(applicationContext))
-        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), routines = db.routines(), romChecks = db.romChecks(), saver = saver, backup = BackupManager(db, prefs), activity = this) }
+        val checkpoints = CheckpointStore(applicationContext)
+        val saver = SessionSaver(history, checkpoints)
+        setContent { StretchRoot(prefs = prefs, history = history, profiles = db.profile(), routines = db.routines(), romChecks = db.romChecks(), saver = saver, backup = BackupManager(db, prefs, checkpoints), activity = this) }
     }
 }

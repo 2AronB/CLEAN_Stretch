@@ -16,9 +16,13 @@ through. All stretch work happens on the PC (D-030).
 `Flow` has only two end points. Circles or multi-step sequences need an engine change
 (a keyframe list in `figure/Motion.kt`); talk to the owner first.
 
-## 2. Write the catalog entry (`catalog/SampleCatalog.kt`)
+## 2. Write the catalog entry (`catalog/<Area>Moves.kt`)
 
-Copy a similar entry and fill in every field:
+Each move lives in the file for the body area of its **first** main muscle: `NeckMoves.kt`,
+`ShoulderMoves.kt` (shoulders & chest), `BackMoves.kt` (upper back, lower back, lats),
+`CoreMoves.kt`, `HipMoves.kt` (hip flexors, glutes, inner thigh) or `LegMoves.kt` (quads,
+hamstrings, calves). Separate files let several people (or agents) add moves at the same time
+without editing the same file. Copy a similar entry in that file and fill in every field:
 
 - **`key`**: lowercase with underscores, **permanent**. History, saved routines, backups and
   voice clips refer to it. Never rename or reuse a key.
@@ -37,7 +41,9 @@ Copy a similar entry and fill in every field:
   **`cautions`** (optional; the "stop for sharp pain…" line is added automatically).
 - **`sourceIds`**: at least one ID that exists in `catalog/Sources.kt` (IDs match
   `docs/EVIDENCE.md`). Copy citation text from EVIDENCE.md; never type citations from memory.
-- Add the new value to **`all`** at the bottom of the file.
+- Add the new value to that file's **`all`** list, and to the end of **`SampleCatalog.all`**
+  (library order; new moves go last). `CatalogTest` fails if a move is in the wrong area file
+  or missing from either list.
 
 **Wording rules (EVIDENCE §11):** describe what people do or feel ("feel the front of your
 thigh", "feel looser"). Never claim it prevents injury, speeds recovery, fixes posture,

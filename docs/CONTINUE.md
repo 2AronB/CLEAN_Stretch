@@ -443,3 +443,14 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   without touching real data: `.\gradlew.bat :app:assembleStaging`.
 - Checked: `assembleRelease` and `assembleStaging` succeed. **Not yet run:** the shrunk app on a
   device (the only emulator was the 3D thread's; PC had 1.6 GB free).
+
+## Catalog split by body area (2026-11-09, stretch-library thread)
+- `catalog/SampleCatalog.kt` (1,500 lines) is split into `NeckMoves.kt` (4), `ShoulderMoves.kt`
+  (5), `BackMoves.kt` (12), `CoreMoves.kt` (5), `HipMoves.kt` (13) and `LegMoves.kt` (16), by each
+  move's first main muscle. `SampleCatalog` keeps library order (`all`, unchanged), `byKey`
+  and the easier/harder pairs. Move definitions were copied unchanged (checked by script).
+- New `CatalogTest.everyMoveLivesInItsAreaFileAndIsListedOnce`. `ADDING_STRETCHES.md` §2 updated.
+- Checks run: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` pass (65 tests, fresh
+  run); pose-preview still compiles and runs. One earlier run reported a build failure whose
+  message wasn't kept; it didn't happen again on two more runs.
+- On the branch only; not merged or pushed (the other thread is handling `main`).

@@ -136,5 +136,9 @@ $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
   root: `powershell -ExecutionPolicy Bypass -File tools\pose-preview\build-and-run.ps1 <key> ...`
   (no keys = every stretch). Images land in `tools/pose-preview/out/`.
 - Optional: the emulator (one at a time on this PC; never the owner's phone).
+- Add the move to `docs/REVIEW_LOG.md` as `Not reviewed` (`ReviewLogTest` fails until you do).
+  Changing a move the owner already approved reopens its review: set it back to `Not reviewed`
+  or `Changes requested` with a history line. **Only the owner marks a move `Reviewed`**, with
+  explicit approval such as "no further changes"; see the rules at the top of the log.
 - Add a line to `docs/CONTINUE.md`: what was added, which checks ran, what still needs the
   owner's eyes.

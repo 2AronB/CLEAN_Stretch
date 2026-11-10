@@ -10,6 +10,9 @@ eventual Google Play release (D-028), so build with that in mind.
 Build, test and lint on the owner's PC (Android Studio's JDK), and run Android tests only on an
 emulator — never the owner's phone; never clear app data. All new stretch development (poses,
 cues, voice clips) is done on the PC (D-030). Follow docs/ADDING_STRETCHES.md when adding or changing a stretch.
+Only the owner can mark a move reviewed in docs/REVIEW_LOG.md, and only with explicit approval
+("no further changes", "approved"), quoted verbatim. Feedback or requested changes are never
+approval, even after they're made; record them as "Changes requested".
 
 Use plain language; the owner is learning app development. At most three focused
 questions per round. Distinguish owner requirements, recommendations,

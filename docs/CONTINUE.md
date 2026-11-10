@@ -454,3 +454,20 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   run); pose-preview still compiles and runs. One earlier run reported a build failure whose
   message wasn't kept; it didn't happen again on two more runs.
 - On the branch only; not merged or pushed (the other thread is handling `main`).
+
+## Exercise review log (2026-11-09, owner request)
+- Owner: thread the needle fails the ground contact rule (one arm should likely touch the
+  ground). **Not fixed** (owner: "Don't fix"); recorded as `Changes requested`.
+- New `docs/REVIEW_LOG.md`: one row per move (status, approval date, fingerprint, owner's
+  verbatim approval, open feedback) plus an append-only history. All 55 moves start
+  `Not reviewed` except thread the needle. Rule (also in AGENTS.md): only the owner marks a move
+  `Reviewed`, with explicit words such as "no further changes"; feedback and making changes are
+  never approval.
+- `ReviewLogTest`: every move has exactly one row; statuses are filled in properly; a `Reviewed`
+  move must still match the fingerprint stored at approval (any change to pose, cues, wording,
+  view or sources fails the test until the review is reopened). Current fingerprints are
+  written to `app/build/review-fingerprints.txt`.
+- `app/build.gradle.kts`: unit tests now declare `docs/REVIEW_LOG.md` and
+  `tools/voice/phrases.txt` as inputs. Without this, Gradle reused a cached pass after the log
+  was edited, so a bad row went unnoticed (found while testing the guard).
+- Checked: a planted fake approval with a stale fingerprint fails the test; the real log passes.

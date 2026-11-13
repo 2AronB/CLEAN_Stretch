@@ -67,7 +67,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.util.Locale
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun TodayScreen(
@@ -299,7 +299,7 @@ private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>, daysTarget: I
                     val isToday = day == today
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            day.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                            day.dayOfWeek.getDisplayName(TextStyle.NARROW, LocalConfiguration.current.locales[0]),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

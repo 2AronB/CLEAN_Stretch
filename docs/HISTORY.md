@@ -552,3 +552,14 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - Checks run: 84 JVM tests pass, assembleDebug, lintDebug (no issues); pose-preview of all three
   moves in every view; emulator: library search "wrist" shows exactly the three moves, wrist
   flexor detail screen shows the bent hand. Not checked: how the new clips sound.
+
+## Automatic database-upgrade tests (2026-11-13, D-041)
+- Owner approved `room-testing`; it failed at run time (needs kotlinx-serialization 1.8.1, the
+  app ships 1.7.3 through AndroidX activity), so it was removed again rather than change a
+  shipped library. `app/src/androidTest/.../data/MigrationTest.kt` builds a v1 and a v5 database
+  from `app/schemas` (added as androidTest assets) with real rows, opens them with the current
+  app (Room runs the auto-migrations and validates every table), and reads the rows back through
+  the DAOs, including per-side minutes for a pre-v6 step.
+- Checked the test can fail: with the 5→6 migration removed, it fails; restored.
+- Checks run: 84 JVM tests, assembleDebug, lintDebug (no issues), 2 emulator tests pass. The
+  app stayed installed (leaveApksInstalledAfterRun).

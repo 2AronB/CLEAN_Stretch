@@ -277,10 +277,8 @@ permanent; trends and "not measured" work as today.
   "Changes requested"; owner said not to fix yet, so ask first).
 
 ### 8.6 Reliability and data safety (agent; one approval, M)
-- **Real database-upgrade tests.** Today's upgrade check was manual (old staging build →
-  new). Room's test helper needs the test-only dependency `androidx.room:room-testing`
-  (**needs owner approval**; it isn't shipped in the app). Then a v1→v6 migration test runs
-  on the emulator every time.
+- ~~Real database-upgrade tests~~ **Done 2026-11-13 (D-041):** `MigrationTest` upgrades v1 and
+  v5 databases to the current version on the emulator; no new dependency was needed.
 - Reminder after a phone restart needs `RECEIVE_BOOT_COMPLETED` (**needs owner approval**);
   today the app re-arms it when opened.
 - Small known issues: the finish screen says "Saved to your history" even when every hold was
@@ -307,5 +305,4 @@ biceps → 8.4 → 8.3 → remaining 8.2 muscles → 8.5 → 8.7 → 8.8.
 
 ### Decisions waiting on the owner
 1. Which muscle gets moves next (suggested: shins & ankles).
-2. Approve the test-only `room-testing` dependency for automatic upgrade tests? (recommended)
-3. Approve `RECEIVE_BOOT_COMPLETED` so reminders survive a phone restart? (optional)
+2. Approve `RECEIVE_BOOT_COMPLETED` so reminders survive a phone restart? (optional)

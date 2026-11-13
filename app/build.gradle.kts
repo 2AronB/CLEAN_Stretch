@@ -56,6 +56,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     lint { abortOnError = true }
+    // Database-upgrade tests read every exported schema version (D-041).
+    sourceSets { getByName("androidTest").assets.directories.add("$projectDir/schemas") }
 }
 // Room writes each database version's schema here so future migrations can be checked.
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }

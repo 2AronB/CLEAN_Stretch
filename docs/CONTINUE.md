@@ -132,6 +132,10 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
 - Build, test and lint: `$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'` then
   `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:lintDebug`.
+- Database-upgrade tests (emulator running, D-041):
+  `.\gradlew.bat :app:connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true`.
+  **Always pass that flag**: without it Gradle uninstalls the app afterwards, which deletes its data.
+  A database change needs a new schema version and a test case in `MigrationTest`.
 - **Memory:** this PC has 16 GB. Run `.\gradlew.bat --stop` after building (idle Gradle daemons
   hold ~5 GB) and run one emulator at a time. Never test on the owner's phone (AGENTS.md).
 - Poses without an emulator: `tools/pose-preview/build-and-run.ps1` renders every keyframe from

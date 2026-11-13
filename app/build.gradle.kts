@@ -74,3 +74,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }
+
+// Unit tests also read files outside the app module; declare them so editing one re-runs the
+// tests instead of reusing a cached (possibly stale) pass.
+tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.file("docs/REVIEW_LOG.md")).withPropertyName("reviewLog")
+    inputs.file(rootProject.file("tools/voice/phrases.txt")).withPropertyName("voicePhrases")
+}

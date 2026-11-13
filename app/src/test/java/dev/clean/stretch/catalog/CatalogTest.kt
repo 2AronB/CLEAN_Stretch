@@ -18,6 +18,19 @@ class CatalogTest {
     }
 
     @Test
+    fun everyMoveLivesInItsAreaFileAndIsListedOnce() {
+        val files = mapOf(
+            Region.Neck to NeckMoves.all, Region.Shoulders to ShoulderMoves.all, Region.Back to BackMoves.all,
+            Region.Core to CoreMoves.all, Region.Hips to HipMoves.all, Region.Legs to LegMoves.all,
+        )
+        files.forEach { (region, moves) ->
+            moves.forEach { assertEquals("${it.key} belongs in the ${it.primary.first().region} file", region, it.primary.first().region) }
+        }
+        // Nothing defined in an area file is missing from the library, and nothing is listed twice.
+        assertEquals(files.values.flatten().map { it.key }.sorted(), all.map { it.key }.sorted())
+    }
+
+    @Test
     fun everyStretchIsComplete() {
         all.forEach { s ->
             assertTrue("${s.key} primary", s.primary.isNotEmpty())

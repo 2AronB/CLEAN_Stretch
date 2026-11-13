@@ -55,7 +55,7 @@ private val frameNames = listOf("Start", "Stretch", "Deep")
 
 /**
  * Developer tool: adjust any keyframe with sliders and copy the result as Kotlin
- * to paste into SampleCatalog.kt. Edits are not saved on the phone.
+ * to paste into the move's catalog/<Area>Moves.kt file. Edits are not saved on the phone.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -508,3 +508,13 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   notification permission was granted with `pm grant` to see the notification.
 - Noticed, not changed: the finish screen says "Saved to your history" even when every hold was
   skipped and nothing was saved.
+
+## Seasonal colour palettes (2026-11-13, D-038)
+- `settings/Palette` (Fall default, Spring, Winter, Summer, Wallpaper) saved as `palette`;
+  backed up and restored with the other settings. The old `wallpaper_colors` key is ignored.
+- `ui/theme/Theme.kt`: full light and dark schemes for each palette, including surface
+  containers (the old sage theme left those to Android's defaults). Settings → Appearance:
+  "Light or dark" plus a Colors list with three swatches per palette.
+- New `PaletteTest`: default is Burnt fall; text/background pairs ≥ 4.5:1 in every palette.
+- Checks run: tests (81), assembleDebug, lintDebug all pass, no lint issues. Emulator (API 37):
+  Burnt fall in dark and light on Today and Settings. The emulator was left on the Light setting.

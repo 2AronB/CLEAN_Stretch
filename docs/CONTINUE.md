@@ -4,7 +4,7 @@
 foam rolling), S9 (range-of-motion checks), a 3D figure, 55 moves, the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v5, compile/target SDK 37.
-79 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
+81 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
 `docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
@@ -39,7 +39,8 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   if-then cue, days a week, daily reminder).
 - Afterwards, Settings → **Goal, focus and limits** (highlighted card) opens a menu of the six
   sections with summaries.
-- Settings also has theme, wallpaper colours, still figures, voice/chimes/vibration switches,
+- Settings also has light/dark, **colours** (Burnt fall default, Spring pastels, Winter calm,
+  Summer energy, Wallpaper; D-038), still figures, voice/chimes/vibration switches,
   backup / restore / **Delete my data**, Sources & credits, and Pose Studio.
 
 **Player**
@@ -107,9 +108,7 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 
 Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
-1. Colour themes: four seasonal palettes proposed (Burnt fall, Spring pastels, Winter calm,
-   Summer energy) as a user choice in Settings, alongside wallpaper colours. Waiting on the
-   owner's pick of a default and any colour changes.
+1. Owner to try the colours on the phone (Settings → Appearance → Colors) and say what to adjust.
 2. Continue the catalog with `docs/ADDING_STRETCHES.md` (catalog is now split by body area).
 3. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
    count foam-rolling minutes toward the area rings (explained to owner, not decided).

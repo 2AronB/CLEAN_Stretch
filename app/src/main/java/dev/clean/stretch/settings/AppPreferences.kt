@@ -9,6 +9,21 @@ import androidx.compose.runtime.setValue
 
 enum class ThemeMode(val label: String) { System("System"), Light("Light"), Dark("Dark") }
 
+/** App colours (owner, 2026-11-13). Burnt fall is the default; Wallpaper follows the phone (Android 12+). */
+enum class Palette(val label: String, val description: String) {
+    Fall("Burnt fall", "Rust, mustard and forest green"),
+    Spring("Spring pastels", "Lilac, blush and mint"),
+    Winter("Winter calm", "Slate blue, frost and icy teal"),
+    Summer("Summer energy", "Ocean teal, sunshine and coral"),
+    Wallpaper("Wallpaper", "Match your phone's colors"),
+    ;
+
+    companion object {
+        val DEFAULT = Fall
+        fun fromName(name: String?): Palette = entries.firstOrNull { it.name == name } ?: DEFAULT
+    }
+}
+
 /** The "if" in "If [cue], then I stretch" (P-7, [S22]). */
 enum class PlanCue(val label: String, val reminderText: String) {
     Wake("After I wake up", "after you wake up"),
@@ -24,7 +39,8 @@ class AppPreferences(context: Context) {
 
     var themeMode by mutableStateOf(ThemeMode.entries.getOrElse(prefs.getInt(KEY_THEME, 0)) { ThemeMode.System })
         private set
-    var wallpaperColors by mutableStateOf(prefs.getBoolean(KEY_WALLPAPER, true))
+    // Replaces the old "wallpaper colors" switch (on by default), whose key is no longer read.
+    var palette by mutableStateOf(Palette.fromName(prefs.getString(KEY_PALETTE, null)))
         private set
     var stillFigures by mutableStateOf(prefs.getBoolean(KEY_STILL, false))
         private set
@@ -75,9 +91,9 @@ class AppPreferences(context: Context) {
         prefs.edit { putInt(KEY_THEME, mode.ordinal) }
     }
 
-    fun updateWallpaperColors(enabled: Boolean) {
-        wallpaperColors = enabled
-        prefs.edit { putBoolean(KEY_WALLPAPER, enabled) }
+    fun updatePalette(choice: Palette) {
+        palette = choice
+        prefs.edit { putString(KEY_PALETTE, choice.name) }
     }
 
     fun updateStillFigures(enabled: Boolean) {
@@ -97,18 +113,18 @@ class AppPreferences(context: Context) {
     /** Restores backed-up settings, ignoring unknown keys, then reloads the visible values. */
     fun importSettings(values: Map<String, String>) {
         val ints = setOf(KEY_THEME, KEY_DAYS, KEY_REMINDER_TIME)
-        val bools = setOf(KEY_WALLPAPER, KEY_STILL, KEY_VOICE, KEY_CHIMES, KEY_VIBRATION, KEY_REMINDER)
+        val bools = setOf(KEY_STILL, KEY_VOICE, KEY_CHIMES, KEY_VIBRATION, KEY_REMINDER)
         prefs.edit {
             values.forEach { (k, v) ->
                 when (k) {
                     in ints -> v.toIntOrNull()?.let { putInt(k, it) }
                     in bools -> putBoolean(k, v.toBoolean())
-                    KEY_PLAN_CUE -> putString(k, v)
+                    KEY_PLAN_CUE, KEY_PALETTE -> putString(k, v)
                 }
             }
         }
         themeMode = ThemeMode.entries.getOrElse(prefs.getInt(KEY_THEME, 0)) { ThemeMode.System }
-        wallpaperColors = prefs.getBoolean(KEY_WALLPAPER, true)
+        palette = Palette.fromName(prefs.getString(KEY_PALETTE, null))
         stillFigures = prefs.getBoolean(KEY_STILL, false)
         voiceCues = prefs.getBoolean(KEY_VOICE, true)
         chimeCues = prefs.getBoolean(KEY_CHIMES, true)
@@ -121,7 +137,7 @@ class AppPreferences(context: Context) {
 
     private companion object {
         const val KEY_THEME = "theme_mode"
-        const val KEY_WALLPAPER = "wallpaper_colors"
+        const val KEY_PALETTE = "palette"
         const val KEY_STILL = "still_figures"
         const val KEY_PLAN_CUE = "plan_cue"
         const val KEY_DAYS = "plan_days_per_week"

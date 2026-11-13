@@ -1,6 +1,5 @@
 package dev.clean.stretch.ui
 
-import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +19,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.semantics.Role
+import dev.clean.stretch.settings.Palette
+import dev.clean.stretch.ui.theme.colorSchemeFor
+import dev.clean.stretch.ui.theme.wallpaperColorsAvailable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -116,7 +130,7 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
         SectionLabel("Appearance")
         Group {
             Column(Modifier.padding(16.dp)) {
-                Text("Theme", style = MaterialTheme.typography.titleMedium)
+                Text("Light or dark", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(10.dp))
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     ThemeMode.entries.forEachIndexed { i, mode ->
@@ -129,14 +143,8 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
                     }
                 }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                SwitchRow(
-                    title = "Wallpaper colors",
-                    subtitle = "Match your phone's Material You colors",
-                    checked = prefs.wallpaperColors,
-                    onChange = prefs::updateWallpaperColors,
-                )
-            }
+            Text("Colors", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
+            PalettePicker(selected = prefs.palette, onSelect = prefs::updatePalette)
             SwitchRow(
                 title = "Still figures",
                 subtitle = "Show each stretch as a still pose. Also on when Android's animations are off.",
@@ -328,4 +336,37 @@ private fun DeleteDialog(onConfirm: () -> Unit, onCancel: () -> Unit) {
         },
         dismissButton = { TextButton(onClick = onCancel) { Text("Cancel") } },
     )
+}
+
+/** One row per palette: three colour dots, its name and a radio button (owner, 2026-11-13). */
+@Composable
+private fun PalettePicker(selected: Palette, onSelect: (Palette) -> Unit) {
+    val context = LocalContext.current
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    Column(Modifier.selectableGroup().padding(vertical = 4.dp)) {
+        Palette.entries.filter { it != Palette.Wallpaper || wallpaperColorsAvailable }.forEach { palette ->
+            val scheme = colorSchemeFor(context, palette, dark)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .selectable(selected = palette == selected, role = Role.RadioButton, onClick = { onSelect(palette) })
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
+                    listOf(scheme.primary, scheme.secondaryContainer, scheme.tertiary).forEach { color ->
+                        Box(
+                            Modifier.size(26.dp).clip(CircleShape).background(color)
+                                .border(2.dp, MaterialTheme.colorScheme.surfaceContainerLow, CircleShape),
+                        )
+                    }
+                }
+                Column(Modifier.weight(1f).padding(start = 16.dp)) {
+                    Text(palette.label, style = MaterialTheme.typography.titleMedium)
+                    Text(palette.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                RadioButton(selected = palette == selected, onClick = null)
+            }
+        }
+    }
 }

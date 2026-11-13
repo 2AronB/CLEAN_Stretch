@@ -134,7 +134,7 @@ fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao
         activity.enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
         onDispose { }
     }
-    StretchTheme(dark = dark, wallpaperColors = prefs.wallpaperColors) {
+    StretchTheme(dark = dark, palette = prefs.palette) {
         StretchApp(prefs, history, profiles, routines, romChecks, saver, backup)
     }
 }

@@ -489,3 +489,22 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   `tools/voice/phrases.txt` as inputs. Without this, Gradle reused a cached pass after the log
   was edited, so a bad row went unnoticed (found while testing the guard).
 - Checked: a planted fake approval with a stale fingerprint fails the test; the real log passes.
+
+## Merge, library updates and screen-off running (2026-11-13)
+- Merged `claude/3d-stretch-models-518e55` (catalog split by body area, `docs/REVIEW_LOG.md`
+  with `ReviewLogTest`). CONTINUE.md conflict: kept the current-state guide; that branch's notes
+  are the two sections above. Checks after merge: 68 tests pass, lint clean.
+- Updated Gradle 9.3.1 → 9.9.1, Compose BOM 2026.02.01 → 2026.09.00, Activity Compose 1.12.4 →
+  1.13.0, Room 2.8.4 → 2.8.5; compileSdk/targetSdk 36 → 37 (the new Compose requires compiling
+  against 37). New Compose lint caught `NonObservableLocale` in TodayScreen's week strip (fixed
+  with `LocalConfiguration`). Lint now shows no warnings. Staging APK 4.2 → 5.2 MB.
+- Screen-off running (D-037): `run/RunEngine` (pure state machine on `elapsedRealtime`, recorded
+  holds capped at their length), `run/RunSession` (cues, checkpoints, saving, wake lock), and
+  `run/RunService` (foreground service + notification). `PlayerScreen` now only draws the session.
+  New `RunEngineTest` (11 tests). Manifest: FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK,
+  WAKE_LOCK.
+- Checks run: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` pass (79 tests);
+  `assembleStaging` builds. Emulator (API 37): see CONTINUE "Verified 2026-11-13". The emulator's
+  notification permission was granted with `pm grant` to see the notification.
+- Noticed, not changed: the finish screen says "Saved to your history" even when every hold was
+  skipped and nothing was saved.

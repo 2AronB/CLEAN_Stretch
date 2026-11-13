@@ -4,6 +4,11 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- R-007: daily reminder. Asked only when the user turns a reminder on; all else works without it. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- D-037: keep a routine running with the screen off (foreground service that plays the
+         spoken cues and chimes; wake lock so the timer keeps ticking). No prompts for these. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- Lets the app find the phone's built-in text-to-speech engine (Android 11+). No Internet. -->
     <queries>
         <intent>
@@ -22,5 +27,7 @@
             </intent-filter>
         </activity>
         <receiver android:name=".settings.ReminderReceiver" android:exported="false" />
+        <service android:name=".run.RunService" android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>

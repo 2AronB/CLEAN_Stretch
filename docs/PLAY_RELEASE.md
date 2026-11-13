@@ -8,14 +8,15 @@ Play policy pages. Nothing here is legal advice.
 
 | Item | Status |
 |---|---|
-| Release build with code/resource shrinking | Done (`assembleRelease`, 4.2 MB APK) |
+| Release build with code/resource shrinking | Done (`assembleRelease`; staging APK 5.2 MB after the 2026-11-13 Compose update) |
 | Shrunk build tested on a device (`assembleStaging`, separate app) | Done on emulator 2026-11-09: setup, routine, player (3D), history, delete flow |
 | Upload key created and backed up (owner) | **To do** — see `docs/CONTINUE.md` |
 | App Bundle built (`bundleRelease`) and signed | To do (after the key) |
 | Health-condition wording and limits: final review + current clinical source (D-031, EVIDENCE §9) | **Blocks release** |
 | Catalog wording review (owner) | To do |
 | Accessibility pass (screen reader, large text, touch targets) | Code audit done (icon buttons labelled, pause button labelled); **TalkBack + largest font size on a device to do** |
-| Dependency and SDK updates (lint warnings) | To do (after 3D work merges) |
+| Dependency and SDK updates (lint warnings) | Done 2026-11-13: Gradle 9.9.1, Compose BOM 2026.09.00, Activity 1.13.0, Room 2.8.5, compile/target SDK 37; lint shows no warnings |
+| Foreground service declaration (Play Console → App content) | To do: "media playback" type, for spoken cues while a routine runs with the screen off (D-037). Play may ask for a short video of the feature |
 | Privacy policy published at a public URL | To do (draft below) |
 | Data safety form | Draft below |
 | Health apps declaration | Draft below |
@@ -26,9 +27,11 @@ Play policy pages. Nothing here is legal advice.
 
 ## 2. Facts the forms will ask about (verified from the code)
 
-- **Permissions:** `VIBRATE` (buzz between steps) and `POST_NOTIFICATIONS` (daily reminder,
-  asked only when the user turns it on). **No `INTERNET` permission**, so the app cannot send
-  anything anywhere.
+- **Permissions:** `VIBRATE` (buzz between steps), `POST_NOTIFICATIONS` (daily reminder,
+  asked only when the user turns it on; also lets the "routine in progress" notification show),
+  and, for running with the screen off (D-037), `FOREGROUND_SERVICE`,
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `WAKE_LOCK` (none of these three shows a prompt).
+  **No `INTERNET` permission**, so the app cannot send anything anywhere.
 - **No accounts, ads, analytics, crash reporting or third-party SDKs** that collect data.
   Libraries: AndroidX/Compose and Room (local database).
 - **Data kept on the device only:** session history, profile answers (goal, focus areas, areas
@@ -56,8 +59,9 @@ Play policy pages. Nothing here is legal advice.
 > a file", Stretch writes a file to the place you pick; what happens to that file afterwards is
 > up to you.
 >
-> **Permissions:** vibration (a short buzz between steps) and notifications (only if you turn on
-> the daily reminder).
+> **Permissions:** vibration (a short buzz between steps), notifications (the daily reminder, if
+> you turn it on, and a "routine in progress" notification), and permission to keep a routine's
+> voice and timer running while your screen is off.
 >
 > **Deleting your information:** use Settings → Your data → Delete my data, or uninstall Stretch.
 >

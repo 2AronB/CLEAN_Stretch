@@ -1,10 +1,10 @@
 # Continue here
 
-**State on 2026-11-09:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
-foam rolling), S9 (range-of-motion checks), a 3D figure and 55 moves. Version
-`0.3.0-first-release-slices` (versionCode 3), database v5. 64 JVM tests pass and lint is clean
-(only version-update warnings). Everything is on `main` and pushed to
-https://github.com/2AronB/CLEAN_Stretch.
+**State on 2026-11-13:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+foam rolling), S9 (range-of-motion checks), a 3D figure, 55 moves, the catalog split by body
+area with an owner review log, and **routines that keep running with the screen off** (D-037).
+Version `0.3.0-first-release-slices` (versionCode 3), database v5, compile/target SDK 37.
+79 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
 `docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
@@ -43,6 +43,12 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   backup / restore / **Delete my data**, Sources & credits, and Pose Studio.
 
 **Player**
+- Keeps running with the screen off or the app in the background (D-037): the timer lives in
+  `run/RunEngine.kt` (real clock time) and `run/RunSession.kt`, kept alive by `run/RunService.kt`
+  (foreground service, "media playback"). Its notification shows the stretch, a live countdown,
+  Pause/Resume and Skip; tapping it returns to the player. Swiping the app away stops the run and
+  Today offers Resume. The notification only shows if notifications are allowed (Android 13+);
+  the run works either way.
 - Hands-free: pre-recorded Kokoro **af_heart** voice clips (D-026), 3-2-1 ticks and chimes,
   vibration, keep-screen-on. Setup time depends on the move (5 / 10 / 15 s) with "I'm ready";
   "+15 s"; skip and back; End saves an "ended early" session; checkpoint and resume after the
@@ -78,9 +84,13 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
   backup, history/streaks, ROM trends, IK pins, joint ranges, 3D solver, voice-clip coverage;
   emulator walk-throughs of most screens; the shrunk staging build (setup, 3D player, history,
   delete); reminder delivery on the emulator; voice quality and setup times on the owner's phone.
-- **Still to see on the owner's phone:** Generator v2 suggestions day to day, library
-  search/filters, Tender spot, the setup section menu, round-5 moves in motion, TalkBack and the
-  largest font size.
+- **Verified 2026-11-13 (API 37 emulator):** screen locked + forced Doze for 70 s mid-routine:
+  holds recorded at full length and steps advanced on time; voice clips played; notification
+  countdown, Pause (timer stops, wake lock released), Resume, tap-to-return, End (saved, service
+  and wake lock gone), finish screen, rotating mid-run (same run continues).
+- **Still to see on the owner's phone:** a real routine with the phone locked (voice through the
+  speaker, battery), Generator v2 suggestions day to day, library search/filters, Tender spot,
+  the setup section menu, round-5 moves in motion, TalkBack and the largest font size.
 
 ## Owner actions
 
@@ -95,13 +105,16 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 
 ## Next (recommended order)
 
-1. Play readiness remainder: dependency and SDK updates (lint warnings), screenshots and store
-   graphics, content-rating answers, then `bundleRelease` with the upload key.
-2. Split `SampleCatalog.kt` by body area (agreed for after the 3D work, which has merged), then
-   continue the catalog with `docs/ADDING_STRETCHES.md`.
-3. Later: running with the screen off (foreground service, D-010) and the sturdier timer;
-   multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; an Advanced toggle to count
-   rolling toward the area rings.
+Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
+
+1. Colour themes: four seasonal palettes proposed (Burnt fall, Spring pastels, Winter calm,
+   Summer energy) as a user choice in Settings, alongside wallpaper colours. Waiting on the
+   owner's pick of a default and any colour changes.
+2. Continue the catalog with `docs/ADDING_STRETCHES.md` (catalog is now split by body area).
+3. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
+   count foam-rolling minutes toward the area rings (explained to owner, not decided).
+4. Before release: screenshots and store graphics, content rating, foreground-service
+   declaration, `bundleRelease` with the upload key.
 
 ## Working on this project (practical notes)
 

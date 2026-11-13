@@ -35,14 +35,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -63,13 +59,12 @@ import dev.clean.stretch.catalog.SampleCatalog
 import dev.clean.stretch.catalog.Stretch
 import dev.clean.stretch.catalog.StretchKind
 import dev.clean.stretch.plan.Generator
-import dev.clean.stretch.data.Checkpoint
-import dev.clean.stretch.data.StepRecord
-import dev.clean.stretch.data.StepRecords
 import dev.clean.stretch.figure.Easing
 import dev.clean.stretch.figure.MotionKind
 import dev.clean.stretch.figure.MotionPlayer
 import dev.clean.stretch.figure.Timing
+import dev.clean.stretch.run.ActiveRun
+import dev.clean.stretch.run.RunSession
 import dev.clean.stretch.settings.AppPreferences
 import dev.clean.stretch.ui.figure.FigureView
 import dev.clean.stretch.ui.figure.rememberFigureStage
@@ -127,20 +122,14 @@ fun buildSteps(keys: List<String>, firstSide: Side = Side.Right, holdMs: Long = 
 }
 
 
-private val recordsSaver = Saver<SnapshotStateMap<Int, StepRecord>, String>(
-    save = { StepRecords.encode(it) },
-    restore = { text -> mutableStateMapOf<Int, StepRecord>().apply { putAll(StepRecords.decode(text)) } },
-)
-
 /**
- * The hands-free runner (Slice S2). It advances on its own, keeps the screen on, speaks and chimes
- * (each switchable in Settings), writes a checkpoint at every step and saves an immutable session
- * when the routine finishes or the user ends it early.
+ * The hands-free runner (Slice S2). The routine itself runs in a [RunSession] (timer, cues, saving,
+ * checkpoints), which keeps going with the screen off (D-037). This screen draws it and passes
+ * button presses on.
  */
 @Composable
 fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver, onClose: () -> Unit) {
-    val steps = remember(route) { buildSteps(route.keys, route.firstSide, route.holdSeconds * 1000L) }
-    if (steps.isEmpty()) {
+    if (route.keys.none { SampleCatalog.byKey(it) != null }) {
         Column(Modifier.fillMaxSize()) {
             BackBar("Routine", onClose)
             Text("Nothing to play.", modifier = Modifier.padding(24.dp))
@@ -149,35 +138,12 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
     }
     val reduced = rememberReducedMotion(prefs.stillFigures)
     val context = LocalContext.current
-    val cues = remember { Cues(context, prefs) }
-    DisposableEffect(Unit) { onDispose { cues.release() } }
-
-    // Runs once per routine (not again after rotation): resume a checkpoint if Today asked for it,
-    // otherwise save any older unfinished run as "ended early" so it is never lost.
-    val start = rememberSaveable {
-        val store = saver.checkpoints
-        val c = store.load()
-        val resume = store.resumeNext && c != null && c.route == Route.encode(route)
-        store.resumeNext = false
-        if (resume) {
-            "${c.startedAt}|${c.index.coerceIn(0, steps.lastIndex)}|${c.records}"
-        } else {
-            if (c != null) saver.saveCheckpoint(c)
-            "${System.currentTimeMillis()}|0|"
-        }
-    }
-    val startParts = start.split("|", limit = 3)
-    val startedAt = startParts[0].toLong()
-
-    var index by rememberSaveable { mutableIntStateOf(startParts[1].toInt()) }
-    val records = rememberSaveable(saver = recordsSaver) {
-        mutableStateMapOf<Int, StepRecord>().apply { putAll(StepRecords.decode(startParts[2])) }
-    }
-    var paused by rememberSaveable { mutableStateOf(false) }
-    var extraMs by rememberSaveable { mutableLongStateOf(0L) }
-    var finished by rememberSaveable { mutableStateOf(false) }
-    var saved by rememberSaveable { mutableStateOf(false) }
-    val elapsed = remember { mutableLongStateOf(0L) }
+    // Remembers which run this screen shows, so after Android restarts the app it resumes that run.
+    var runStartedAt by rememberSaveable { mutableStateOf<Long?>(null) }
+    val session = remember(route) { ActiveRun.obtain(context, route, saver, prefs, runStartedAt) }
+    runStartedAt = session.startedAt
+    val steps = session.steps
+    val engine = session.engine
 
     val view = LocalView.current
     DisposableEffect(Unit) {
@@ -185,81 +151,27 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
         onDispose { view.keepScreenOn = false }
     }
 
-    fun saveOnce(completed: Boolean) {
-        if (saved) return
-        saved = true
-        saver.save(route.title, steps, records.toMap(), startedAt, System.currentTimeMillis(), completed)
-    }
-
-    /** Moves to [next]. Leaving a hold forward records how long it was held. */
-    fun goTo(next: Int, skipped: Boolean = false) {
-        val current = steps[index]
-        if (next > index && !current.setup) {
-            records[index] = StepRecord(elapsed.longValue, skipped)
-            if (!skipped) cues.chime()
-        }
-        if (next >= steps.size) {
-            finished = true
-            saveOnce(completed = true)
-            return
-        }
-        index = next.coerceAtLeast(0)
-        elapsed.longValue = 0L
-        extraMs = 0L
-        cues.buzz()
-        saver.checkpoints.save(Checkpoint(Route.encode(route), index, startedAt, System.currentTimeMillis(), StepRecords.encode(records)))
-    }
-
-    /** End button and system Back: keep what was done as an "ended early" session. */
-    fun endEarly() {
-        if (!finished) {
-            val current = steps[index]
-            if (!current.setup && elapsed.longValue > 0L) records[index] = StepRecord(elapsed.longValue, skipped = true)
-            saveOnce(completed = false)
-        }
+    fun close() {
+        session.end()
         onClose()
     }
-    BackHandler { endEarly() }
+    BackHandler { close() }
 
-    val step = steps[index]
-    val duration = step.baseMs + extraMs
+    // Redraw every frame from the real clock; the session does the timing.
+    var now by remember { mutableLongStateOf(RunSession.now()) }
+    LaunchedEffect(Unit) { while (true) withFrameMillis { now = RunSession.now() } }
+    @Suppress("UNUSED_EXPRESSION") session.revision // read so presses and step changes redraw at once
 
-    LaunchedEffect(paused, finished, index) {
-        if (paused || finished) return@LaunchedEffect
-        var last = withFrameMillis { it }
-        while (true) {
-            withFrameMillis { now ->
-                val dt = now - last
-                last = now
-                elapsed.longValue += dt
-            }
-            if (elapsed.longValue >= steps[index].baseMs + extraMs) {
-                goTo(index + 1)
-                break
-            }
-        }
-    }
-
-    // Voice line at the start of each step.
-    LaunchedEffect(index, finished) {
-        if (finished) { cues.say(VoiceLines.COMPLETE); return@LaunchedEffect }
-        val s = steps[index]
-        if (s.setup) cues.say(VoiceLines.setup(s.stretch, s.side))
-        else cues.say(
-            when (s.stretch.kind) {
-                StretchKind.Roll -> VoiceLines.roll(s.baseMs / 1000)
-                StretchKind.Dynamic -> VoiceLines.flow(s.baseMs / 1000)
-                else -> VoiceLines.hold(s.baseMs / 1000)
-            },
-        )
-    }
-
-    if (finished) {
-        FinishedView(route.title, records.values.sumOf { it.heldMs }, onClose)
+    if (engine.finished) {
+        FinishedView(route.title, engine.records.values.sumOf { it.heldMs }, ::close)
         return
     }
 
-    val t = elapsed.longValue
+    val index = engine.index
+    val step = engine.step
+    val duration = engine.durationMs
+    val t = engine.elapsed(now)
+    val paused = engine.paused
     val holdSteps = steps.filter { !it.setup }
     val holdIndex = steps.take(index + 1).count { !it.setup } - if (step.setup) 0 else 1
     val stage = MaterialTheme.colorScheme.surfaceContainerLow
@@ -271,19 +183,9 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
     // (not the hold of the side that is being set up right now).
     val nextStretch = steps.drop(index + 1).firstOrNull { it.setup }
 
-    // 3-2-1 ticks and "what's next" near the end of each hold.
-    val remainingSec = ceil((duration - t).coerceAtLeast(0L) / 1000.0).toInt()
-    LaunchedEffect(index, remainingSec, paused) {
-        if (paused || step.setup) return@LaunchedEffect
-        if (remainingSec in 1..3) cues.tick()
-        if (remainingSec == 6 && nextStretch != null) {
-            cues.say(VoiceLines.next(nextStretch.stretch, nextStretch.side))
-        }
-    }
-
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = ::endEarly) { Icon(painterResource(R.drawable.ic_close), contentDescription = "End routine and save what you did") }
+            IconButton(onClick = ::close) { Icon(painterResource(R.drawable.ic_close), contentDescription = "End routine and save what you did") }
             Text(route.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             Text(
                 "${(holdIndex + 1).coerceAtMost(holdSteps.size)} of ${holdSteps.size}",
@@ -354,9 +256,9 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (step.setup) {
-                FilledTonalButton(onClick = { goTo(index + 1) }) { Text("I'm ready") }
+                FilledTonalButton(onClick = session::ready) { Text("I'm ready") }
             } else {
-                TextButton(onClick = { extraMs += 15_000L }) { Text("+15 s") }
+                TextButton(onClick = session::addTime) { Text("+15 s") }
             }
             if (nextStretch != null && (step.setup || duration - t < 8_000L)) {
                 Text(
@@ -372,14 +274,14 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            FilledTonalIconButton(onClick = { if (t > 3_000L || index == 0) goTo(index) else goTo(index - 2) }, modifier = Modifier.size(56.dp)) {
+            FilledTonalIconButton(onClick = session::back, modifier = Modifier.size(56.dp)) {
                 Icon(painterResource(R.drawable.ic_skip_previous), contentDescription = "Back")
             }
             Box(contentAlignment = Alignment.Center) {
                 CountdownRing(fraction = 1f - (t.toFloat() / duration).coerceIn(0f, 1f), modifier = Modifier.size(112.dp))
                 val secondsLeft = ceil((duration - t).coerceAtLeast(0L) / 1000.0).toInt()
                 FilledIconButton(
-                    onClick = { paused = !paused },
+                    onClick = session::togglePause,
                     // Screen readers: say what the button does, not just the countdown number.
                     modifier = Modifier.size(84.dp).semantics {
                         contentDescription = if (paused) "Resume" else "Pause, $secondsLeft seconds left"
@@ -397,7 +299,7 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
                 }
             }
             FilledTonalIconButton(
-                onClick = { if (step.setup) goTo(index + 2) else goTo(index + 1, skipped = true) },
+                onClick = session::skip,
                 modifier = Modifier.size(56.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_skip_next), contentDescription = "Skip")

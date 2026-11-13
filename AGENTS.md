@@ -20,7 +20,8 @@ assumptions, approvals and verified behavior.
 
 CLEAN rules: Android only, offline, no ads/tracking/analytics/accounts/
 subscriptions/paywalls. No new dependencies, SDKs, permissions or services without
-approval (approved so far: Room + KSP, VIBRATE — see DECISIONS). Protect user data; never
+approval (approved so far: Room + KSP, VIBRATE, POST_NOTIFICATIONS, and foreground service +
+WAKE_LOCK for screen-off routines — see DECISIONS D-016, D-025, D-037). Protect user data; never
 reset storage or hide failures. Stretch guidance must cite sources and must not present
 itself as medical advice. Source library: C:\Users\Kayli\Desktop\CLEAN Development\development .
 

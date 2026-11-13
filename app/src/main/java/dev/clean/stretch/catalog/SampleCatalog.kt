@@ -2,7 +2,7 @@ package dev.clean.stretch.catalog
 
 /**
  * The move library. Each move lives in the file for its body area (the region of its first main
- * muscle): NeckMoves, ShoulderMoves, BackMoves, CoreMoves, HipMoves, LegMoves. `CatalogTest`
+ * muscle): NeckMoves, ShoulderMoves, ArmMoves, BackMoves, CoreMoves, HipMoves, LegMoves. `CatalogTest`
  * checks every move is in the right file and listed here exactly once.
  *
  * Instructions are Editorial (standard exercise technique); hold defaults come from [S2][S3];
@@ -29,7 +29,7 @@ object SampleCatalog {
         ShoulderMoves.armSwings, LegMoves.hipHinge, LegMoves.ankleRocks, HipMoves.lungeReach,
         NeckMoves.neckNods, NeckMoves.neckSideBend, BackMoves.standingSideBend, HipMoves.figureFour,
         BackMoves.kneeDropTwist, BackMoves.seatedTwist, BackMoves.threadNeedle, HipMoves.wideLegFold,
-        HipMoves.sideLunge, ShoulderMoves.overheadTriceps, CoreMoves.torsoTurns, HipMoves.sideLegRaise,
+        HipMoves.sideLunge, ArmMoves.overheadTriceps, CoreMoves.torsoTurns, HipMoves.sideLegRaise,
         HipMoves.recliningButterfly,
     )
 
@@ -61,4 +61,7 @@ object SampleCatalog {
     fun easier(key: String): Stretch? = variantPairs.firstOrNull { it.second == key }?.first?.let(::byKey)
 
     fun harder(key: String): Stretch? = variantPairs.firstOrNull { it.first == key }?.second?.let(::byKey)
+
+    /** Muscles that at least one move stretches or works as a main muscle (new muscles may have none yet). */
+    val musclesWithMoves: List<Muscle> by lazy { Muscle.entries.filter { m -> all.any { m in it.primary } } }
 }

@@ -2,6 +2,7 @@ package dev.clean.stretch.data
 
 import android.content.Context
 import androidx.room.AutoMigration
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -56,6 +57,11 @@ data class SessionStepEntity(
     val plannedSeconds: Int,
     val actualSeconds: Int,
     val skipped: Boolean,
+    /**
+     * v6: comma-separated Muscle names the stretch mainly stretches, snapshot (empty for strength
+     * and rolling). Rows saved before v6 have it empty; [Stats] then looks the move up by key.
+     */
+    @ColumnInfo(defaultValue = "") val primaryMuscles: String = "",
 )
 
 @Dao
@@ -107,12 +113,12 @@ abstract class HistoryDao {
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
 }
 
-/** v1: sessions. v2: adds profile. v3: adds saved routines. v4: adds ROM checks. v5: profile gets foam roller + strengthen columns. Automatic migrations; existing data is kept. */
+/** v1: sessions. v2: adds profile. v3: adds saved routines. v4: adds ROM checks. v5: profile gets foam roller + strengthen columns. v6: steps get main muscles, profile gets secondary areas + weekly dose. Automatic migrations; existing data is kept. */
 @Database(
     entities = [SessionEntity::class, SessionStepEntity::class, ProfileEntity::class, SavedRoutineEntity::class, RomCheckEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5), AutoMigration(from = 5, to = 6)],
 )
 abstract class StretchDatabase : RoomDatabase() {
     abstract fun history(): HistoryDao

@@ -73,32 +73,52 @@ object Generator {
         return ((seconds + 59) / 60).coerceAtLeast(1)
     }
 
-    /** P-1: about 10 minutes per area each week is where gains level off [S1][S2]. */
-    const val WEEKLY_GOAL_MINUTES = 10.0
-
-    /** P-1: never more than 4 minutes for one area in a single session. */
+    /** P-1: never more than 4 minutes for one muscle on one side in a single session [S2]. */
     const val SESSION_CAP_MINUTES = 4.0
 
-    /** Stretch minutes this move gives each of its main areas. */
-    private fun areaMinutes(s: Stretch, hold: Int): Double =
-        if (s.kind.isStretch) (if (s.sided) 2 else 1) * secondsFor(s, hold) / 60.0 else 0.0
+    /**
+     * Minutes this move gives each of its main muscles, per side. A two-sided move is held once on
+     * each side, so each side gets one hold; a move that stretches both sides at once gives both.
+     */
+    fun muscleMinutes(s: Stretch, hold: Int): Double = if (s.kind.isStretch) secondsFor(s, hold) / 60.0 else 0.0
 
     /**
-     * Today's share of each focus area's weekly goal: what's left of [WEEKLY_GOAL_MINUTES], spread
-     * over the planned days still to come, capped at [SESSION_CAP_MINUTES]. With no focus areas,
-     * every area gets a share.
+     * Today's share of each muscle's weekly goal (D-039): what's left of its goal ([Profile.weeklyTarget],
+     * per side, judged on the weaker side), spread over the planned days still to come, capped at
+     * [SESSION_CAP_MINUTES]. Muscles no allowed move stretches are left out.
      */
-    fun sessionTargets(profile: Profile, weekMinutes: Map<Region, Double>, daysLeft: Int): Map<Region, Double> {
-        val areas = profile.effectiveFocus.ifEmpty { Region.entries.toSet() }
-        return areas.associateWith { r ->
-            ((WEEKLY_GOAL_MINUTES - (weekMinutes[r] ?: 0.0)) / daysLeft.coerceAtLeast(1)).coerceIn(0.0, SESSION_CAP_MINUTES)
+    fun sessionTargets(profile: Profile, weekMinutes: Map<Muscle, Double>, daysLeft: Int, pool: List<Stretch> = SampleCatalog.all): Map<Muscle, Double> =
+        Muscle.entries.mapNotNull { m ->
+            val goal = profile.weeklyTarget(m) ?: return@mapNotNull null
+            if (pool.none { it.kind.isStretch && m in it.primary }) return@mapNotNull null
+            m to ((goal - (weekMinutes[m] ?: 0.0)) / daysLeft.coerceAtLeast(1)).coerceIn(0.0, SESSION_CAP_MINUTES)
+        }.toMap()
+
+    /**
+     * Roughly how many minutes of holding a week it takes to meet every weekly goal (both sides),
+     * for the setup page's live total. Greedy: keep picking the allowed move that helps the most
+     * unmet muscles, one standard hold per side at a time. Moves that stretch several muscles
+     * make the total smaller than adding up each muscle's goal.
+     */
+    fun weeklyPlanMinutes(profile: Profile): Int {
+        val hold = holdSeconds(profile, RoutineKind.Full)
+        val moves = allowed(profile, RoutineKind.Full).filter { it.kind.isStretch }
+        val left = sessionTargets(profile, emptyMap(), 1, moves).keys
+            .associateWith { profile.weeklyTarget(it) ?: 0.0 }.toMutableMap()
+        var seconds = 0
+        while (true) {
+            val best = moves.maxByOrNull { s -> s.primary.count { (left[it] ?: 0.0) > 1e-9 } } ?: break
+            if (best.primary.none { (left[it] ?: 0.0) > 1e-9 }) break
+            best.primary.forEach { m -> left[m]?.let { left[m] = it - hold / 60.0 } }
+            seconds += hold * (if (best.sided) 2 else 1) // a two-sided move is held on each side
         }
+        return (seconds + 59) / 60
     }
 
     /**
      * Builds a routine (Generator v2, D-032: right on generation).
-     * 1. Each focus area first gets its share of the weekly goal ([sessionTargets]), neediest first.
-     * 2. Leftover time fills from the least-covered areas, never past 4 min per area.
+     * 1. Each muscle with a goal first gets its share of the weekly goal ([sessionTargets]), neediest first.
+     * 2. Leftover time fills from the least-covered muscles, never past 4 min per muscle per side.
      * 3. Variety: the order changes day to day ([seed] = date) and moves done often this week
      *    ([weekCounts]) go to the back of the queue.
      * Warm-ups use flowing moves first; full routines and cool-downs use holds first.
@@ -107,7 +127,8 @@ object Generator {
         profile: Profile,
         kind: RoutineKind,
         minutes: Int = profile.minutes,
-        weekMinutes: Map<Region, Double> = emptyMap(),
+        /** This week's minutes per muscle on its weaker side ([dev.clean.stretch.data.SideMinutes.weaker]). */
+        weekMinutes: Map<Muscle, Double> = emptyMap(),
         seed: Long = 0L,
         daysLeft: Int = 3,
         weekCounts: Map<String, Int> = emptyMap(),
@@ -131,33 +152,40 @@ object Generator {
             .sortedWith(compareBy<Stretch>({ typeRank(it) }, { weekCounts[it.key] ?: 0 }))
             .toMutableList()
 
-        val targets = sessionTargets(profile, weekMinutes, daysLeft)
-        val given = mutableMapOf<Region, Double>()
+        val targets = sessionTargets(profile, weekMinutes, daysLeft, pool)
+        val given = mutableMapOf<Muscle, Double>()
         val chosen = mutableListOf<Stretch>()
         var used = (rolls + strengths).sumOf { costSeconds(it, hold) }
 
         fun canAdd(s: Stretch): Boolean =
             fits(s, hold, used, budget) &&
-                s.primary.map { it.region }.distinct().all { (given[it] ?: 0.0) + areaMinutes(s, hold) <= SESSION_CAP_MINUTES + 1e-9 }
+                s.primary.all { (given[it] ?: 0.0) + muscleMinutes(s, hold) <= SESSION_CAP_MINUTES + 1e-9 }
 
         fun take(s: Stretch) {
             pool.remove(s); chosen += s; used += costSeconds(s, hold)
-            s.primary.map { it.region }.distinct().forEach { given[it] = (given[it] ?: 0.0) + areaMinutes(s, hold) }
+            s.primary.forEach { given[it] = (given[it] ?: 0.0) + muscleMinutes(s, hold) }
         }
 
-        // 1. Weekly-goal shares for focus areas, neediest first.
+        // 1. Weekly-goal shares, neediest muscle first. A move that also stretches other needy
+        //    muscles is preferred, since its time counts for each of them.
+        //    Warm-ups chase goals with flowing moves only, so they stay warm-ups (P-3); holds can
+        //    still fill spare time below.
+        val forGoals = { s: Stretch -> kind != RoutineKind.WarmUp || s.kind == StretchKind.Dynamic }
         while (true) {
-            val area = targets.filter { (r, goal) -> (given[r] ?: 0.0) < goal - 1e-9 && pool.any { s -> s.primary.any { it.region == r } && canAdd(s) } }
-                .maxByOrNull { (r, goal) -> goal - (given[r] ?: 0.0) }?.key ?: break
-            take(pool.first { s -> s.primary.any { it.region == area } && canAdd(s) })
+            val muscle = targets.filter { (m, goal) -> (given[m] ?: 0.0) < goal - 1e-9 && pool.any { s -> m in s.primary && forGoals(s) && canAdd(s) } }
+                .maxByOrNull { (m, goal) -> goal - (given[m] ?: 0.0) }?.key ?: break
+            val needy = { s: Stretch -> s.primary.count { m -> (targets[m] ?: 0.0) - (given[m] ?: 0.0) > 1e-9 } }
+            // Preferred move type first (pool order), then the move that helps the most needy muscles.
+            take(pool.filter { s -> muscle in s.primary && forGoals(s) && canAdd(s) }.minWith(compareBy({ typeRank(it) }, { -needy(it) })))
         }
-        // 2. Fill leftover time from the least-covered areas (focus areas whose weekly goal is met come last).
-        val metThisWeek = targets.filterValues { it <= 1e-9 }.keys
+        // 2. Fill leftover time from the least-covered muscles; muscles whose weekly goal is met come last.
+        val metThisWeek = targets.filter { (m, share) -> share <= 1e-9 && (weekMinutes[m] ?: 0.0) > 0 }.keys
         while (true) {
             val pick = pool.filter(::canAdd).minWithOrNull(
                 compareBy<Stretch>(
-                    { s -> if (s.primary.all { it.region in metThisWeek }) 1 else 0 },
-                    { s -> s.primary.minOf { given[it.region] ?: 0.0 } },
+                    { s -> typeRank(s) },
+                    { s -> if (s.primary.all { it in metThisWeek }) 1 else 0 },
+                    { s -> s.primary.minOf { given[it] ?: 0.0 } },
                 ),
             ) ?: break
             take(pick)
@@ -177,7 +205,7 @@ object Generator {
         if (rolls.isNotEmpty()) notes += "Starts with a minute of foam rolling."
         if (strengths.isNotEmpty()) notes += "Ends with a short Strengthen block. Strength through a full range builds flexibility too."
         val focus = profile.effectiveFocus
-        focus.filter { it in metThisWeek && (weekMinutes[it] ?: 0.0) > 0 }
+        focus.filter { r -> val ms = targets.keys.filter { it.region == r }; ms.isNotEmpty() && ms.all { it in metThisWeek } }
             .forEach { notes += "You've reached this week's ${it.label.lowercase()} goal, so today leans on other areas." }
         focus.filter { r -> allowed(profile, kind).none { s -> s.primary.any { it.region == r } } }
             .forEach { notes += "No ${it.label.lowercase()} stretch fits your settings, so it's left out." }
@@ -187,11 +215,11 @@ object Generator {
         return Routine(kind, kind.title, (rolls + ordered + strengths).map { it.key }, hold, notes)
     }
 
-    /** Stretch minutes per area for a list of moves (used by tests and the review screen). */
-    fun minutesByArea(keys: List<String>, hold: Int): Map<Region, Double> {
-        val out = mutableMapOf<Region, Double>()
+    /** Stretch minutes per muscle, per side, for a list of moves (used by tests). */
+    fun minutesByMuscle(keys: List<String>, hold: Int): Map<Muscle, Double> {
+        val out = mutableMapOf<Muscle, Double>()
         keys.mapNotNull { SampleCatalog.byKey(it) }.forEach { s ->
-            s.primary.map { it.region }.distinct().forEach { r -> out[r] = (out[r] ?: 0.0) + areaMinutes(s, hold) }
+            s.primary.forEach { m -> out[m] = (out[m] ?: 0.0) + muscleMinutes(s, hold) }
         }
         return out
     }

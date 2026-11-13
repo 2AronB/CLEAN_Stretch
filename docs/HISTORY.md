@@ -518,3 +518,24 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - New `PaletteTest`: default is Burnt fall; text/background pairs ≥ 4.5:1 in every palette.
 - Checks run: tests (81), assembleDebug, lintDebug all pass, no lint issues. Emulator (API 37):
   Burnt fall in dark and light on Today and Settings. The emulator was left on the Light setting.
+
+## Per-muscle goals, body view, single RoM checks (2026-11-13, D-039)
+- Read Ingram 2024 full text (Methods, Results, Figs 2–3, Discussion): dose ranges recorded in
+  EVIDENCE §1. Tapping one range-of-motion check on Progress opens just that check.
+- New area Arms & wrists; new muscles biceps, triceps, forearms & wrists, side body, outer hip,
+  deep hip rotators, shins & ankles. Retagged: overhead triceps → triceps (moved to new
+  `ArmMoves.kt`), figure-four + deep hip rotators, torso turns → side body, twists + side body
+  (secondary), side leg raise → outer hip, wall chest + biceps (secondary). Library and Sore
+  spot list only muscles that have moves.
+- Database v6 (auto-migration): `session_steps.primaryMuscles`, `profile.secondary`,
+  `profile.weeklyDose`. Backups include the new fields; older backups still restore.
+- `Stats.minutesByMuscle` (per side), `Profile.weeklyTarget`, `Dose`, generator targets per
+  muscle, `Generator.weeklyPlanMinutes` for the setup total, Weekly goals setup page,
+  `ui/BodyMap.kt` replaces the six rings.
+- Checks run: 83 JVM tests pass (new: per-side minutes incl. pre-v6 rows, dose/secondary
+  targets, weekly total), assembleDebug, lintDebug (no issues), assembleStaging. Emulator:
+  installed the previous version as the staging app, saved a 20 s neck hold, upgraded it to
+  this version: no crash, body view shows "Neck: right 0.3 of 5 min". Weekly goals page:
+  Hips secondary → about 27 min/week; + Legs primary → about 57 min/week with the warning.
+- Not checked: TalkBack on the body view (it has a spoken summary), the Weekly goals page in the
+  first-run flow end to end on a phone.

@@ -4,22 +4,29 @@ import dev.clean.stretch.figure.Motion
 import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.StageProp
 
-enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
+enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Arms("Arms & wrists"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
 
 enum class Muscle(val label: String, val region: Region) {
     Neck("Neck", Region.Neck),
     Chest("Chest", Region.Shoulders),
     Shoulders("Shoulders", Region.Shoulders),
+    Biceps("Biceps", Region.Arms),
+    Triceps("Triceps", Region.Arms),
+    Forearms("Forearms & wrists", Region.Arms),
     Lats("Lats", Region.Back),
     UpperBack("Upper back", Region.Back),
     LowerBack("Lower back", Region.Back),
     Abdominals("Abdominals", Region.Core),
+    Obliques("Side body", Region.Core),
     HipFlexors("Hip flexors", Region.Hips),
     Glutes("Glutes", Region.Hips),
     Adductors("Inner thigh", Region.Hips),
+    OuterHip("Outer hip", Region.Hips),
+    DeepHip("Deep hip rotators", Region.Hips),
     Quadriceps("Quadriceps", Region.Legs),
     Hamstrings("Hamstrings", Region.Legs),
     Calves("Calves", Region.Legs),
+    Shins("Shins & ankles", Region.Legs),
 }
 
 enum class Position(val label: String) {

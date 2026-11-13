@@ -94,7 +94,7 @@ fun TodayScreen(
     val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
     val streak = remember(starts, prefs.daysPerWeek) { Stats.weekStreak(Stats.daysFromStarts(starts, zone), LocalDate.now(), prefs.daysPerWeek) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
-    val weekMinutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
+    val weekMinutes = remember(weekSteps) { Stats.minutesByMuscle(weekSteps).mapValues { it.value.weaker } }
     var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
     val kind = RoutineKind.valueOf(kindName)
     // The recommendation (D-029): the user reviews and changes it before starting.

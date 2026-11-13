@@ -31,6 +31,9 @@ data class ProfileEntity(
     @ColumnInfo(defaultValue = "0") val hasRoller: Boolean = false,
     /** 1 = on, 0 = off, null = automatic. */
     val strengthen: Boolean? = null,
+    /** v6: secondary areas and the weekly dose (D-039). */
+    @ColumnInfo(defaultValue = "") val secondary: String = "",
+    @ColumnInfo(defaultValue = "10") val weeklyDose: Int = 10,
 )
 
 @Dao
@@ -65,6 +68,8 @@ object ProfileMapper {
         setupDone = e.setupDone,
         hasRoller = e.hasRoller,
         strengthen = e.strengthen,
+        secondary = decodeSet<Region>(e.secondary),
+        weeklyDose = e.weeklyDose,
     )
 
     fun toEntity(p: Profile, now: Long) = ProfileEntity(
@@ -81,6 +86,8 @@ object ProfileMapper {
         updatedAt = now,
         hasRoller = p.hasRoller,
         strengthen = p.strengthen,
+        secondary = p.secondary.joinToString(",") { it.name },
+        weeklyDose = p.weeklyDose,
     )
 }
 

@@ -1,6 +1,7 @@
 package dev.clean.stretch.data
 
 import dev.clean.stretch.catalog.Region
+import dev.clean.stretch.catalog.Muscle
 import dev.clean.stretch.catalog.SampleCatalog
 import dev.clean.stretch.ui.SessionRecorder
 import dev.clean.stretch.ui.Side
@@ -42,6 +43,24 @@ class HistoryTest {
         val minutes = Stats.minutesByRegion(rows)
         assertEquals(1.5, minutes[Region.Legs]!!, 1e-9)
         assertEquals(null, minutes[Region.Neck])
+    }
+
+    // D-039: minutes are per muscle per side; a both-sides move counts for each side; rows saved
+    // before v6 (no main muscles stored) fall back to the move's tags.
+    @Test
+    fun weeklyMinutesArePerMusclePerSide() {
+        val steps = buildSteps(listOf("standing_quad", "cobra"))
+        // 0 quad setup (right), 1 quad hold right, 2 setup left, 3 hold left, 4 cobra setup, 5 cobra hold
+        val rows = SessionRecorder.stepRows(steps, mapOf(1 to StepRecord(60_000L, false), 3 to StepRecord(30_000L, false), 5 to StepRecord(40_000L, false)))
+        val m = Stats.minutesByMuscle(rows)
+        assertEquals(1.0, m.getValue(Muscle.Quadriceps).right, 1e-9)
+        assertEquals(0.5, m.getValue(Muscle.Quadriceps).left, 1e-9)
+        assertEquals(0.5, m.getValue(Muscle.Quadriceps).weaker, 1e-9)
+        val abs = m.getValue(Muscle.Abdominals)
+        assertEquals(40 / 60.0, abs.left, 1e-9)
+        assertEquals(40 / 60.0, abs.right, 1e-9)
+        val old = rows.map { it.copy(primaryMuscles = "") }
+        assertEquals(m, Stats.minutesByMuscle(old))
     }
 
     @Test

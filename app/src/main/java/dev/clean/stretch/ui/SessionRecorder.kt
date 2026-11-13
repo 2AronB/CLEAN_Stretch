@@ -29,6 +29,7 @@ object SessionRecorder {
                     plannedSeconds = (step.holdMs / 1000).toInt(),
                     actualSeconds = (r.heldMs / 1000).toInt(),
                     skipped = r.skipped,
+                    primaryMuscles = if (step.stretch.kind.isStretch) step.stretch.primary.joinToString(",") { it.name } else "",
                 )
             }
 }

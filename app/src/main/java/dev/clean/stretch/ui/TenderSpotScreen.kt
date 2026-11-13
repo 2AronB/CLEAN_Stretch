@@ -61,7 +61,7 @@ fun TenderSpotScreen(profile: Profile, onBack: () -> Unit, onStart: (Route) -> U
             Spacer(Modifier.height(16.dp))
             Text("Where is it?", style = MaterialTheme.typography.titleMedium)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                Muscle.entries.forEach { m ->
+                SampleCatalog.musclesWithMoves.forEach { m ->
                     FilterChip(selected = m == muscle, onClick = { muscleName = m.name }, label = { Text(m.label) })
                 }
             }

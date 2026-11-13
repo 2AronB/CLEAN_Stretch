@@ -47,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -61,6 +62,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import dev.clean.stretch.catalog.Region
 import dev.clean.stretch.plan.Condition
+import dev.clean.stretch.plan.Dose
+import dev.clean.stretch.plan.Generator
 import dev.clean.stretch.plan.Goal
 import dev.clean.stretch.plan.Profile
 
@@ -70,7 +73,7 @@ private val profileSaver = Saver<Profile, String>(
         listOf(
             p.goal.name, p.olderAdult, p.focus.joinToString(",") { it.name }, p.avoid.joinToString(",") { it.name },
             p.noFloor, p.noKneeling, p.hasWall, p.conditions.joinToString(",") { it.name }, p.minutes, p.setupDone,
-            p.hasRoller, p.strengthen?.toString() ?: "auto",
+            p.hasRoller, p.strengthen?.toString() ?: "auto", p.secondary.joinToString(",") { it.name }, p.weeklyDose,
         ).joinToString("|")
     },
     restore = { text ->
@@ -82,13 +85,14 @@ private val profileSaver = Saver<Profile, String>(
             conditions = f[7].split(",").mapNotNull { n -> Condition.entries.firstOrNull { it.name == n } }.toSet(),
             minutes = f[8].toInt(), setupDone = f[9].toBoolean(),
             hasRoller = f.getOrNull(10).toBoolean(), strengthen = f.getOrNull(11)?.takeIf { it != "auto" }?.toBoolean(),
+            secondary = regions(f.getOrElse(12) { "" }), weeklyDose = f.getOrNull(13)?.toIntOrNull() ?: Dose.Recommended.minutes,
         )
     },
 )
 
 private const val PAGES = 6
 private const val MENU = -1
-private val SECTIONS = listOf("Goal", "Focus areas", "Limits and equipment", "Health conditions", "Routine length", "Schedule and reminder")
+private val SECTIONS = listOf("Goal", "Weekly goals", "Limits and equipment", "Health conditions", "Routine length", "Schedule and reminder")
 
 /**
  * First-run setup, also opened from Settings (Slice S4). Five short pages: goal, focus,
@@ -129,10 +133,7 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
                     Spacer(Modifier.height(8.dp))
                     ToggleRow("I'm 65 or older", "Uses longer, 60-second holds.", draft.olderAdult) { draft = draft.copy(olderAdult = it) }
                 }
-                1 -> {
-                    Heading("Any areas to focus on?", "Leave empty to follow your goal (${draft.goal.defaultFocus.joinToString { it.label }.ifEmpty { "whole body" }}).")
-                    RegionChips(draft.focus) { draft = draft.copy(focus = it) }
-                }
+                1 -> GoalsPage(draft, prefs.daysPerWeek) { draft = it }
                 2 -> {
                     Heading("Anything to avoid?", "Areas with pain, an injury or recent surgery are left out of routines.")
                     RegionChips(draft.avoid) { draft = draft.copy(avoid = it) }
@@ -256,6 +257,62 @@ private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onChang
     }
 }
 
+/**
+ * Weekly goals (D-039). Primary areas get the chosen dose per muscle per side; secondary areas get
+ * the minimum; other areas only fill spare time. A live total shows what the choices add up to,
+ * so nobody signs up for two hours a week by accident.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> Unit) {
+    Heading(
+        "Weekly goals",
+        "Primary areas get your weekly goal for each muscle, on each side. Secondary areas get a smaller amount to keep what you have. " +
+            "Leave all off to follow your goal (${draft.goal.defaultFocus.joinToString { it.label.lowercase() }.ifEmpty { "whole body, secondary" }}).",
+    )
+    val levels = listOf("Off", "Secondary", "Primary")
+    Region.entries.filter { it !in draft.avoid }.forEach { r ->
+        val level = when (r) { in draft.focus -> 2; in draft.secondary -> 1; else -> 0 }
+        Text(r.label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 10.dp, bottom = 4.dp))
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            levels.forEachIndexed { i, label ->
+                SegmentedButton(
+                    selected = level == i,
+                    onClick = {
+                        onChange(
+                            draft.copy(
+                                focus = if (i == 2) draft.focus + r else draft.focus - r,
+                                secondary = if (i == 1) draft.secondary + r else draft.secondary - r,
+                            ),
+                        )
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = i, count = levels.size),
+                    label = { Text(label) },
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(20.dp))
+    Text("Weekly goal for primary areas", style = MaterialTheme.typography.titleMedium)
+    Text("Minutes for each muscle, on each side, per week. Secondary areas get ${Dose.SECONDARY.minutes} minutes.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Dose.entries.forEach { d ->
+        ChoiceRow(d.label, d.info, selected = draft.dose == d) { onChange(draft.copy(weeklyDose = d.minutes)) }
+    }
+    Spacer(Modifier.height(12.dp))
+    val weekly = remember(draft) { Generator.weeklyPlanMinutes(draft) }
+    val perDay = (weekly + daysPerWeek - 1) / daysPerWeek.coerceAtLeast(1)
+    Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("About $weekly min of stretching a week", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "About $perDay min on each of your $daysPerWeek days. Moves that stretch several muscles at once count for each of them." +
+                    if (perDay > draft.minutes) " That's longer than your usual ${draft.minutes}-minute routine; try fewer primary areas or a smaller goal." else "",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RegionChips(selected: Set<Region>, onChange: (Set<Region>) -> Unit) {
@@ -359,7 +416,10 @@ private fun formatTime(minutes: Int): String =
 /** One line per section showing what's set now, so the user can jump straight to it. */
 private fun sectionSummaries(d: Profile, prefs: AppPreferences): List<String> = listOf(
     d.goal.label + if (d.olderAdult) " · 65 or older" else "",
-    d.focus.joinToString { it.label }.ifEmpty { "Follows your goal" },
+    buildList {
+        add(d.effectiveFocus.joinToString { it.label }.ifEmpty { "No primary areas" } + " · ${d.dose.minutes} min")
+        if (d.effectiveSecondary.isNotEmpty()) add("secondary: " + d.effectiveSecondary.joinToString { it.label.lowercase() })
+    }.joinToString(" · "),
     buildList {
         if (d.avoid.isNotEmpty()) add("Avoid " + d.avoid.joinToString { it.label.lowercase() })
         if (d.noFloor) add("no floor")

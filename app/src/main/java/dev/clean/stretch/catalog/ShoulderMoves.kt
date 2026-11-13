@@ -43,7 +43,7 @@ object ShoulderMoves {
         kind = StretchKind.Static,
         sided = true,
         primary = listOf(Muscle.Chest),
-        secondary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.Shoulders, Muscle.Biceps),
         position = Position.Standing,
         equipment = Equipment.Wall,
         highlight = setOf(Segment.NearUpperArm, Segment.Torso),
@@ -116,31 +116,5 @@ object ShoulderMoves {
         ),
     )
 
-    val overheadTriceps = Stretch(
-        key = "overhead_triceps",
-        name = "Overhead triceps stretch",
-        kind = StretchKind.Static,
-        sided = true,
-        primary = listOf(Muscle.Shoulders),
-        secondary = listOf(Muscle.Lats),
-        position = Position.Standing,
-        highlight = setOf(Segment.NearUpperArm),
-        summary = "Reach one hand down behind your head and ease that elbow back with the other hand.",
-        cues = listOf(
-            "Stand or sit tall.",
-            "Raise one arm, bend the elbow and let your hand drop behind your head.",
-            "With the other hand, ease that elbow gently back and in.",
-            "Feel the back of your upper arm and under your arm. Keep your head up.",
-        ),
-        sourceIds = listOf("S3", "S2"),
-        motion = Motion(
-            kind = MotionKind.Hold,
-            start = Pose(nearElbow = 6f, farElbow = 6f),
-            stretch = Pose(nearShoulder = 172f, nearElbow = 145f, nearArmOut = -8f, farShoulder = 150f, farElbow = 120f, farArmOut = -30f),
-            deep = Pose(nearShoulder = 178f, nearElbow = 150f, nearArmOut = -10f, farShoulder = 154f, farElbow = 124f, farArmOut = -32f),
-            view = View.Angled,
-        ),
-    )
-
-    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings, overheadTriceps)
+    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings)
 }

@@ -3,8 +3,8 @@
 **State on 2026-11-13:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
 foam rolling), S9 (range-of-motion checks), a 3D figure, 55 moves, the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
-Version `0.3.0-first-release-slices` (versionCode 3), database v5, compile/target SDK 37.
-81 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
+Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
+83 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
 `docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
@@ -21,9 +21,11 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   week streak; an evidence card.
 
 **Routine generator (Generator v2, `plan/Generator.kt`)**
-- Weekly dose (P-1): each focus area gets today's share of ~10 min/week (what's left ÷ planned
-  days still to come), never more than 4 min per area per session; leftover time fills the
-  least-covered areas; a met goal shifts time elsewhere with a note.
+- Weekly goals per muscle, per side (D-039): primary areas get the chosen dose (5 / 10 / 15
+  min), secondary areas 5 min; today's share = what's left on the weaker side ÷ planned days
+  left, never more than 4 min per muscle per side per session; moves that help several needy
+  muscles are preferred; warm-ups chase goals with flowing moves only; a met goal shifts time
+  elsewhere with a note.
 - Variety: seeded by date; moves used often this week go to the back. Order stays standing →
   floor.
 - Warm-ups use flowing moves first; full routines and cool-downs use holds. Optional
@@ -34,7 +36,8 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   hypermobility (easier only). Notes explain anything left out.
 
 **Setup and settings**
-- First run: 6 pages (goal + 65+, focus areas, limits and equipment incl. foam roller and
+- First run: 6 pages (goal + 65+, weekly goals (Off / Secondary / Primary per area, dose choice
+  with explanations, live weekly total), limits and equipment incl. foam roller and
   Strengthen switch, health conditions with the doctor-advice dialog, routine length, schedule:
   if-then cue, days a week, daily reminder).
 - Afterwards, Settings → **Goal, focus and limits** (highlighted card) opens a menu of the six
@@ -57,7 +60,7 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 - 3D figure with Side / Angled / Front / Above views (view chip), floor, mat, shadows and black
   outlines (D-034, D-035). Rolling keeps hands or feet planted with two-bone IK.
 
-**Library (55 moves)**
+**Library (55 moves, 20 muscles in 7 areas)**
 - 37 holds, 8 flowing moves, 7 strengthen holds and 3 foam-rolling moves; easier/harder pairs
   with "Other versions" links.
 - Search where every word must match and everyday words are understood ("easy hamstring",
@@ -65,8 +68,10 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   "Fits my limits"; results easiest first.
 
 **Progress**
-- Week streak, six area rings (stretch minutes this week), range-of-motion card (picture-based
-  check-ins: toe reach, overhead reach, ankle lunge, straight-leg raise; "+N steps since…"),
+- Week streak, **body view** (front and back figures, a bar per muscle per side filling toward
+  this week's goal; colour = primary / secondary / no goal; tap a muscle for its minutes;
+  `ui/BodyMap.kt`), range-of-motion card (picture-based check-ins: toe reach, overhead reach,
+  ankle lunge, straight-leg raise; "+N steps since…"; tap one check to update just that one),
   and session history.
 
 **Reminders**: daily, "around" the chosen time (one-shot alarm with a 10-minute window, re-armed
@@ -108,11 +113,17 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 
 Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
-1. Owner to try the colours on the phone (Settings → Appearance → Colors) and say what to adjust.
-2. Continue the catalog with `docs/ADDING_STRETCHES.md` (catalog is now split by body area).
-3. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
+1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
+   single range-of-motion check.
+2. New moves for muscles that have none yet: forearms & wrists (prayer stretch, wrist flexor /
+   extensor), biceps (doorway or wall biceps), shins & ankles (kneeling shin stretch), side body
+   (standing side bend is tagged Back; consider retagging), outer hip (cross-body glute, IT-band
+   side stretch). Each needs poses, cues, sources and voice clips (ADDING_STRETCHES.md).
+3. More range-of-motion checks (proposed, not built): back-scratch shoulder reach, hip-flexor
+   "Thomas test" lying knee hug, neck turn, seated twist, butterfly knee height.
+4. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
    count foam-rolling minutes toward the area rings (explained to owner, not decided).
-4. Before release: screenshots and store graphics, content rating, foreground-service
+5. Before release: screenshots and store graphics, content rating, foreground-service
    declaration, `bundleRelease` with the upload key.
 
 ## Working on this project (practical notes)

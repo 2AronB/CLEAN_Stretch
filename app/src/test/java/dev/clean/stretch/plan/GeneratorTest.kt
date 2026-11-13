@@ -1,6 +1,7 @@
 package dev.clean.stretch.plan
 
 import dev.clean.stretch.catalog.Position
+import dev.clean.stretch.catalog.Muscle
 import dev.clean.stretch.catalog.Region
 import dev.clean.stretch.catalog.SampleCatalog
 import org.junit.Assert.assertEquals
@@ -98,27 +99,26 @@ class GeneratorTest {
         assertEquals(dev.clean.stretch.catalog.StretchKind.Strengthen, SampleCatalog.byKey(r.keys.last())!!.kind)
     }
 
-    // PLAN §5 acceptance "Weekly target": ~10 min per area per week, spread over planned days,
-    // never more than 4 min for one area in a session.
+    // PLAN §5 acceptance "Weekly target", per muscle per side (D-039): the goal is spread over the
+    // planned days left and never more than 4 min for one muscle on one side in a session.
     @Test
     fun weeklyTargetIsSpreadOverPlannedDaysAndCapped() {
-        val legs = Profile(focus = setOf(Region.Legs), minutes = 15)
-        fun legMinutes(week: Map<Region, Double>, daysLeft: Int): Double {
-            val r = Generator.generate(legs, RoutineKind.Full, weekMinutes = week, daysLeft = daysLeft)
-            return Generator.minutesByArea(r.keys, r.holdSeconds)[Region.Legs] ?: 0.0
-        }
-        // Monday, 5 planned days: about 2 min.
-        assertEquals(2.0, Generator.sessionTargets(legs, emptyMap(), 5)[Region.Legs]!!, 1e-9)
-        assertTrue(legMinutes(emptyMap(), 5) in 1.3..4.0)
-        // Wednesday after Monday + Tuesday (4 min done), 3 days left: (10 - 4) / 3 = 2 min.
-        assertEquals(2.0, Generator.sessionTargets(legs, mapOf(Region.Legs to 4.0), 3)[Region.Legs]!!, 1e-9)
-        // Last day with nothing done: the share would be 10 min, but it's capped at 4.
-        assertEquals(4.0, Generator.sessionTargets(legs, emptyMap(), 1)[Region.Legs]!!, 1e-9)
-        // No area ever gets more than 4 min in one routine, whatever the length.
+        val legs = Profile(focus = setOf(Region.Legs), minutes = 15) // primary, 10 min default
+        // Monday, 5 planned days: 10 / 5 = 2 min.
+        assertEquals(2.0, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Hamstrings]!!, 1e-9)
+        // Wednesday after 4 min, 3 days left: (10 - 4) / 3 = 2 min.
+        assertEquals(2.0, Generator.sessionTargets(legs, mapOf(Muscle.Hamstrings to 4.0), 3)[Muscle.Hamstrings]!!, 1e-9)
+        // Last day with nothing done: capped at 4.
+        assertEquals(4.0, Generator.sessionTargets(legs, emptyMap(), 1)[Muscle.Hamstrings]!!, 1e-9)
+        // A muscle with no moves yet gets no target.
+        assertEquals(null, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Shins])
+        val r = Generator.generate(legs, RoutineKind.Full, daysLeft = 5)
+        assertTrue((Generator.minutesByMuscle(r.keys, r.holdSeconds)[Muscle.Hamstrings] ?: 0.0) > 0.0)
+        // No muscle side ever gets more than 4 min in one routine, whatever the length.
         listOf(5, 10, 15).forEach { m ->
             RoutineKind.entries.forEach { k ->
-                val r = Generator.generate(Profile(minutes = m), k, minutes = m, daysLeft = 1)
-                Generator.minutesByArea(r.keys, r.holdSeconds).values.forEach { assertTrue("$k $m min: $it", it <= 4.0 + 1e-9) }
+                val rr = Generator.generate(Profile(minutes = m), k, minutes = m, daysLeft = 1)
+                Generator.minutesByMuscle(rr.keys, rr.holdSeconds).values.forEach { assertTrue("$k $m min: $it", it <= 4.0 + 1e-9) }
             }
         }
     }
@@ -126,10 +126,27 @@ class GeneratorTest {
     @Test
     fun metWeeklyGoalShiftsTimeToOtherAreasWithANote() {
         val p = Profile(focus = setOf(Region.Legs), minutes = 10)
-        val r = Generator.generate(p, RoutineKind.Full, weekMinutes = mapOf(Region.Legs to 12.0), daysLeft = 2)
-        val byArea = Generator.minutesByArea(r.keys, r.holdSeconds)
+        val done = Muscle.entries.filter { it.region == Region.Legs }.associateWith { 12.0 }
+        val r = Generator.generate(p, RoutineKind.Full, weekMinutes = done, daysLeft = 2)
+        val byMuscle = Generator.minutesByMuscle(r.keys, r.holdSeconds)
         assertTrue(r.notes.any { it.contains("legs goal") })
-        assertTrue(byArea.filterKeys { it != Region.Legs }.values.sum() > (byArea[Region.Legs] ?: 0.0))
+        assertTrue(byMuscle.filterKeys { it.region != Region.Legs }.values.sum() > byMuscle.filterKeys { it.region == Region.Legs }.values.sum())
+    }
+
+    @Test
+    fun doseAndSecondaryAreasSetEachMusclesGoal() {
+        val p = Profile(focus = setOf(Region.Hips), secondary = setOf(Region.Neck, Region.Hips), weeklyDose = 15)
+        assertEquals(15.0, p.weeklyTarget(Muscle.Glutes)!!, 1e-9)
+        assertEquals(5.0, p.weeklyTarget(Muscle.Neck)!!, 1e-9)
+        assertEquals(null, p.weeklyTarget(Muscle.Hamstrings))
+        // An area to avoid never gets a goal.
+        assertEquals(null, p.copy(avoid = setOf(Region.Neck)).weeklyTarget(Muscle.Neck))
+        // Nothing chosen and a whole-body goal: everything is secondary.
+        assertEquals(5.0, Profile().weeklyTarget(Muscle.Calves)!!, 1e-9)
+        // The setup page's weekly total grows with the dose.
+        val legs = Profile(focus = setOf(Region.Legs))
+        assertTrue(Generator.weeklyPlanMinutes(legs.copy(weeklyDose = 5)) < Generator.weeklyPlanMinutes(legs.copy(weeklyDose = 15)))
+        assertTrue(Generator.weeklyPlanMinutes(legs.copy(weeklyDose = 5)) > 0)
     }
 
     @Test

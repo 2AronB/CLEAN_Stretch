@@ -20,7 +20,7 @@ class CatalogTest {
     @Test
     fun everyMoveLivesInItsAreaFileAndIsListedOnce() {
         val files = mapOf(
-            Region.Neck to NeckMoves.all, Region.Shoulders to ShoulderMoves.all, Region.Back to BackMoves.all,
+            Region.Neck to NeckMoves.all, Region.Shoulders to ShoulderMoves.all, Region.Arms to ArmMoves.all, Region.Back to BackMoves.all,
             Region.Core to CoreMoves.all, Region.Hips to HipMoves.all, Region.Legs to LegMoves.all,
         )
         files.forEach { (region, moves) ->

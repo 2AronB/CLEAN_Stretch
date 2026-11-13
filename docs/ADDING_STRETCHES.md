@@ -19,7 +19,7 @@ through. All stretch work happens on the PC (D-030).
 ## 2. Write the catalog entry (`catalog/<Area>Moves.kt`)
 
 Each move lives in the file for the body area of its **first** main muscle: `NeckMoves.kt`,
-`ShoulderMoves.kt` (shoulders & chest), `BackMoves.kt` (upper back, lower back, lats),
+`ShoulderMoves.kt` (shoulders & chest), `ArmMoves.kt` (biceps, triceps, forearms & wrists), `BackMoves.kt` (upper back, lower back, lats),
 `CoreMoves.kt`, `HipMoves.kt` (hip flexors, glutes, inner thigh) or `LegMoves.kt` (quads,
 hamstrings, calves). Separate files let several people (or agents) add moves at the same time
 without editing the same file. Copy a similar entry in that file and fill in every field:

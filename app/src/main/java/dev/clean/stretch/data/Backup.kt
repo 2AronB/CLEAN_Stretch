@@ -34,6 +34,7 @@ object BackupCodec {
                     "id" to s.id, "sessionId" to s.sessionId, "position" to s.position, "stretchKey" to s.stretchKey,
                     "stretchName" to s.stretchName, "side" to s.side, "primaryRegions" to s.primaryRegions, "muscles" to s.muscles,
                     "plannedSeconds" to s.plannedSeconds, "actualSeconds" to s.actualSeconds, "skipped" to s.skipped,
+                    "primaryMuscles" to s.primaryMuscles,
                 )
             },
             "profile" to data.profile?.let { p ->
@@ -41,6 +42,7 @@ object BackupCodec {
                     "goal" to p.goal, "olderAdult" to p.olderAdult, "focus" to p.focus, "avoid" to p.avoid, "noFloor" to p.noFloor,
                     "noKneeling" to p.noKneeling, "hasWall" to p.hasWall, "conditions" to p.conditions, "minutes" to p.minutes,
                     "setupDone" to p.setupDone, "updatedAt" to p.updatedAt, "hasRoller" to p.hasRoller, "strengthen" to p.strengthen,
+                    "secondary" to p.secondary, "weeklyDose" to p.weeklyDose,
                 )
             },
             "settings" to data.settings,
@@ -80,6 +82,8 @@ object BackupCodec {
                 id = it.long("id"), sessionId = it.long("sessionId"), position = it.int("position"), stretchKey = it.str("stretchKey"),
                 stretchName = it.str("stretchName"), side = it.str("side"), primaryRegions = it.str("primaryRegions"), muscles = it.str("muscles"),
                 plannedSeconds = it.int("plannedSeconds"), actualSeconds = it.int("actualSeconds"), skipped = it.bool("skipped"),
+                // Optional: backups made before v6 don't have it.
+                primaryMuscles = it["primaryMuscles"] as? String ?: "",
             )
         }
         if (steps.any { it.sessionId !in ids }) throw BackupException("Damaged backup: a step belongs to a missing session.")
@@ -89,6 +93,7 @@ object BackupCodec {
                 noFloor = it.bool("noFloor"), noKneeling = it.bool("noKneeling"), hasWall = it.bool("hasWall"),
                 conditions = it.str("conditions"), minutes = it.int("minutes"), setupDone = it.bool("setupDone"), updatedAt = it.long("updatedAt"),
                 hasRoller = it["hasRoller"] as? Boolean ?: false, strengthen = it["strengthen"] as? Boolean,
+                secondary = it["secondary"] as? String ?: "", weeklyDose = (it["weeklyDose"] as? Long)?.toInt() ?: 10,
             )
         }
         val settings = (root["settings"] as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v.toString() } ?: emptyMap()

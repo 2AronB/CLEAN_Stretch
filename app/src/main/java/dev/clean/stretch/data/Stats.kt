@@ -1,16 +1,58 @@
 package dev.clean.stretch.data
 
+import dev.clean.stretch.catalog.Muscle
 import dev.clean.stretch.catalog.Region
+import dev.clean.stretch.catalog.SampleCatalog
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
+/** Left or right side of the body. */
+enum class BodySide(val label: String) { Left("Left"), Right("Right") }
+
+/** Minutes for one muscle on each side this week. */
+data class SideMinutes(val left: Double = 0.0, val right: Double = 0.0) {
+    /** The side that's further behind; goals count as met only when both sides are. */
+    val weaker: Double get() = minOf(left, right)
+    operator fun get(side: BodySide) = if (side == BodySide.Left) left else right
+}
+
 /** Weekly numbers, always recomputed from saved session steps (never stored). Pure Kotlin. */
 object Stats {
-    /** Weekly goal per area. Tier A wording: "about 10 minutes per muscle each week" [S1][S2]. */
-    const val WEEKLY_GOAL_MINUTES = 10.0
+    /**
+     * Minutes each muscle was stretched this week, per side (D-039). Doses in the research are per
+     * muscle on one side (EVIDENCE §1), so a 40 s hold on the right counts 40 s for the right side
+     * only; a move that stretches both sides at once ("both") counts for each side. Each of a move's
+     * main muscles gets the full time; muscles it only stretches lightly get nothing.
+     */
+    fun minutesByMuscle(steps: List<SessionStepEntity>): Map<Muscle, SideMinutes> {
+        val totals = mutableMapOf<Muscle, SideMinutes>()
+        steps.forEach { s ->
+            val muscles = mainMuscles(s)
+            val min = s.actualSeconds / 60.0
+            muscles.forEach { m ->
+                val t = totals[m] ?: SideMinutes()
+                totals[m] = when (s.side) {
+                    "left" -> t.copy(left = t.left + min)
+                    "right" -> t.copy(right = t.right + min)
+                    else -> SideMinutes(t.left + min, t.right + min)
+                }
+            }
+        }
+        return totals
+    }
+
+    /** A step's main stretched muscles: the saved snapshot, or for rows saved before v6, the move's current tags. */
+    private fun mainMuscles(s: SessionStepEntity): Set<Muscle> {
+        if (s.primaryMuscles.isNotBlank()) {
+            return s.primaryMuscles.split(",").mapNotNull { n -> Muscle.entries.firstOrNull { it.name == n } }.toSet()
+        }
+        // Old rows: only stretch steps had areas recorded (strength and rolling had none).
+        if (s.primaryRegions.isBlank()) return emptySet()
+        return SampleCatalog.byKey(s.stretchKey)?.primary?.toSet() ?: emptySet()
+    }
 
     /** Weeks start on Monday (docs/PLAN.md default) in the phone's time zone. */
     fun weekStart(today: LocalDate): LocalDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))

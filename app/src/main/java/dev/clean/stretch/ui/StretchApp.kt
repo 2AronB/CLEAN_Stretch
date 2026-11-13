@@ -44,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import dev.clean.stretch.settings.AppPreferences
+import dev.clean.stretch.plan.Profile
 import dev.clean.stretch.settings.ThemeMode
 import dev.clean.stretch.ui.theme.StretchTheme
 
@@ -197,7 +198,7 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines, onOpenTender = { push(Route.TenderSpot) })
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) }, profile = profile)
-                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck(it)) })
+                    Route.Progress -> ProgressScreen(history, profile ?: Profile(), prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck(it)) })
                     Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) }, onOpenStretch = { push(Route.Detail(it)) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)

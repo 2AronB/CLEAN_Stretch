@@ -118,7 +118,7 @@ fun LibraryScreen(onOpen: (String) -> Unit, profile: Profile?) {
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         ChipGroup("Body area", Region.entries, { it.label }, filter.regions) { update(filter.copy(regions = filter.regions.toggle(it))) }
-                        ChipGroup("Muscle", Muscle.entries, { it.label }, filter.muscles) { update(filter.copy(muscles = filter.muscles.toggle(it))) }
+                        ChipGroup("Muscle", SampleCatalog.musclesWithMoves, { it.label }, filter.muscles) { update(filter.copy(muscles = filter.muscles.toggle(it))) }
                         ChipGroup("Position", Position.entries, { it.label }, filter.positions) { update(filter.copy(positions = filter.positions.toggle(it))) }
                         ChipGroup("Equipment", Equipment.entries.filter { e -> SampleCatalog.all.any { it.equipment == e } }, { it.label }, filter.equipment) {
                             update(filter.copy(equipment = filter.equipment.toggle(it)))

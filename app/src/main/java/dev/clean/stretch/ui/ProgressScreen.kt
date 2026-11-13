@@ -26,6 +26,8 @@ import dev.clean.stretch.catalog.Region
 import androidx.compose.material3.Button
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.RomCheckDao
+import dev.clean.stretch.plan.Dose
+import dev.clean.stretch.plan.Profile
 import dev.clean.stretch.plan.RomEntry
 import dev.clean.stretch.plan.RomTests
 import dev.clean.stretch.plan.RomTrends
@@ -43,21 +45,20 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
-/** This week's minutes per body area and recent sessions, recomputed from saved history. */
+/** This week's minutes per muscle and side (body view), range of motion and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen(history: HistoryDao, daysTarget: Int, romChecks: RomCheckDao, onCheck: (String?) -> Unit) {
+fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romChecks: RomCheckDao, onCheck: (String?) -> Unit) {
     val romRows by remember { romChecks.observe() }.collectAsState(initial = emptyList())
     val zone = remember { ZoneId.systemDefault() }
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val sessions by remember { history.recentSessions(20) }.collectAsState(initial = emptyList())
-    val minutes = remember(weekSteps) { Stats.minutesByRegion(weekSteps) }
+    val minutes = remember(weekSteps) { Stats.minutesByMuscle(weekSteps) }
     val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
     val days = remember(starts) { Stats.daysFromStarts(starts, zone) }
     val today = remember { LocalDate.now() }
     val streak = remember(days, daysTarget) { Stats.weekStreak(days, today, daysTarget) }
     val daysThisWeek = days.count { !it.isBefore(Stats.weekStart(today)) }
-    val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.secondary)
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ScreenTitle("Progress", subtitle = "This week")
@@ -90,27 +91,14 @@ fun ProgressScreen(history: HistoryDao, daysTarget: Int, romChecks: RomCheckDao,
             Column(Modifier.padding(20.dp)) {
                 Text("Weekly goals", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Each area aims for about 10 minutes a week. Minutes count the time you held stretches for that area.",
+                    "Each muscle has a bar on each side. It fills as that side reaches this week's goal: " +
+                        "${profile.dose.minutes} min for primary areas, ${Dose.SECONDARY.minutes} min for secondary. " +
+                        "A move counts for every muscle it mainly stretches.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Region.entries.chunked(3).forEachIndexed { row, regions ->
-                    Spacer(Modifier.height(20.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        regions.forEachIndexed { i, region ->
-                            val m = minutes[region] ?: 0.0
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Ring(fraction = (m / Stats.WEEKLY_GOAL_MINUTES).toFloat(), color = colors[(row * 3 + i) % colors.size], modifier = Modifier.size(64.dp))
-                                    Text(formatMinutes(m), style = MaterialTheme.typography.titleMedium)
-                                }
-                                Spacer(Modifier.height(6.dp))
-                                Text(region.label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
-                                Text("of 10 min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
+                Spacer(Modifier.height(16.dp))
+                BodyMap(minutes, profile)
             }
         }
         Spacer(Modifier.height(16.dp))

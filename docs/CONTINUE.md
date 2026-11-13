@@ -113,6 +113,8 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 
 Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
+**The full next-stage plan, in order and with sizes, is `docs/PLAN.md` §8.** The list below is the short version.
+
 1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
    single range-of-motion check.
 2. Owner review of the new wrist moves (wrist flexor, wrist extensor, prayer stretch, D-040) and

@@ -224,3 +224,88 @@ are not authorized by being listed.
 6. Git: local repo now; a GitHub repo like `CLEAN_Words` if you want pushes.
 7. Name the first slice to authorize (recommended: **S0 + S1** together, so the
    riskiest piece — the figure — is judged early).
+
+## 8. Next stage plan (written 2026-11-13)
+
+**Where things stand:** S0–S9 are built, plus screen-off running (D-037), seasonal palettes
+(D-038), per-muscle weekly goals with a body view (D-039) and wrist moves (D-040). The owner
+said publishing is "still a bit out", so this stage is **depth and polish**, with release prep
+last. Sizes: S = one short session, M = one full session, L = several sessions.
+
+Rule for every step: follow AGENTS.md (tests, lint, emulator only, CONTINUE.md update). New
+moves follow ADDING_STRETCHES.md and go into REVIEW_LOG.md as "Not reviewed".
+
+### 8.1 Gate: owner phone pass (owner, S)
+Nothing below depends on it, but its feedback reorders the list. On the phone, try:
+the colours (Settings → Appearance), the Weekly goals setup page and its weekly total, the
+body view on Progress, tapping one range-of-motion check, a routine with the screen locked
+(voice through the speaker, notification Pause/Skip), the three wrist moves and their voice
+clips, TalkBack and the largest font size.
+
+### 8.2 Fill the empty muscles (agent + owner review, L)
+Muscles with goals but no moves show grey bars. One muscle per session, in this order:
+
+| Muscle | Candidate moves (pick 2–3) | Notes |
+|---|---|---|
+| Shins & ankles | Standing top-of-foot stretch (toes tucked behind), kneeling shin stretch (level 2) | Kneeling one is left out for "no kneeling" |
+| Biceps | Wall biceps stretch, behind-back clasp with straight arms | Wall needs the wall prop |
+| Side body | Overhead side reach (retag or new), side-lying reach | Decide whether the standing side bend's main muscle becomes side body |
+| Outer hip | Standing cross-legged side lean, lying cross-body knee pull | — |
+| Deep hip rotators | Seated figure-four, pigeon (level 2) | Pigeon: check knee caution wording |
+
+Each move: pose (pose-preview, every view), cues and wording (EVIDENCE §11), sources (Editorial
+plus dose sources [S2][S3]), voice clips (script now makes only missing ones), review-log row.
+
+### 8.3 Range-of-motion checks, round 2 (agent, M)
+Picture-choice checks like the current four, each tied to the muscles it reflects:
+back-scratch reach (shoulders/triceps), lying knee hug ("Thomas test", hip flexors), neck turn
+(neck), seated twist (side body / back), butterfly knee height (inner thigh). Keys are
+permanent; trends and "not measured" work as today.
+
+### 8.4 Body view, next round (agent, M)
+- Tap a muscle → a sheet with its minutes and a **"Stretch this now"** button that builds a
+  short routine for it (reuses the Tender spot builder).
+- A list mode for screen readers and the largest font size (same data as the figure).
+- "Last week" toggle, recomputed from history like everything else.
+- Show which muscles today's suggested routine works, on the Today card.
+
+### 8.5 Engine and figure (agent, M–L; owner check on looks)
+- Multi-keyframe flows (circles, sequences) in `figure/Motion.kt` (noted since S1).
+- Forearm rotation (palm up / palm down) so the wrist flexor and extensor stretches look
+  different.
+- Planted hands on the floor for moves that need ground contact (thread the needle is
+  "Changes requested"; owner said not to fix yet, so ask first).
+
+### 8.6 Reliability and data safety (agent; one approval, M)
+- **Real database-upgrade tests.** Today's upgrade check was manual (old staging build →
+  new). Room's test helper needs the test-only dependency `androidx.room:room-testing`
+  (**needs owner approval**; it isn't shipped in the app). Then a v1→v6 migration test runs
+  on the emulator every time.
+- Reminder after a phone restart needs `RECEIVE_BOOT_COMPLETED` (**needs owner approval**);
+  today the app re-arms it when opened.
+- Small known issues: the finish screen says "Saved to your history" even when every hold was
+  skipped; the emulator started with `-no-snapshot-save` rewinds to an old snapshot on every
+  boot, so test data doesn't carry over between sessions (use it knowingly).
+
+### 8.7 Goals tuning (agent + owner, S–M)
+- Watch the weekly totals in real use; if routines feel long, consider defaulting new users
+  to fewer primary areas or showing "about N min a day" next to each area as it's picked.
+- Optional "Advanced" toggle to count foam rolling toward the bars (explained to owner, not
+  decided).
+- A small "goal met" moment on Progress when a muscle side fills (no streak pressure,
+  EVIDENCE P-7).
+
+### 8.8 Release prep (last; owner-heavy)
+Health-condition clinical review (**blocks release**, D-031), wording reviews, privacy policy
+URL and contact address, Data safety and health declarations, foreground-service declaration
+(Play may ask for a short video), content rating, screenshots and store graphics, upload key,
+`bundleRelease`. Checklist: `docs/PLAY_RELEASE.md`.
+
+### Suggested order
+8.1 (whenever the owner can) → 8.2 shins & ankles → 8.6 migration tests (if approved) → 8.2
+biceps → 8.4 → 8.3 → remaining 8.2 muscles → 8.5 → 8.7 → 8.8.
+
+### Decisions waiting on the owner
+1. Which muscle gets moves next (suggested: shins & ankles).
+2. Approve the test-only `room-testing` dependency for automatic upgrade tests? (recommended)
+3. Approve `RECEIVE_BOOT_COMPLETED` so reminders survive a phone restart? (optional)

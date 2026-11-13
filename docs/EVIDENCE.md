@@ -56,6 +56,31 @@ reduces soreness, fixes posture, or meaningfully builds muscle [S3][S11][S14].
 - **ACSM** [S15]: stretch at least 2–3 days/week, daily is most effective; build
   up about 60 s per muscle per session.
 
+**Ingram 2024 full text, re-read 2026-11-13 (dose ranges for the user's choice):**
+- *How dose was counted:* weekly stretching time per muscle group stretched (per-session time
+  for single sessions). Studies recorded whether stretching was one-sided, and many used the
+  other, unstretched limb as the control, so the dose is time on the stretched muscle of one
+  side. The paper doesn't spell out how a two-sided exercise is counted; counting **per muscle
+  per side** is the reading that matches its data (owner decision, D-039).
+- *Dose-response (chronic, cubic spline, knots at 3, 8, 16 and 173 min/week):* gains rise
+  steeply up to about **10 min/week**, where they peak (Hedges' g ≈ 1.2 on the fitted curve),
+  then flatten; the curve sits a little lower at very high volumes (≈ 0.7 by 100+ min/week)
+  with wide confidence bands. The authors report "no further meaningful improvements", not harm.
+- *Per session (acute):* gains peak at about **4 min per muscle**, then flat.
+- *Typical dose in the studies:* median 2.5 min per session and 12.5 min/week; 5 sessions/week
+  for 6 weeks.
+- *Frequency and program length* did not change the result (p = 0.95 for sessions/week).
+- *Minimum:* Thomas 2018 found larger gains at 5–10 and 10+ min/week than under 5 min [S1];
+  one included study found 7 min/week as good as 14, and both better than 3.5 [S2].
+- *Very long durations:* one study (60 min/day of calf stretching) found more ankle range than
+  10 or 30 min/day; such doses are rare and their benefit is uncertain [S2].
+- 80% of studies stretched hamstrings or calves; evidence for other muscles is thinner.
+
+**Dose choices offered to the user (P-1, revised):** Minimum **5 min/week** (smallest dose with
+clear gains), Recommended **10 min/week** (where gains peak), More **15 min/week** (no further
+gain measured; for people who simply enjoy more). Always ≤ 4 min per muscle per side per
+session.
+
 **Takeaway:** 5 min/week is a good *minimum*; **10 min/week per focus muscle**
 is where gains appear to max out. These figures are **per muscle group**, so a
 6-muscle routine at 10 min each is about 60 min/week (about 12 min on 5 days),

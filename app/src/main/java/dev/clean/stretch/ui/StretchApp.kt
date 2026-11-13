@@ -59,7 +59,8 @@ sealed interface Route {
     data object Studio : Route
     data object Sources : Route
     data object Setup : Route
-    data object RomCheck : Route
+    /** Range-of-motion check-in; [only] limits it to one check (tapped on Progress). */
+    data class RomCheck(val only: String? = null) : Route
     data object TenderSpot : Route
     /** Review a recommended routine before starting it (D-029). */
     data class Preview(val kind: RoutineKind, val holdSeconds: Int, val keys: List<String>) : Route
@@ -75,7 +76,7 @@ sealed interface Route {
             Studio -> "studio"
             Sources -> "sources"
             Setup -> "setup"
-            RomCheck -> "romcheck"
+            is RomCheck -> if (r.only == null) "romcheck" else "romcheck|${r.only}"
             TenderSpot -> "tender"
             is Preview -> "preview|${r.kind.name}|${r.holdSeconds}|${r.keys.joinToString(",")}"
             is Detail -> "detail|${r.key}"
@@ -98,7 +99,7 @@ sealed interface Route {
                     holdSeconds = parts.getOrNull(4)?.toIntOrNull() ?: (HOLD_MS / 1000).toInt(),
                 )
                 "setup" -> Setup
-                "romcheck" -> RomCheck
+                "romcheck" -> RomCheck(parts.getOrNull(1)?.takeIf { it.isNotBlank() })
                 "tender" -> TenderSpot
                 "preview" -> Preview(
                     kind = RoutineKind.entries.firstOrNull { it.name == parts.getOrNull(1) } ?: RoutineKind.Full,
@@ -196,13 +197,13 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines, onOpenTender = { push(Route.TenderSpot) })
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) }, profile = profile)
-                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck) })
+                    Route.Progress -> ProgressScreen(history, prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck(it)) })
                     Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) }, onOpenStretch = { push(Route.Detail(it)) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)
                     Route.Studio -> PoseStudioScreen(onBack = ::pop)
                     Route.Sources -> SourcesScreen(onBack = ::pop)
-                    Route.RomCheck -> RomCheckScreen(romChecks, onDone = ::pop)
+                    is Route.RomCheck -> RomCheckScreen(romChecks, only = route.only, onDone = ::pop)
                     Route.TenderSpot -> profile?.let { p -> TenderSpotScreen(p, onBack = ::pop, onStart = ::replace) }
                     Route.Setup -> profile?.let { p ->
                         SetupScreen(

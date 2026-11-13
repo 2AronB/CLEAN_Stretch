@@ -44,7 +44,8 @@ import kotlinx.coroutines.launch
  * so it shows as "not measured" rather than a low score.
  */
 @Composable
-fun RomCheckScreen(checks: RomCheckDao, onDone: () -> Unit) {
+fun RomCheckScreen(checks: RomCheckDao, only: String? = null, onDone: () -> Unit) {
+    val tests = RomTests.all.filter { only == null || it.key == only }.ifEmpty { RomTests.all }
     // "testKey|side" -> level, saved as text so it survives rotation.
     var answersText by rememberSaveable { mutableStateOf("") }
     val answers = answersText.split(";").filter { it.isNotBlank() }.associate { it.substringBeforeLast("=") to it.substringAfterLast("=").toInt() }
@@ -56,14 +57,14 @@ fun RomCheckScreen(checks: RomCheckDao, onDone: () -> Unit) {
     var error by rememberSaveable { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        BackBar("Range-of-motion check", onDone)
+        BackBar(if (tests.size == 1) tests.single().name else "Range-of-motion check", onDone)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
             Text(
                 "Warm up gently first. Go only to mild tension, never pain, and pick the closest answer. These are for tracking your own progress, not medical tests.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            RomTests.all.forEach { test ->
+            tests.forEach { test ->
                 Spacer(Modifier.height(16.dp))
                 Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {

@@ -1,6 +1,7 @@
 package dev.clean.stretch.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +45,7 @@ import androidx.compose.ui.unit.dp
 
 /** This week's minutes per body area and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen(history: HistoryDao, daysTarget: Int, romChecks: RomCheckDao, onCheck: () -> Unit) {
+fun ProgressScreen(history: HistoryDao, daysTarget: Int, romChecks: RomCheckDao, onCheck: (String?) -> Unit) {
     val romRows by remember { romChecks.observe() }.collectAsState(initial = emptyList())
     val zone = remember { ZoneId.systemDefault() }
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
@@ -174,7 +175,7 @@ fun Ring(fraction: Float, color: Color, modifier: Modifier = Modifier) {
 
 /** Range-of-motion check results (S9): latest answer and change since the first check. */
 @Composable
-private fun RomCard(entries: List<RomEntry>, onCheck: () -> Unit) {
+private fun RomCard(entries: List<RomEntry>, onCheck: (String?) -> Unit) {
     val trends = remember(entries) { RomTrends.of(entries) }
     val days = remember(entries) { RomTrends.daysSinceLast(entries, System.currentTimeMillis()) }
     val dateFormat = remember { DateTimeFormatter.ofPattern("d MMM") }
@@ -199,7 +200,11 @@ private fun RomCard(entries: List<RomEntry>, onCheck: () -> Unit) {
                 val sides = if (test.sided) listOf("left" to " (left)", "right" to " (right)") else listOf("both" to "")
                 sides.forEach { (side, label) ->
                     val trend = trends[test.key to side]
-                    Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    // Tap one check to update just that one (owner, 2026-11-13).
+                    Row(
+                        Modifier.fillMaxWidth().clickable(onClickLabel = "Update ${test.name}") { onCheck(test.key) }.padding(top = 10.dp, bottom = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Column(Modifier.weight(1f)) {
                             Text(test.name + label, style = MaterialTheme.typography.bodyLarge)
                             Text(
@@ -224,7 +229,9 @@ private fun RomCard(entries: List<RomEntry>, onCheck: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Button(onClick = onCheck) { Text(if (days == null) "Check now" else "Check again") }
+            Text("Tap a check to update just that one.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = { onCheck(null) }) { Text(if (days == null) "Check all now" else "Check all again") }
         }
     }
 }

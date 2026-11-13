@@ -213,8 +213,22 @@ object FigureDrawing {
             // Parts behind the torso (across the floor, ignoring height) fade a little toward the background.
             val back = if (g === torsoGroup) 0f else ((torsoLevel - levelOf(g)) / 14f).coerceIn(0f, 1f)
             if (glow > 0f) g.segments.filter { it in highlight }.forEach { out += part(it, Ink.Highlight, 10f, 0f, 0.18f * glow) }
+            // A hand bent at the wrist belongs to its forearm: same outline, ink and highlight.
+            val hands = g.segments.mapNotNull { seg ->
+                val joint = if (seg == Segment.NearForearm) Joint.NearHand else if (seg == Segment.FarForearm) Joint.FarHand else null
+                joint?.let { j -> figure.handTips[j]?.let { tip -> Triple(seg, figure[j], tip) } }
+            }
+            fun hand(seg: Segment, from: Vec3, tip: Vec3, ink: Ink, extra: Float, fade: Float, alpha: Float = 1f): Shape {
+                val s = (proj.project(from).scale + proj.project(tip).scale) / 2f
+                return Shape.Line(at(from), at(tip), (Body.HAND_WIDTH + extra) * s * px, ink, fade, alpha)
+            }
+            if (glow > 0f) hands.filter { it.first in highlight }.forEach { (seg, a, b) -> out += hand(seg, a, b, Ink.Highlight, 10f, 0f, 0.18f * glow) }
+            hands.forEach { (seg, a, b) -> out += hand(seg, a, b, Ink.Outline, 2 * OUTLINE, 0f) }
             g.segments.forEach { out += part(it, Ink.Outline, 2 * OUTLINE, 0f) }
             if (g.withHead) out += Shape.Dot(map(head), headR + OUTLINE * head.scale * px, Ink.Outline)
+            hands.forEach { (seg, a, b) ->
+                out += if (seg in highlight) hand(seg, a, b, Ink.Highlight, 0f, back * 0.35f) else hand(seg, a, b, Ink.Body, 0f, back * 0.55f)
+            }
             g.segments.forEach { seg ->
                 out += if (seg in highlight) part(seg, Ink.Highlight, 0f, back * 0.35f) else part(seg, Ink.Body, 0f, back * 0.55f)
             }

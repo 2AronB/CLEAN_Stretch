@@ -122,7 +122,8 @@ new everyday word, add it to `SearchWords.synonyms` in `plan/LibraryFilter.kt`.
 2. Copy it over `tools/voice/phrases.txt`.
 3. Generate the clips (af_heart, D-026):
    `<kokoro venv>/Scripts/python.exe -I tools/voice/generate.py <kokoro model dir>`
-   (the tools are in `C:\Users\Kayli\Desktop\CLEAN Development\kokoro`).
+   (the tools are in `C:\Users\Kayli\Desktop\CLEAN Development\kokoro`). Only missing clips are made;
+   add `--all` to remake every clip (they'd all need listening to again).
 4. Run the tests again. They should pass.
 
 ## 7. Check it

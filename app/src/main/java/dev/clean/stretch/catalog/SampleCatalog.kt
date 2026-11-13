@@ -30,7 +30,7 @@ object SampleCatalog {
         NeckMoves.neckNods, NeckMoves.neckSideBend, BackMoves.standingSideBend, HipMoves.figureFour,
         BackMoves.kneeDropTwist, BackMoves.seatedTwist, BackMoves.threadNeedle, HipMoves.wideLegFold,
         HipMoves.sideLunge, ArmMoves.overheadTriceps, CoreMoves.torsoTurns, HipMoves.sideLegRaise,
-        HipMoves.recliningButterfly,
+        HipMoves.recliningButterfly, ArmMoves.wristFlexor, ArmMoves.wristExtensor, ArmMoves.prayerStretch,
     )
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }

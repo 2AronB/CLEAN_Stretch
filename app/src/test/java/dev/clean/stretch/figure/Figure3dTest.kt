@@ -9,6 +9,21 @@ import kotlin.math.max
 
 class Figure3dTest {
 
+    // A hand appears only when a pose bends the wrist, so every older pose draws exactly as before.
+    @Test
+    fun handIsDrawnOnlyWhenTheWristIsBent() {
+        assertTrue(Figure3d.solve(Pose(nearShoulder = 90f)).handTips.isEmpty())
+        val f = Figure3d.solve(Pose(nearShoulder = 90f, nearWrist = -70f))
+        val hand = f[Joint.NearHand]
+        val tip = f.handTips.getValue(Joint.NearHand)
+        // Arm reaching forward, wrist -70: fingers point down (y grows downward) and a little forward.
+        assertTrue("fingers down", tip.y - hand.y > 0.9f * Body.HAND)
+        assertTrue("a little forward", tip.x > hand.x)
+        assertEquals(Body.HAND, (tip - hand).length(), 0.01f)
+        val up = Figure3d.solve(Pose(nearShoulder = 90f, nearWrist = 80f))
+        assertTrue("fingers up", up.handTips.getValue(Joint.NearHand).y < up[Joint.NearHand].y)
+    }
+
     private val sideways = listOf(PoseParam.SideBend, PoseParam.Twist, PoseParam.NearArmOut, PoseParam.FarArmOut, PoseParam.NearLegOut, PoseParam.FarLegOut, PoseParam.NearLegTurn, PoseParam.FarLegTurn, PoseParam.HeadTilt, PoseParam.NearArmTurn, PoseParam.FarArmTurn, PoseParam.Roll)
 
     @Test

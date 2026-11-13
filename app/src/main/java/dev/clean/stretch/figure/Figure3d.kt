@@ -65,6 +65,8 @@ class Figure3d(
     val neckAngle: Float,
     /** Unit vector across the hips, toward the near side (changes only when the body rolls). */
     val pelvisSide: Vec3 = Vec3.Side,
+    /** Fingertip points for hands bent at the wrist, keyed by [Joint.NearHand] / [Joint.FarHand]. Drawing only. */
+    val handTips: Map<Joint, Vec3> = emptyMap(),
 ) {
     operator fun get(j: Joint): Vec3 = points.getValue(j)
 
@@ -143,6 +145,20 @@ class Figure3d(
             val (nearElbow, nearHand) = arm(nearArmRoot, pose.nearShoulder, pose.nearElbow, pose.nearArmOut, pose.nearArmTurn, 1f, side)
             val (farElbow, farHand) = arm(farArmRoot, pose.farShoulder, pose.farElbow, pose.farArmOut, pose.farArmTurn, -1f, -side)
 
+            // A bent wrist adds a hand past the forearm, turned toward the torso's up (+) or down (-).
+            fun handTip(elbow: Vec3, hand: Vec3, wrist: Float): Vec3? {
+                if (wrist == 0f) return null
+                val fore = (hand - elbow) * (1f / Body.FOREARM)
+                var perp = up - fore * up.dot(fore)
+                if (perp.length() < 0.05f) perp = fwd - fore * fwd.dot(fore)
+                perp = perp * (1f / perp.length())
+                return hand + (fore * cosd(wrist) + perp * sind(wrist)) * Body.HAND
+            }
+            val rawTips = listOfNotNull(
+                handTip(nearElbow, nearHand, pose.nearWrist)?.let { Joint.NearHand to it },
+                handTip(farElbow, farHand, pose.farWrist)?.let { Joint.FarHand to it },
+            ).toMap()
+
             val nearLegRoot = hip + Vec3.Side * Width3d.LEG_ROOT
             val farLegRoot = hip - Vec3.Side * Width3d.LEG_ROOT
             val (nearKnee, nearAnkle, nearToe) = leg(nearLegRoot, pose.nearHip, pose.nearKnee, pose.nearAnkle, pose.nearLegOut, pose.nearLegTurn, Vec3.Side)
@@ -168,11 +184,12 @@ class Figure3d(
             fun rolledDir(v: Vec3) = if (pose.roll == 0f) v else v.rotate(axis, pose.roll)
             val raw = rawPoints.mapValues { rolled(it.value) }
             val roots = rawRoots.mapValues { rolled(it.value) }
+            val tips = rawTips.mapValues { rolled(it.value) }
             val spine = rolled(spineControl)
             val chest = rolledDir(side)
             val pelvisSide = rolledDir(Vec3.Side)
             val rolledShoulder = raw.getValue(Joint.Shoulder)
-            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide)
+            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide, tips)
             // A curved spine bulges past the hip-shoulder line; include its outer edge.
             val spineBottom = (hip * 0.25f + spine * 0.5f + rolledShoulder * 0.25f).y + Body.width(Segment.Torso) / 2f
             val lowest = max(raw.maxOf { (j, p) -> p.y + Body.radius(j) }, spineBottom)
@@ -180,6 +197,7 @@ class Figure3d(
             return Figure3d(
                 raw.mapValues { it.value + drop }, spine + drop, chest,
                 roots.mapValues { it.value + drop }, pose.torso, neckAngle, pelvisSide,
+                tips.mapValues { it.value + drop },
             )
         }
     }

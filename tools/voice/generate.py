@@ -43,9 +43,13 @@ def main() -> None:
         if old.stem not in wanted:
             old.unlink()
             print("removed stale", old.name)
+    # Existing clips are kept (they've been listened to); pass --all to remake every clip.
+    remake = "--all" in sys.argv[2:]
     for text in phrases:
-        audio, sr = kokoro.create(text, voice=VOICE, speed=SPEED, lang="en-us")
         path = out / f"{clip_name(text)}.ogg"
+        if path.exists() and not remake:
+            continue
+        audio, sr = kokoro.create(text, voice=VOICE, speed=SPEED, lang="en-us")
         sf.write(path, trim(audio, sr), sr, format="OGG", subtype="VORBIS")
         print("wrote", path.name)
 

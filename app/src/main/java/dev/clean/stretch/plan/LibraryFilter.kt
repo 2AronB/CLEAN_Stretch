@@ -106,7 +106,7 @@ object SearchWords {
         "hammies" to listOf("hamstrings"), "hamstring" to listOf("hamstrings"),
         "quad" to listOf("quadriceps"), "quads" to listOf("quadriceps"), "thigh" to listOf("quadriceps", "hamstrings", "inner thigh"),
         "thighs" to listOf("quadriceps", "hamstrings", "inner thigh"), "groin" to listOf("inner thigh"), "adductor" to listOf("inner thigh"),
-        "adductors" to listOf("inner thigh"), "calf" to listOf("calves"), "ankle" to listOf("calves"), "ankles" to listOf("calves"),
+        "adductors" to listOf("inner thigh"), "calf" to listOf("calves"), "ankle" to listOf("calves", "shins & ankles"), "ankles" to listOf("calves", "shins & ankles"), "shin" to listOf("shins & ankles"),
         "glute" to listOf("glutes"), "butt" to listOf("glutes"), "bum" to listOf("glutes"), "hip" to listOf("hips", "hip flexors", "glutes"),
         "pecs" to listOf("chest"), "pec" to listOf("chest"), "shoulder" to listOf("shoulders"), "lat" to listOf("lats"),
         "abs" to listOf("abdominals"), "stomach" to listOf("abdominals"), "spine" to listOf("back", "upper back", "lower back"),
@@ -115,7 +115,11 @@ object SearchWords {
         "floor" to listOf("lying", "seated", "kneeling", "hands & knees"), "ground" to listOf("lying", "seated", "kneeling", "hands & knees"),
         "laying" to listOf("lying"), "sitting" to listOf("seated"), "sit" to listOf("seated"), "stand" to listOf("standing"),
         "kneel" to listOf("kneeling"), "dynamic" to listOf("flow"), "flowing" to listOf("flow"), "moving" to listOf("flow"),
-        "twisting" to listOf("twist"), "rotation" to listOf("twist"), "rotate" to listOf("twist"), "obliques" to listOf("abdominals"),
+        "twisting" to listOf("twist"), "rotation" to listOf("twist"), "rotate" to listOf("twist"), "obliques" to listOf("side body"), "oblique" to listOf("side body"),
+        "wrist" to listOf("forearms & wrists"), "wrists" to listOf("forearms & wrists"), "forearm" to listOf("forearms & wrists"),
+        "forearms" to listOf("forearms & wrists"), "hand" to listOf("forearms & wrists"), "hands" to listOf("forearms & wrists"),
+        "tricep" to listOf("triceps"), "bicep" to listOf("biceps"), "arm" to listOf("arms"), "arms" to listOf("arms"),
+        "piriformis" to listOf("deep hip rotators"), "rotators" to listOf("deep hip rotators"),
         "warmup" to listOf("flow"), "strength" to listOf("strengthen"), "strong" to listOf("strengthen"), "hold" to listOf("hold"),
     )
     private val easyWords = setOf("easy", "easier", "easiest", "gentle", "beginner", "simple")

@@ -58,9 +58,9 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
   "+15 s"; skip and back; End saves an "ended early" session; checkpoint and resume after the
   app is killed.
 - 3D figure with Side / Angled / Front / Above views (view chip), floor, mat, shadows and black
-  outlines (D-034, D-035). Rolling keeps hands or feet planted with two-bone IK.
+  outlines (D-034, D-035); hands bend at the wrist when a pose sets a wrist angle (D-040). Rolling keeps hands or feet planted with two-bone IK.
 
-**Library (55 moves, 20 muscles in 7 areas)**
+**Library (58 moves, 20 muscles in 7 areas)**
 - 37 holds, 8 flowing moves, 7 strengthen holds and 3 foam-rolling moves; easier/harder pairs
   with "Other versions" links.
 - Search where every word must match and everyday words are understood ("easy hamstring",
@@ -115,8 +115,8 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
 1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
    single range-of-motion check.
-2. New moves for muscles that have none yet: forearms & wrists (prayer stretch, wrist flexor /
-   extensor), biceps (doorway or wall biceps), shins & ankles (kneeling shin stretch), side body
+2. Owner review of the new wrist moves (wrist flexor, wrist extensor, prayer stretch, D-040) and
+   their voice clips. Then new moves for muscles that still have none: biceps (doorway or wall biceps), shins & ankles (kneeling shin stretch), side body
    (standing side bend is tagged Back; consider retagging), outer hip (cross-body glute, IT-band
    side stretch). Each needs poses, cues, sources and voice clips (ADDING_STRETCHES.md).
 3. More range-of-motion checks (proposed, not built): back-scratch shoulder reach, hip-flexor

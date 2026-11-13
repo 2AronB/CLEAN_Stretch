@@ -539,3 +539,16 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   Hips secondary → about 27 min/week; + Legs primary → about 57 min/week with the warning.
 - Not checked: TalkBack on the body view (it has a spoken summary), the Weekly goals page in the
   first-run flow end to end on a phone.
+
+## Forearm and wrist moves (2026-11-13, D-040)
+- New `Pose.nearWrist` / `farWrist`, `Figure3d.handTips`, hand drawn with the forearm's outline,
+  ink and highlight in `FigureDrawing`; Pose Studio gets wrist sliders. No hand when the wrist is
+  0, so older poses draw exactly as before (new `Figure3dTest.handIsDrawnOnlyWhenTheWristIsBent`).
+- `ArmMoves`: wrist_flexor, wrist_extensor (sided, Angled view), prayer_stretch (both sides,
+  Front view); prayer arm angles worked out so the palms meet at the middle. Review log rows
+  added as Not reviewed. Search: wrist, forearm, hand, bicep, tricep, piriformis, shin, oblique.
+- Voice: 10 new af_heart clips. The script first rewrote every clip; the old ones were restored
+  from git and the script now only makes missing clips.
+- Checks run: 84 JVM tests pass, assembleDebug, lintDebug (no issues); pose-preview of all three
+  moves in every view; emulator: library search "wrist" shows exactly the three moves, wrist
+  flexor detail screen shows the bent hand. Not checked: how the new clips sound.

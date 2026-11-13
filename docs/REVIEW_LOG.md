@@ -83,8 +83,13 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | torso_turns | Standing torso turns | Not reviewed | | | | |
 | side_leg_raise | Side leg raise hold | Not reviewed | | | | |
 | reclining_butterfly | Reclining butterfly | Not reviewed | | | | |
+| wrist_flexor | Wrist flexor stretch | Not reviewed | | | | |
+| wrist_extensor | Wrist extensor stretch | Not reviewed | | | | |
+| prayer_stretch | Prayer stretch | Not reviewed | | | | |
 
 ## History (append-only)
 
 - 2026-11-09 · all 55 moves · Not reviewed · Log created. No move has been approved by the owner yet.
 - 2026-11-09 · thread_the_needle · Changes requested · Owner: "Thread the needle fails the ground contact rule. One arm should likely be touching the ground." Not fixed yet (owner: "Don't fix").
+- 2026-11-13 · wrist_flexor, wrist_extensor, prayer_stretch · Not reviewed · Added (forearms & wrists, owner request). The figure now draws a hand when a pose bends the wrist.
+- 2026-11-13 · overhead_triceps, figure_four, torso_turns, knee_drop_twist, seated_twist, side_leg_raise, wall_chest · Not reviewed · Muscle tags changed for the new muscles (D-039).

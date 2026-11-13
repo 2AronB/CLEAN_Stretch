@@ -59,6 +59,9 @@ object Body {
     const val THIGH = 44f
     const val SHIN = 43f
     const val FOOT = 15f
+    /** Hand length and width, drawn only when a pose bends the wrist ([Pose.nearWrist]). */
+    const val HAND = 14f
+    const val HAND_WIDTH = 7.5f
 
     /** Stroke widths used both for drawing and for keeping thick parts above the floor. */
     fun width(segment: Segment): Float = when (segment) {

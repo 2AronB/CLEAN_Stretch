@@ -4,7 +4,7 @@ import dev.clean.stretch.figure.Motion
 import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.StageProp
 
-enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Arms("Arms & wrists"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
+enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Arms("Arms"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
 
 enum class Muscle(val label: String, val region: Region) {
     Neck("Neck", Region.Neck),

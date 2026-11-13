@@ -26,6 +26,9 @@ package dev.clean.stretch.figure
  * - [roll]: turns the whole body about its long axis through the hip; +90 lies on the far side, near side up.
  * - [headTilt]: ear toward the near shoulder (+) or far shoulder (-).
  * - Leg "turn": rotates the leg at the hip; + turns the knee out (a bent knee then brings the foot inward).
+ * - Wrists: 0 = no separate hand is drawn (the arm ends in a round hand, as in every older pose).
+ *   Any other value draws a hand bent from the forearm toward the body's up (+) or down (-), e.g.
+ *   -70 with the arm reaching forward = fingers pointing to the floor.
  *
  * "Near" limbs face the viewer and are drawn in front; "far" limbs are drawn behind.
  */
@@ -56,6 +59,8 @@ data class Pose(
     val nearArmTurn: Float = 0f,
     val farArmTurn: Float = 0f,
     val roll: Float = 0f,
+    val nearWrist: Float = 0f,
+    val farWrist: Float = 0f,
 ) {
     fun lerp(to: Pose, t: Float): Pose = Pose(
         torso = mix(torso, to.torso, t),
@@ -84,6 +89,8 @@ data class Pose(
         nearArmTurn = mix(nearArmTurn, to.nearArmTurn, t),
         farArmTurn = mix(farArmTurn, to.farArmTurn, t),
         roll = mix(roll, to.roll, t),
+        nearWrist = mix(nearWrist, to.nearWrist, t),
+        farWrist = mix(farWrist, to.farWrist, t),
     )
 
     operator fun get(param: PoseParam): Float = param.read(this)
@@ -146,4 +153,6 @@ enum class PoseParam(
     NearArmTurn("Near arm turn", "nearArmTurn", -120f, 120f, { it.nearArmTurn }, { p, v -> p.copy(nearArmTurn = v) }),
     FarArmTurn("Far arm turn", "farArmTurn", -120f, 120f, { it.farArmTurn }, { p, v -> p.copy(farArmTurn = v) }),
     Roll("Body roll", "roll", -100f, 100f, { it.roll }, { p, v -> p.copy(roll = v) }),
+    NearWrist("Near wrist", "nearWrist", -90f, 90f, { it.nearWrist }, { p, v -> p.copy(nearWrist = v) }),
+    FarWrist("Far wrist", "farWrist", -90f, 90f, { it.farWrist }, { p, v -> p.copy(farWrist = v) }),
 }

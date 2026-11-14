@@ -67,6 +67,8 @@ class Figure3d(
     val pelvisSide: Vec3 = Vec3.Side,
     /** Fingertip points for hands bent at the wrist, keyed by [Joint.NearHand] / [Joint.FarHand]. Drawing only. */
     val handTips: Map<Joint, Vec3> = emptyMap(),
+    /** Thumb tips for hands with a palm direction set, same keys as [handTips]. Drawing only. */
+    val thumbTips: Map<Joint, Vec3> = emptyMap(),
 ) {
     operator fun get(j: Joint): Vec3 = points.getValue(j)
 
@@ -154,6 +156,23 @@ class Figure3d(
                 perp = perp * (1f / perp.length())
                 return hand + (fore * cosd(wrist) + perp * sind(wrist)) * Body.HAND
             }
+            // Thumb: starts at the wrist and points toward the body's middle when the palm faces
+            // down (palm 90), out to the side when it faces up (palm -90).
+            fun thumbTip(elbow: Vec3, hand: Vec3, wrist: Float, palm: Float, outward: Vec3): Vec3? {
+                if (wrist == 0f || palm == 0f) return null
+                val fore = (hand - elbow) * (1f / Body.FOREARM)
+                var medial = -outward - fore * (-outward).dot(fore)
+                if (medial.length() < 0.05f) medial = fwd - fore * fwd.dot(fore)
+                medial = medial * (1f / medial.length())
+                val side = medial.rotate(fore, palm - 90f)
+                val tip = handTip(elbow, hand, wrist) ?: return null
+                val handDir = (tip - hand) * (1f / Body.HAND)
+                return hand + (side * 0.85f + handDir * 0.5f) * Body.THUMB
+            }
+            val rawThumbs = listOfNotNull(
+                thumbTip(nearElbow, nearHand, pose.nearWrist, pose.nearPalm, side)?.let { Joint.NearHand to it },
+                thumbTip(farElbow, farHand, pose.farWrist, pose.farPalm, -side)?.let { Joint.FarHand to it },
+            ).toMap()
             val rawTips = listOfNotNull(
                 handTip(nearElbow, nearHand, pose.nearWrist)?.let { Joint.NearHand to it },
                 handTip(farElbow, farHand, pose.farWrist)?.let { Joint.FarHand to it },
@@ -185,11 +204,12 @@ class Figure3d(
             val raw = rawPoints.mapValues { rolled(it.value) }
             val roots = rawRoots.mapValues { rolled(it.value) }
             val tips = rawTips.mapValues { rolled(it.value) }
+            val thumbs = rawThumbs.mapValues { rolled(it.value) }
             val spine = rolled(spineControl)
             val chest = rolledDir(side)
             val pelvisSide = rolledDir(Vec3.Side)
             val rolledShoulder = raw.getValue(Joint.Shoulder)
-            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide, tips)
+            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide, tips, thumbs)
             // A curved spine bulges past the hip-shoulder line; include its outer edge.
             val spineBottom = (hip * 0.25f + spine * 0.5f + rolledShoulder * 0.25f).y + Body.width(Segment.Torso) / 2f
             val lowest = max(raw.maxOf { (j, p) -> p.y + Body.radius(j) }, spineBottom)
@@ -198,6 +218,7 @@ class Figure3d(
                 raw.mapValues { it.value + drop }, spine + drop, chest,
                 roots.mapValues { it.value + drop }, pose.torso, neckAngle, pelvisSide,
                 tips.mapValues { it.value + drop },
+                thumbs.mapValues { it.value + drop },
             )
         }
     }

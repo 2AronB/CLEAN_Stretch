@@ -368,7 +368,8 @@ private fun FinishedView(title: String, heldMs: Long, onClose: () -> Unit) {
         Text("$title · ${minutes} min ${seconds} s of stretching", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         Text(
-            "Saved to your history. See this week's minutes on Progress.",
+            // SessionSaver skips a run with nothing held, so don't claim it was saved.
+            if (heldMs >= 1000L) "Saved to your history. See this week's minutes on Progress." else "Nothing was held, so nothing was saved.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

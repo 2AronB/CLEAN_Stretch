@@ -218,14 +218,22 @@ object FigureDrawing {
                 val joint = if (seg == Segment.NearForearm) Joint.NearHand else if (seg == Segment.FarForearm) Joint.FarHand else null
                 joint?.let { j -> figure.handTips[j]?.let { tip -> Triple(seg, figure[j], tip) } }
             }
-            fun hand(seg: Segment, from: Vec3, tip: Vec3, ink: Ink, extra: Float, fade: Float, alpha: Float = 1f): Shape {
+            fun hand(seg: Segment, from: Vec3, tip: Vec3, ink: Ink, extra: Float, fade: Float, alpha: Float = 1f, width: Float = Body.HAND_WIDTH): Shape {
                 val s = (proj.project(from).scale + proj.project(tip).scale) / 2f
-                return Shape.Line(at(from), at(tip), (Body.HAND_WIDTH + extra) * s * px, ink, fade, alpha)
+                return Shape.Line(at(from), at(tip), (width + extra) * s * px, ink, fade, alpha)
+            }
+            val thumbs = hands.mapNotNull { (seg, from, _) ->
+                val j = if (seg == Segment.NearForearm) Joint.NearHand else Joint.FarHand
+                figure.thumbTips[j]?.let { Triple(seg, from, it) }
             }
             if (glow > 0f) hands.filter { it.first in highlight }.forEach { (seg, a, b) -> out += hand(seg, a, b, Ink.Highlight, 10f, 0f, 0.18f * glow) }
+            thumbs.forEach { (seg, a, b) -> out += hand(seg, a, b, Ink.Outline, 2 * OUTLINE, 0f, width = Body.THUMB_WIDTH) }
             hands.forEach { (seg, a, b) -> out += hand(seg, a, b, Ink.Outline, 2 * OUTLINE, 0f) }
             g.segments.forEach { out += part(it, Ink.Outline, 2 * OUTLINE, 0f) }
             if (g.withHead) out += Shape.Dot(map(head), headR + OUTLINE * head.scale * px, Ink.Outline)
+            thumbs.forEach { (seg, a, b) ->
+                out += if (seg in highlight) hand(seg, a, b, Ink.Highlight, 0f, back * 0.35f, width = Body.THUMB_WIDTH) else hand(seg, a, b, Ink.Body, 0f, back * 0.55f, width = Body.THUMB_WIDTH)
+            }
             hands.forEach { (seg, a, b) ->
                 out += if (seg in highlight) hand(seg, a, b, Ink.Highlight, 0f, back * 0.35f) else hand(seg, a, b, Ink.Body, 0f, back * 0.55f)
             }

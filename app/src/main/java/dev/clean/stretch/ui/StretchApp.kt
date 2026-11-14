@@ -195,7 +195,9 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
             screenStates.SaveableStateProvider(Route.encode(route)) {
                 when (route) {
                     Route.Today -> profile?.let { p ->
-                        TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines, onOpenTender = { push(Route.TenderSpot) })
+                        TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines, onOpenTender = { push(Route.TenderSpot) },
+                            onUpdateProfile = { edited -> AppScope.launch { profiles.save(ProfileMapper.toEntity(edited, System.currentTimeMillis())) } },
+                            romChecks = romChecks, onOpenRomCheck = { push(Route.RomCheck()) })
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) }, profile = profile)
                     Route.Progress -> ProgressScreen(history, profile ?: Profile(), prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck(it)) })

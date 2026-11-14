@@ -63,6 +63,24 @@ class HistoryTest {
         assertEquals(m, Stats.minutesByMuscle(old))
     }
 
+    // Owner 2026-11-14: a day fills toward its goal; extra minutes later fill earlier unfinished days.
+    @Test
+    fun daysFillTowardTheGoalAndCanBeCaughtUp() {
+        val mon = LocalDate.of(2026, 11, 9)
+        val fill = Stats.weekFill(mon, mapOf(mon to 4.0), dayGoal = 8.0)
+        assertEquals(0.5f, fill[0], 1e-6f)
+        // Wednesday: 20 min fills Wednesday, then catches up Monday (4 more), then Tuesday (8).
+        val caught = Stats.weekFill(mon, mapOf(mon to 4.0, mon.plusDays(2) to 20.0), dayGoal = 8.0)
+        assertEquals(listOf(1f, 1f, 1f, 0f, 0f, 0f, 0f), caught)
+        assertEquals(3, Stats.daysDone(mon, mapOf(mon to 4.0, mon.plusDays(2) to 20.0), 8.0))
+        // Extra minutes never fill later days.
+        assertEquals(0f, Stats.weekFill(mon, mapOf(mon to 30.0), 8.0)[1], 0f)
+        // Streak counts weeks with enough full days.
+        val lastWeek = mon.minusWeeks(1)
+        val minutes = (0L..2L).associate { lastWeek.plusDays(it) to 8.0 }
+        assertEquals(1, Stats.weekStreakByGoal(minutes, mon.plusDays(3), daysTarget = 3, dayGoal = 8.0))
+    }
+
     @Test
     fun weekStartsOnMonday() {
         assertEquals(LocalDate.of(2026, 11, 2), Stats.weekStart(LocalDate.of(2026, 11, 8)))

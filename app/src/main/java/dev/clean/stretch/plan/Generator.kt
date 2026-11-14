@@ -100,6 +100,10 @@ object Generator {
      * unmet muscles, one standard hold per side at a time. Moves that stretch several muscles
      * make the total smaller than adding up each muscle's goal.
      */
+    /** Minutes a day should reach to count as done: the weekly plan spread over the planned days. */
+    fun dayGoalMinutes(profile: Profile, daysPerWeek: Int): Double =
+        (weeklyPlanMinutes(profile).toDouble() / daysPerWeek.coerceAtLeast(1)).coerceAtLeast(3.0)
+
     fun weeklyPlanMinutes(profile: Profile): Int {
         val hold = holdSeconds(profile, RoutineKind.Full)
         val moves = allowed(profile, RoutineKind.Full).filter { it.kind.isStretch }
@@ -202,8 +206,7 @@ object Generator {
         }
 
         val notes = mutableListOf<String>()
-        if (rolls.isNotEmpty()) notes += "Starts with a minute of foam rolling."
-        if (strengths.isNotEmpty()) notes += "Ends with a short Strengthen block. Strength through a full range builds flexibility too."
+        // Foam rolling and the Strengthen block are shown as toggles on Today, not as notes.
         val focus = profile.effectiveFocus
         focus.filter { r -> val ms = targets.keys.filter { it.region == r }; ms.isNotEmpty() && ms.all { it in metThisWeek } }
             .forEach { notes += "You've reached this week's ${it.label.lowercase()} goal, so today leans on other areas." }

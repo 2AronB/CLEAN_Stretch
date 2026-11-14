@@ -29,6 +29,8 @@ package dev.clean.stretch.figure
  * - Wrists: 0 = no separate hand is drawn (the arm ends in a round hand, as in every older pose).
  *   Any other value draws a hand bent from the forearm toward the body's up (+) or down (-), e.g.
  *   -70 with the arm reaching forward = fingers pointing to the floor.
+ * - Palms (only with a bent wrist): 0 = no thumb drawn; 90 = palm down (thumb toward the body's
+ *   middle), -90 = palm up (thumb pointing out to the side). Shows which way the palm faces.
  *
  * "Near" limbs face the viewer and are drawn in front; "far" limbs are drawn behind.
  */
@@ -61,6 +63,8 @@ data class Pose(
     val roll: Float = 0f,
     val nearWrist: Float = 0f,
     val farWrist: Float = 0f,
+    val nearPalm: Float = 0f,
+    val farPalm: Float = 0f,
 ) {
     fun lerp(to: Pose, t: Float): Pose = Pose(
         torso = mix(torso, to.torso, t),
@@ -91,6 +95,8 @@ data class Pose(
         roll = mix(roll, to.roll, t),
         nearWrist = mix(nearWrist, to.nearWrist, t),
         farWrist = mix(farWrist, to.farWrist, t),
+        nearPalm = mix(nearPalm, to.nearPalm, t),
+        farPalm = mix(farPalm, to.farPalm, t),
     )
 
     operator fun get(param: PoseParam): Float = param.read(this)
@@ -155,4 +161,6 @@ enum class PoseParam(
     Roll("Body roll", "roll", -100f, 100f, { it.roll }, { p, v -> p.copy(roll = v) }),
     NearWrist("Near wrist", "nearWrist", -90f, 90f, { it.nearWrist }, { p, v -> p.copy(nearWrist = v) }),
     FarWrist("Far wrist", "farWrist", -90f, 90f, { it.farWrist }, { p, v -> p.copy(farWrist = v) }),
+    NearPalm("Near palm", "nearPalm", -90f, 90f, { it.nearPalm }, { p, v -> p.copy(nearPalm = v) }),
+    FarPalm("Far palm", "farPalm", -90f, 90f, { it.farPalm }, { p, v -> p.copy(farPalm = v) }),
 }

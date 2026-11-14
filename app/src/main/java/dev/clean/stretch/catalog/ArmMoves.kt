@@ -38,8 +38,7 @@ object ArmMoves {
     )
 
     // Forearms & wrists (owner, 2026-11-13). The figure shows the bent wrist with the hand drawn
-    // past the forearm (Pose.nearWrist). Palm up vs palm down can't be seen on the figure; the
-    // cues say which.
+    // past the forearm (Pose.nearWrist); the thumb (Pose.nearPalm) shows palm up vs palm down.
     private val armForward = Pose(nearShoulder = 82f, nearElbow = 6f, nearArmOut = -18f, farShoulder = 82f, farElbow = 12f, farArmOut = -16f)
 
     val wristFlexor = Stretch(
@@ -62,8 +61,8 @@ object ArmMoves {
         motion = Motion(
             kind = MotionKind.Hold,
             start = Pose(nearElbow = 6f, farElbow = 6f),
-            stretch = armForward.copy(nearWrist = -62f, farWrist = -20f),
-            deep = armForward.copy(nearWrist = -74f, farWrist = -24f),
+            stretch = armForward.copy(nearWrist = -62f, nearPalm = -90f, farWrist = -20f),
+            deep = armForward.copy(nearWrist = -74f, nearPalm = -90f, farWrist = -24f),
             view = View.Angled,
         ),
     )
@@ -88,8 +87,8 @@ object ArmMoves {
         motion = Motion(
             kind = MotionKind.Hold,
             start = Pose(nearElbow = 6f, farElbow = 6f),
-            stretch = armForward.copy(nearWrist = -70f, farWrist = -30f),
-            deep = armForward.copy(nearWrist = -82f, farWrist = -34f),
+            stretch = armForward.copy(nearWrist = -70f, nearPalm = 90f, farWrist = -30f),
+            deep = armForward.copy(nearWrist = -82f, nearPalm = 90f, farWrist = -34f),
             view = View.Angled,
         ),
     )

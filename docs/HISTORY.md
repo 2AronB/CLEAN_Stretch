@@ -564,6 +564,22 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - Checks run: 84 JVM tests, assembleDebug, lintDebug (no issues), 2 emulator tests pass. The
   app stayed installed (leaveApksInstalledAfterRun).
 
+## Owner phone round: Settings, Today, week circles, anatomy chart, motion checks (2026-11-14, D-042)
+- Settings: five menus. Today: link popup with the muscles a routine works (per side, this week
+  / goal), Foam roller and Strengthen chips, block notes removed from the generator.
+- This week: `Stats.minutesByDay`, `weekFill` (catch-up into earlier days), `daysDone`,
+  `weekStreakByGoal`; `Generator.dayGoalMinutes`; `HistoryDao.allSessions()`. New unit test.
+- Small fixes: finish screen; `Pose.nearPalm` / `farPalm` thumb (drawing only), used by the wrist
+  flexor (palm up) and extensor (palm down) stretches.
+- `ui/BodyMap.kt` rewritten as an anatomy chart: hand-drawn muscle outlines (smoothed), front and
+  back mirrored per side, side views, swipe or tap to turn, point-in-shape tapping.
+- Motion checks: `RomTest.view`; butterfly_knees, seated_twist, knee_hug; RECHECK_DAYS 7; weekly
+  pop-up on Today (`AppPreferences.romPromptWeek`); one row per check with L/R and history dots.
+- Checks run: unit tests, assembleDebug, lintDebug (no issues) after each part; emulator: Today,
+  Settings menus build, body view front/right/back, new check pictures, check list.
+- Not checked: the weekly pop-up appearing (needs a week of history), the day-circle catch-up
+  with real sessions (unit-tested only), knee hug pictures, TalkBack.
+
 ## Moves for the five empty muscles (2026-11-14, PLAN §8.2)
 - 14 new moves in their area files and at the end of `SampleCatalog.all`, one commit per muscle:
   shins & ankles (`standing_shin`, `kneeling_shin` level 2, `ankle_pumps` flowing), biceps
@@ -583,6 +599,7 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - Review log: 14 rows added as Not reviewed, plus history lines (including the side bend retag).
 - Other: `GeneratorTest` no longer assumes shins has no moves; new variant pairs; new search
   words (foot, feet, itb, tfl, abductor(s), waist, "4" for figure 4).
-- Checks run: after each muscle and again on `main` after the fast-forward: 84 JVM tests pass,
+- Checks run: after each muscle (84 JVM tests) and again after merging the D-042 work from
+  `main` (85 JVM tests; lint 0 errors, 0 warnings, 2 style hints in the D-042 screens): all pass,
   assembleDebug, lintDebug (no issues). Not checked: the moves in the app on the emulator, and
   how the new clips sound.

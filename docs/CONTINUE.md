@@ -5,7 +5,7 @@ foam rolling), S9 (range-of-motion checks), a 3D figure, 72 moves (every muscle 
 view now has moves, PLAN §8.2), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-84 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
+85 JVM tests pass and lint shows no errors or warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
 `docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
@@ -103,7 +103,8 @@ with `tools/pose-preview` and new af_heart voice clips (44 new clips; no existin
 - New Easier/Harder links: standing shin → kneeling shin, standing biceps → seated biceps,
   lying figure-four → pigeon. Search also understands foot/feet, itb, tfl, abductor, waist, "figure 4".
 - `GeneratorTest` used to assert that shins had no moves; it now expects a normal target.
-- Checks run after every muscle and again on `main` after the merge: 84 JVM tests pass,
+- Checks run after every muscle (84 JVM tests) and again on `main` after merging the D-042 work
+  (85 JVM tests; lint 0 errors, 0 warnings, 2 style hints in BodyMap.kt and TodayScreen.kt): all pass,
   `assembleDebug` builds, `lintDebug` reports no issues. Not run: the emulator (nothing in this
   work touches the database or screens), so the new moves have **not** been seen in the app itself.
 - Owner chose not to fill these yet: **Chest (2 main moves), Shoulders (2) and Triceps (1)** have
@@ -143,8 +144,9 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
 **The full next-stage plan, in order and with sizes, is `docs/PLAN.md` §8.** The list below is the short version.
 
-1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
-   single range-of-motion check.
+1. Owner to try on the phone (2026-11-14 round, D-042): Settings menus, the Today link popup and
+   chips, the filling day circles and "Why?", the anatomy chart (side views are the roughest),
+   the three new motion checks and the weekly check-in pop-up, the wrist moves' thumbs.
 2. Owner review of the wrist moves (D-040) and the 14 new moves from 2026-11-14, with their
    voice clips. Then the remaining gap: one more chest move, one more shoulder move and two more
    triceps moves, so every muscle has three that mainly target it (ADDING_STRETCHES.md).

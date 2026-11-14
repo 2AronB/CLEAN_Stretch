@@ -62,6 +62,9 @@ object Body {
     /** Hand length and width, drawn only when a pose bends the wrist ([Pose.nearWrist]). */
     const val HAND = 14f
     const val HAND_WIDTH = 7.5f
+    /** Thumb, drawn only when a pose sets a palm direction ([Pose.nearPalm]). */
+    const val THUMB = 9.5f
+    const val THUMB_WIDTH = 5f
 
     /** Stroke widths used both for drawing and for keeping thick parts above the floor. */
     fun width(segment: Segment): Float = when (segment) {

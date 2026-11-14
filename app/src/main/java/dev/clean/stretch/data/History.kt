@@ -111,6 +111,9 @@ abstract class HistoryDao {
 
     @Query("SELECT * FROM session_steps")
     abstract fun allSteps(): Flow<List<SessionStepEntity>>
+
+    @Query("SELECT * FROM sessions")
+    abstract fun allSessions(): Flow<List<SessionEntity>>
 }
 
 /** v1: sessions. v2: adds profile. v3: adds saved routines. v4: adds ROM checks. v5: profile gets foam roller + strengthen columns. v6: steps get main muscles, profile gets secondary areas + weekly dose. Automatic migrations; existing data is kept. */

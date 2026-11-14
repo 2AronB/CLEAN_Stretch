@@ -91,9 +91,9 @@ fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romCh
             Column(Modifier.padding(20.dp)) {
                 Text("Weekly goals", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Each muscle has a bar on each side. It fills as that side reaches this week's goal: " +
+                    "Each side fills toward this week's goal: " +
                         "${profile.dose.minutes} min for primary areas, ${Dose.SECONDARY.minutes} min for secondary. " +
-                        "A move counts for every muscle it mainly stretches.",
+                        "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -511,9 +511,9 @@ object LegMoves {
         sourceIds = listOf("S3", "S4", "S5"),
         motion = Motion(
             kind = MotionKind.Flow,
-            start = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, farHip = 90f),
-            stretch = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, nearAnkle = -42f, farHip = 90f, farAnkle = -42f),
-            deep = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, nearAnkle = 22f, farHip = 90f, farAnkle = 22f),
+            start = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 87f, farHip = 87f),
+            stretch = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 87f, nearAnkle = -42f, farHip = 87f, farAnkle = -42f),
+            deep = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 87f, nearAnkle = 22f, farHip = 87f, farAnkle = 22f),
         ),
     )
 

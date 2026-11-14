@@ -7,7 +7,7 @@ import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.View
 
 /**
- * Hips (hip flexors, glutes, inner thigh) moves: every move whose first main muscle is in this area.
+ * Hips (hip flexors, glutes, inner thigh, outer hip, deep hip rotators) moves: every move whose first main muscle is in this area.
  * Library order is set by [SampleCatalog.all]; see docs/ADDING_STRETCHES.md.
  */
 object HipMoves {
@@ -352,5 +352,85 @@ object HipMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(halfKneelingHipFlexor, kneeToChest, butterfly, standingLunge, standingKneeHug, activeLegRaise, gluteBridge, lungeReach, figureFour, wideLegFold, sideLunge, sideLegRaise, recliningButterfly)
+    // Outer hip (PLAN §8.2, 2026-11-14). Feet that stay on the floor were placed numerically.
+    val standingOuterHip = Stretch(
+        key = "standing_outer_hip",
+        name = "Standing outer-hip stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.OuterHip),
+        secondary = listOf(Muscle.Lats),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Cross one foot behind the other and lean your upper body away, letting that hip push out to the side.",
+        cues = listOf(
+            "Stand tall. Hold a wall or chair for balance if you like.",
+            "Cross one foot behind the other and rest it flat on the floor.",
+            "Reach the same-side arm overhead and lean gently away from the back leg, letting that hip push out to the side.",
+            "Feel the outside of your hip and thigh. Keep both feet on the floor.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(sideBend = -15f, nearShoulder = 168f, nearElbow = 10f, nearArmOut = -10f, farElbow = 30f, farArmOut = 24f, nearHip = -6f, nearLegOut = -12f, nearAnkle = 6f, farHip = 13.5f, farKnee = 27f, farAnkle = 13.5f),
+            deep = Pose(sideBend = -21f, nearShoulder = 170f, nearElbow = 8f, nearArmOut = -14f, farElbow = 30f, farArmOut = 24f, nearHip = -6f, nearLegOut = -12f, nearAnkle = 6f, farHip = 13.5f, farKnee = 27f, farAnkle = 13.5f),
+            view = View.Front,
+        ),
+    )
+
+    val seatedOuterHip = Stretch(
+        key = "seated_outer_hip",
+        name = "Seated outer-hip stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.OuterHip),
+        secondary = listOf(Muscle.Glutes),
+        position = Position.Seated,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Sit with one leg long, cross the other foot over it and hug that knee toward your opposite shoulder.",
+        cues = listOf(
+            "Sit tall with both legs out in front of you.",
+            "Bend one knee and place that foot flat on the floor, on the outside of your other knee.",
+            "Hug the bent knee with both arms and draw it gently toward your opposite shoulder.",
+            "Feel the outside of your hip. Sit tall and keep your chest facing forward.",
+        ),
+        cautions = listOf("Sit on a folded towel if you can't sit tall."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = 4f, nearElbow = 8f, farShoulder = 4f, farElbow = 8f, nearHip = 87f, farHip = 87f),
+            stretch = Pose(nearShoulder = 20f, nearElbow = 55f, nearArmOut = -40f, farShoulder = 20f, farElbow = 80f, farArmOut = -10f, nearHip = 146f, nearKnee = 116f, nearAnkle = -25f, nearLegOut = -21f, nearLegTurn = 35f, farHip = 87f),
+            deep = Pose(nearShoulder = 20f, nearElbow = 50f, nearArmOut = -45f, farShoulder = 20f, farElbow = 80f, farArmOut = -5f, nearHip = 150f, nearKnee = 116f, nearAnkle = -25f, nearLegOut = -27f, nearLegTurn = 30f, farHip = 87f),
+            view = View.Angled,
+        ),
+    )
+
+    val sideLegSwings = Stretch(
+        key = "side_leg_swings",
+        name = "Side leg swings",
+        kind = StretchKind.Dynamic,
+        sided = true,
+        primary = listOf(Muscle.OuterHip),
+        secondary = listOf(Muscle.Adductors),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Hold something steady and swing one leg out to the side, then across in front of you.",
+        cues = listOf(
+            "Face a wall or chair and hold it lightly with both hands.",
+            "Swing one leg out to the side, then across in front of your standing leg.",
+            "Keep the leg relaxed and your toes pointing forward.",
+            "Stay tall. Let the swings grow a little as you warm up, without forcing them.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearShoulder = 70f, nearElbow = 20f, farShoulder = 70f, farElbow = 20f),
+            stretch = Pose(nearShoulder = 70f, nearElbow = 20f, farShoulder = 70f, farElbow = 20f, nearHip = 4f, nearKnee = 4f, nearLegOut = 32f),
+            deep = Pose(nearShoulder = 70f, nearElbow = 20f, farShoulder = 70f, farElbow = 20f, nearHip = 16f, nearKnee = 4f, nearLegOut = -20f),
+            view = View.Front,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(halfKneelingHipFlexor, kneeToChest, butterfly, standingLunge, standingKneeHug, activeLegRaise, gluteBridge, lungeReach, figureFour, wideLegFold, sideLunge, sideLegRaise, recliningButterfly, standingOuterHip, seatedOuterHip, sideLegSwings)
 }

@@ -33,6 +33,7 @@ object SampleCatalog {
         HipMoves.recliningButterfly, ArmMoves.wristFlexor, ArmMoves.wristExtensor, ArmMoves.prayerStretch,
         LegMoves.standingShin, LegMoves.kneelingShin, LegMoves.anklePumps,
         ArmMoves.wallBiceps, ArmMoves.standingBiceps, ArmMoves.seatedBiceps,
+        HipMoves.standingOuterHip, HipMoves.seatedOuterHip, HipMoves.sideLegSwings,
     )
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }

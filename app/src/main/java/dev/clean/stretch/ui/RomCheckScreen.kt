@@ -118,7 +118,7 @@ private fun Option(text: String, selected: Boolean, onClick: () -> Unit) {
 /** "Which looks most like you?" — one figure per level, two per row (D-033). */
 @Composable
 private fun PictureChoices(test: RomTest, mirrored: Boolean, selected: Int?, onPick: (Int) -> Unit) {
-    val stage = remember(test.key) { figureStage(test.pictures, View.Side.camera, prop = null) }
+    val stage = remember(test.key) { figureStage(test.pictures, test.view.camera, prop = null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
         test.levels.indices.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

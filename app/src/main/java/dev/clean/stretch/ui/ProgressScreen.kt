@@ -161,12 +161,29 @@ fun Ring(fraction: Float, color: Color, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+private fun RomHistory(levels: List<Int>, max: Int) {
+    val color = MaterialTheme.colorScheme.primary
+    val track = MaterialTheme.colorScheme.surfaceContainerHighest
+    Canvas(Modifier.padding(vertical = 4.dp).size(width = 140.dp, height = 24.dp)) {
+        val r = 3.dp.toPx()
+        drawLine(track, Offset(0f, size.height - r), Offset(size.width, size.height - r), strokeWidth = 1.dp.toPx())
+        val pts = levels.takeLast(10).let { l ->
+            l.mapIndexed { i, v ->
+                val x = if (l.size == 1) size.width / 2 else r + (size.width - 2 * r) * i / (l.size - 1)
+                Offset(x, size.height - r - (size.height - 2 * r) * v / max.coerceAtLeast(1))
+            }
+        }
+        pts.zipWithNext().forEach { (a, b) -> drawLine(color, a, b, strokeWidth = 2.dp.toPx()) }
+        pts.forEach { drawCircle(color, r, it) }
+    }
+}
+
 /** Range-of-motion check results (S9): latest answer and change since the first check. */
 @Composable
 private fun RomCard(entries: List<RomEntry>, onCheck: (String?) -> Unit) {
     val trends = remember(entries) { RomTrends.of(entries) }
     val days = remember(entries) { RomTrends.daysSinceLast(entries, System.currentTimeMillis()) }
-    val dateFormat = remember { DateTimeFormatter.ofPattern("d MMM") }
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(28.dp),
@@ -176,48 +193,48 @@ private fun RomCard(entries: List<RomEntry>, onCheck: (String?) -> Unit) {
             Text("Range of motion", style = MaterialTheme.typography.titleMedium)
             Text(
                 when {
-                    days == null -> "Check how far you can reach today, then again in a few weeks to see what's changed."
+                    days == null -> "See how your range changes over time."
                     days >= RomTests.RECHECK_DAYS -> "Last checked $days days ago. A good time to check again."
-                    days == 0L -> "Checked today. Check again in about 4 weeks."
-                    else -> "Last checked $days ${if (days == 1L) "day" else "days"} ago. Check again in about 4 weeks."
+                    days == 0L -> "Checked today."
+                    else -> "Last checked $days ${if (days == 1L) "day" else "days"} ago."
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // One row per check; left and right share it (owner: as few words as needed).
             RomTests.all.forEach { test ->
-                val sides = if (test.sided) listOf("left" to " (left)", "right" to " (right)") else listOf("both" to "")
-                sides.forEach { (side, label) ->
-                    val trend = trends[test.key to side]
-                    // Tap one check to update just that one (owner, 2026-11-13).
-                    Row(
-                        Modifier.fillMaxWidth().clickable(onClickLabel = "Update ${test.name}") { onCheck(test.key) }.padding(top = 10.dp, bottom = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(test.name + label, style = MaterialTheme.typography.bodyLarge)
-                            Text(
-                                trend?.let { test.levels.getOrElse(it.latest.level) { "?" } } ?: "Not measured yet",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                val sides = if (test.sided) listOf("left" to "L", "right" to "R") else listOf("both" to "")
+                fun level(side: String) = trends[test.key to side]?.let { test.levels.getOrElse(it.latest.level) { "?" } } ?: "—"
+                fun change(side: String) = trends[test.key to side]?.takeIf { it.count > 1 }?.change
+                Row(
+                    Modifier.fillMaxWidth().clickable(onClickLabel = "Update ${test.name}") { onCheck(test.key) }.padding(top = 10.dp, bottom = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(test.name, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            if (test.sided) sides.joinToString(" · ") { (side, l) -> "$l: ${level(side)}" } else level("both").let { if (it == "—") "Not measured yet" else it },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        // Flexibility history: one dot per check, higher = more range.
+                        sides.forEach { (side, _) ->
+                            val series = entries.filter { it.testKey == test.key && it.side == side }.sortedBy { it.takenAt }
+                            if (series.size > 1) RomHistory(series.map { it.level }, test.levels.lastIndex)
                         }
-                        if (trend != null && trend.count > 1) {
-                            val since = Instant.ofEpochMilli(trend.first.takenAt).atZone(ZoneId.systemDefault()).format(dateFormat)
-                            Text(
-                                when {
-                                    trend.change > 0 -> "+${trend.change} ${if (trend.change == 1) "step" else "steps"} since $since"
-                                    trend.change < 0 -> "${trend.change} ${if (trend.change == -1) "step" else "steps"} since $since"
-                                    else -> "Same as $since"
-                                },
-                                style = MaterialTheme.typography.labelLarge,
-                                color = if (trend.change > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                    }
+                    val changes = sides.mapNotNull { (side, l) -> change(side)?.let { c -> (if (l.isEmpty()) "" else "$l ") + (if (c > 0) "+$c" else "$c") } }
+                    if (changes.isNotEmpty()) {
+                        Text(
+                            changes.joinToString(" · "),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (sides.any { (change(it.first) ?: 0) > 0 }) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Text("Tap a check to update just that one.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Tap one to update it. +/- = steps since your first check.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             Button(onClick = { onCheck(null) }) { Text(if (days == null) "Check all now" else "Check all again") }
         }

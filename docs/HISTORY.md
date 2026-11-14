@@ -563,3 +563,19 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - Checked the test can fail: with the 5→6 migration removed, it fails; restored.
 - Checks run: 84 JVM tests, assembleDebug, lintDebug (no issues), 2 emulator tests pass. The
   app stayed installed (leaveApksInstalledAfterRun).
+
+## Owner phone round: Settings, Today, week circles, anatomy chart, motion checks (2026-11-14, D-042)
+- Settings: five menus. Today: link popup with the muscles a routine works (per side, this week
+  / goal), Foam roller and Strengthen chips, block notes removed from the generator.
+- This week: `Stats.minutesByDay`, `weekFill` (catch-up into earlier days), `daysDone`,
+  `weekStreakByGoal`; `Generator.dayGoalMinutes`; `HistoryDao.allSessions()`. New unit test.
+- Small fixes: finish screen; `Pose.nearPalm` / `farPalm` thumb (drawing only), used by the wrist
+  flexor (palm up) and extensor (palm down) stretches.
+- `ui/BodyMap.kt` rewritten as an anatomy chart: hand-drawn muscle outlines (smoothed), front and
+  back mirrored per side, side views, swipe or tap to turn, point-in-shape tapping.
+- Motion checks: `RomTest.view`; butterfly_knees, seated_twist, knee_hug; RECHECK_DAYS 7; weekly
+  pop-up on Today (`AppPreferences.romPromptWeek`); one row per check with L/R and history dots.
+- Checks run: unit tests, assembleDebug, lintDebug (no issues) after each part; emulator: Today,
+  Settings menus build, body view front/right/back, new check pictures, check list.
+- Not checked: the weekly pop-up appearing (needs a week of history), the day-circle catch-up
+  with real sessions (unit-tested only), knee hug pictures, TalkBack.

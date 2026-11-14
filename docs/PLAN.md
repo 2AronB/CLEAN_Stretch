@@ -285,7 +285,7 @@ permanent; trends and "not measured" work as today.
   skipped; the emulator started with `-no-snapshot-save` rewinds to an old snapshot on every
   boot, so test data doesn't carry over between sessions (use it knowingly).
 
-### 8.7 Goals tuning (agent + owner, S–M)
+### 8.7 Goals tuning — penultimate update (owner, 2026-11-14)
 - Watch the weekly totals in real use; if routines feel long, consider defaulting new users
   to fewer primary areas or showing "about N min a day" next to each area as it's picked.
 - Optional "Advanced" toggle to count foam rolling toward the bars (explained to owner, not
@@ -306,3 +306,11 @@ biceps → 8.4 → 8.3 → remaining 8.2 muscles → 8.5 → 8.7 → 8.8.
 ### Decisions waiting on the owner
 1. Which muscle gets moves next (suggested: shins & ankles).
 2. Approve `RECEIVE_BOOT_COMPLETED` so reminders survive a phone restart? (optional)
+
+### Done 2026-11-14 (D-042)
+Settings menus; Today link popup, roller/strengthen chips, filling day circles with catch-up and
+"Why?"; anatomy-chart body view (front, right, back, left); motion checks butterfly knees,
+seated twist, knee hug, weekly check-in pop-up and history dots; finish-screen fix; palm
+direction on the figure. Still open from 8.3: back-scratch reach and neck turn (need arms behind
+the back and a head-turn value on the figure). From 8.4: "Stretch this now" from a tapped muscle,
+list mode for screen readers, last-week toggle.

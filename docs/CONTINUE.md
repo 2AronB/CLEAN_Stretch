@@ -115,8 +115,9 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
 **The full next-stage plan, in order and with sizes, is `docs/PLAN.md` §8.** The list below is the short version.
 
-1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
-   single range-of-motion check.
+1. Owner to try on the phone (2026-11-14 round, D-042): Settings menus, the Today link popup and
+   chips, the filling day circles and "Why?", the anatomy chart (side views are the roughest),
+   the three new motion checks and the weekly check-in pop-up, the wrist moves' thumbs.
 2. Owner review of the new wrist moves (wrist flexor, wrist extensor, prayer stretch, D-040) and
    their voice clips. Then new moves for muscles that still have none: biceps (doorway or wall biceps), shins & ankles (kneeling shin stretch), side body
    (standing side bend is tagged Back; consider retagging), outer hip (cross-body glute, IT-band

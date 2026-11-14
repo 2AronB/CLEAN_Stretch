@@ -50,6 +50,7 @@ import dev.clean.stretch.catalog.SampleCatalog
 import dev.clean.stretch.catalog.Stretch
 import dev.clean.stretch.plan.Generator
 import dev.clean.stretch.plan.Profile
+import dev.clean.stretch.data.RomCheckDao
 import dev.clean.stretch.plan.RoutineKind
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.SavedRoutineDao
@@ -85,6 +86,8 @@ fun TodayScreen(
     savedRoutines: SavedRoutineDao,
     onOpenTender: () -> Unit,
     onUpdateProfile: (Profile) -> Unit,
+    romChecks: RomCheckDao,
+    onOpenRomCheck: () -> Unit,
 ) {
     val saved by remember { savedRoutines.observe() }.collectAsState(initial = emptyList())
     var deleting by remember { mutableStateOf<SavedRoutineEntity?>(null) }
@@ -210,6 +213,27 @@ fun TodayScreen(
         SectionLabel("This week")
         WeekCard(today, Stats.weekFill(Stats.weekStart(today), dayMinutes, dayGoal), prefs.daysPerWeek, streak, dayGoal, onOpenSources)
         Spacer(Modifier.height(32.dp))
+    }
+
+    // Weekly flexibility check (owner, 2026-11-14): offered once a week after a week of
+    // stretching; "Not this week" (or answering) hides it until next Monday.
+    val romRows by remember { romChecks.observe() }.collectAsState(initial = null)
+    val thisMonday = Stats.weekStart(today).toEpochDay()
+    val firstSession = allSessions.minOfOrNull { it.startedAt }
+    val now = System.currentTimeMillis()
+    val lastCheck = romRows?.maxOfOrNull { it.takenAt }
+    var promptWeek by remember { mutableStateOf(prefs.romPromptWeek) }
+    val due = romRows != null && firstSession != null && now - firstSession >= 7 * 86_400_000L &&
+        (lastCheck == null || now - lastCheck >= 7 * 86_400_000L) && promptWeek != thisMonday
+    if (due) {
+        fun dismiss() { prefs.romPromptWeek = thisMonday; promptWeek = thisMonday }
+        AlertDialog(
+            onDismissRequest = ::dismiss,
+            title = { Text("Weekly flexibility check") },
+            text = { Text("A minute of picture check-ins shows how your range is changing.") },
+            confirmButton = { TextButton(onClick = { dismiss(); onOpenRomCheck() }) { Text("Check now") } },
+            dismissButton = { TextButton(onClick = ::dismiss) { Text("Not this week") } },
+        )
     }
 
     deleting?.let { r ->

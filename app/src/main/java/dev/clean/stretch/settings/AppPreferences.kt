@@ -63,6 +63,11 @@ class AppPreferences(context: Context) {
     var reminderTime by mutableIntStateOf(prefs.getInt(KEY_REMINDER_TIME, 19 * 60))
         private set
 
+    /** Monday (epoch day) of the week the weekly flexibility check was last offered. Not backed up. */
+    var romPromptWeek: Long
+        get() = prefs.getLong(KEY_ROM_PROMPT, 0L)
+        set(value) { prefs.edit { putLong(KEY_ROM_PROMPT, value) } }
+
     fun updatePlanCue(cue: PlanCue) { planCue = cue; prefs.edit { putString(KEY_PLAN_CUE, cue.name) } }
     fun updateDaysPerWeek(days: Int) { daysPerWeek = days; prefs.edit { putInt(KEY_DAYS, days) } }
     fun updateReminder(on: Boolean, time: Int = reminderTime) {
@@ -138,6 +143,7 @@ class AppPreferences(context: Context) {
     private companion object {
         const val KEY_THEME = "theme_mode"
         const val KEY_PALETTE = "palette"
+        const val KEY_ROM_PROMPT = "rom_prompt_week"
         const val KEY_STILL = "still_figures"
         const val KEY_PLAN_CUE = "plan_cue"
         const val KEY_DAYS = "plan_days_per_week"

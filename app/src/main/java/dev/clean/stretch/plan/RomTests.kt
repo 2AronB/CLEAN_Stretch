@@ -6,6 +6,7 @@ import dev.clean.stretch.figure.Pin
 import dev.clean.stretch.figure.Pose
 import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.Vec
+import dev.clean.stretch.figure.View
 import kotlin.math.acos
 
 /**
@@ -28,6 +29,8 @@ data class RomTest(
     /** One picture per level, same order. */
     val pictures: List<Pose>,
     val highlight: Set<Segment>,
+    /** Camera for the pictures. */
+    val view: View = View.Side,
 )
 
 object RomTests {
@@ -127,12 +130,67 @@ object RomTests {
         highlight = setOf(Segment.NearThigh),
     )
 
-    val all: List<RomTest> = listOf(toeReach, overheadReach, ankleLunge, legRaise)
+    // Round 2 (owner, 2026-11-14). Back-scratch reach and neck turn need new figure abilities.
+    val butterflyKnees = RomTest(
+        key = "butterfly_knees",
+        name = "Butterfly knees",
+        region = Region.Hips,
+        sided = false,
+        howTo = listOf(
+            "Sit tall with the soles of your feet together and heels in close.",
+            "Let your knees drop toward the floor. Don't push them.",
+            "Pick the picture closest to how low your knees rest.",
+        ),
+        levels = listOf("Knees well up", "Knees a little up", "Knees near the floor", "Knees on the floor"),
+        pictures = listOf(20f, 32f, 44f, 58f).map { out ->
+            Pose(torso = 178f, nearShoulder = 25f, nearElbow = 10f, farShoulder = 25f, farElbow = 12f, nearHip = 115f, nearKnee = 140f, nearAnkle = 20f,
+                farHip = 115f, farKnee = 140f, farAnkle = 20f, nearLegOut = out, farLegOut = out, nearLegTurn = 60f, farLegTurn = 60f)
+        },
+        highlight = setOf(Segment.NearThigh, Segment.FarThigh),
+        view = View.Front,
+    )
+
+    val seatedTwist = RomTest(
+        key = "seated_twist",
+        name = "Seated twist",
+        region = Region.Core,
+        sided = true,
+        howTo = listOf(
+            "Sit tall on the floor, legs out in front.",
+            "Turn your chest toward the side named, keeping your hips still. Use your hands lightly.",
+            "Pick the picture closest to how far your chest turns.",
+        ),
+        levels = listOf("A small turn", "A quarter turn", "Most of the way", "Shoulders sideways"),
+        pictures = listOf(12f, 24f, 34f, 44f).map { t ->
+            Pose(twist = t, nearShoulder = -30f * t / 40f, nearElbow = 4f, nearArmOut = 18f, farShoulder = 50f, farElbow = 30f, farArmOut = -35f, nearHip = 90f, farHip = 90f)
+        },
+        highlight = setOf(Segment.Torso),
+        view = View.Above,
+    )
+
+    val kneeHug = RomTest(
+        key = "knee_hug",
+        name = "Knee hug",
+        region = Region.Hips,
+        sided = true,
+        howTo = listOf(
+            "Lie on your back on a firm surface, both legs long.",
+            "Hug one knee to your chest. Let the other leg relax.",
+            "Watch the straight leg. Pick the picture closest to it. The side named is the straight leg.",
+        ),
+        levels = listOf("Thigh lifts well off", "Thigh lifts a little", "Thigh stays down"),
+        pictures = listOf(124f to 40f, 106f to 18f, 90f to 0f).map { (hip, knee) ->
+            Pose(torso = -90f, head = -8f, nearShoulder = 46f, nearElbow = 12f, farShoulder = 42f, farElbow = 14f, nearHip = 200f, nearKnee = 115f, farHip = hip, farKnee = knee)
+        },
+        highlight = setOf(Segment.FarThigh),
+    )
+
+    val all: List<RomTest> = listOf(toeReach, overheadReach, ankleLunge, legRaise, butterflyKnees, seatedTwist, kneeHug)
 
     fun byKey(key: String): RomTest? = all.firstOrNull { it.key == key }
 
-    /** Suggested days between checks. */
-    const val RECHECK_DAYS = 28
+    /** Days between check-ins: Today offers one once a week (owner, 2026-11-14). */
+    const val RECHECK_DAYS = 7
 }
 
 /** One saved answer, as plain values (no Android types) so trend math is unit-tested. */

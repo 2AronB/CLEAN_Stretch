@@ -232,7 +232,8 @@ object BackMoves {
         name = "Standing side bend",
         kind = StretchKind.Static,
         sided = true,
-        primary = listOf(Muscle.Lats),
+        // Counts for side body as well as lats (owner, 2026-11-14). Lats stays first so the move stays in this file.
+        primary = listOf(Muscle.Lats, Muscle.Obliques),
         secondary = listOf(Muscle.Abdominals),
         position = Position.Standing,
         highlight = setOf(Segment.Torso, Segment.NearUpperArm),

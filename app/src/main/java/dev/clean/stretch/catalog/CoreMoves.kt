@@ -7,7 +7,7 @@ import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.View
 
 /**
- * Core moves: every move whose first main muscle is in this area.
+ * Core (abdominals, side body) moves: every move whose first main muscle is in this area.
  * Library order is set by [SampleCatalog.all]; see docs/ADDING_STRETCHES.md.
  */
 object CoreMoves {
@@ -143,5 +143,63 @@ object CoreMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(sphinx, standingBackBend, cobra, plank, torsoTurns)
+    // Side body (PLAN §8.2, 2026-11-14). The standing side bend (BackMoves) also counts for side
+    // body now (owner, 2026-11-14). The supporting hand below was placed on the floor numerically
+    // and stays in the same spot as the lean deepens (the elbow bends instead).
+    private val crossLegs = Pose(nearHip = 109f, nearKnee = 140f, nearLegOut = 55f, nearLegTurn = 60f, farHip = 109f, farKnee = 140f, farLegOut = 55f, farLegTurn = 60f)
+
+    val seatedSideBend = Stretch(
+        key = "seated_side_bend",
+        name = "Seated side bend",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Obliques),
+        secondary = listOf(Muscle.Lats),
+        position = Position.Seated,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm),
+        summary = "Sit with your knees open, rest one hand on the floor beside you and reach the other arm up and over.",
+        cues = listOf(
+            "Sit tall with your legs crossed, or with the soles of your feet together.",
+            "Rest one hand on the floor, out to the side of your hip.",
+            "Reach your other arm up and lean gently toward the hand on the floor, letting that elbow bend.",
+            "Feel along your side from hip to fingertips. Keep both sides of your seat on the floor.",
+        ),
+        cautions = listOf("Sit on a folded towel if you can't sit tall."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = crossLegs.copy(nearShoulder = 20f, nearElbow = 30f, nearArmOut = 10f, farShoulder = 20f, farElbow = 30f, farArmOut = 10f),
+            stretch = crossLegs.copy(sideBend = -18f, nearShoulder = 168f, nearElbow = 10f, nearArmOut = -12f, farElbow = 3f, farArmOut = 49.5f, farArmTurn = -90f),
+            deep = crossLegs.copy(sideBend = -25f, nearShoulder = 170f, nearElbow = 8f, nearArmOut = -16f, farElbow = 55f, farArmOut = 80f, farArmTurn = -90f),
+            view = View.Front,
+        ),
+    )
+
+    val sideReaches = Stretch(
+        key = "side_reaches",
+        name = "Standing side reaches",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Obliques),
+        secondary = listOf(Muscle.Lats),
+        position = Position.Standing,
+        highlight = setOf(Segment.Torso),
+        summary = "Stand tall and reach one arm up and over to the side, then the other, in a slow rhythm.",
+        cues = listOf(
+            "Stand tall with your feet hip-width apart and knees soft.",
+            "Reach one arm up overhead and lean gently to the other side.",
+            "Come back up, switch arms and lean the other way.",
+            "Keep it slow and smooth. Feel each side in turn, without tipping forward or back.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farElbow = 6f, nearKnee = 6f, farKnee = 6f),
+            stretch = Pose(sideBend = -18f, nearShoulder = 168f, nearElbow = 10f, nearArmOut = -12f, farElbow = 30f, farArmOut = 24f, nearKnee = 6f, farKnee = 6f),
+            deep = Pose(sideBend = 18f, nearElbow = 30f, nearArmOut = 24f, farShoulder = 168f, farElbow = 10f, farArmOut = -12f, nearKnee = 6f, farKnee = 6f),
+            view = View.Front,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(sphinx, standingBackBend, cobra, plank, torsoTurns, seatedSideBend, sideReaches)
 }

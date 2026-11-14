@@ -98,6 +98,8 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | seated_figure_four | Seated figure-four stretch | Not reviewed | | | | |
 | pigeon | Pigeon stretch | Not reviewed | | | | |
 | knee_to_opposite_shoulder | Knee to opposite shoulder | Not reviewed | | | | |
+| seated_side_bend | Seated side bend | Not reviewed | | | | |
+| side_reaches | Standing side reaches | Not reviewed | | | | |
 
 ## History (append-only)
 
@@ -110,3 +112,5 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 - 2026-11-14 · standing_outer_hip, seated_outer_hip, side_leg_swings · Not reviewed · Added (outer hip, PLAN §8.2). First stretches for this muscle; side_leg_raise was its only move.
 - 2026-11-14 · ankle_pumps · Not reviewed · Legs lowered 3 degrees so the heels rest on the floor (was floating slightly). Still not reviewed.
 - 2026-11-14 · seated_figure_four, pigeon, knee_to_opposite_shoulder · Not reviewed · Added (deep hip rotators, PLAN §8.2). Pigeon is level 2 with knee cautions; figure_four was the only move for this muscle before.
+- 2026-11-14 · seated_side_bend, side_reaches · Not reviewed · Added (side body, PLAN §8.2).
+- 2026-11-14 · standing_side_bend · Not reviewed · Main muscles are now Lats and Side body (was Lats only). Owner chose "Yes, main = both" when asked; pose, cues and voice clips unchanged. This is a tagging decision, not a review approval.

@@ -121,7 +121,7 @@ object SearchWords {
         "forearms" to listOf("forearms & wrists"), "hand" to listOf("forearms & wrists"), "hands" to listOf("forearms & wrists"),
         "tricep" to listOf("triceps"), "bicep" to listOf("biceps"), "arm" to listOf("arms"), "arms" to listOf("arms"),
         "piriformis" to listOf("deep hip rotators"), "rotators" to listOf("deep hip rotators"),
-        "4" to listOf("four"), "itb" to listOf("outer hip"), "tfl" to listOf("outer hip"), "abductor" to listOf("outer hip"), "abductors" to listOf("outer hip"),
+        "waist" to listOf("side body"), "4" to listOf("four"), "itb" to listOf("outer hip"), "tfl" to listOf("outer hip"), "abductor" to listOf("outer hip"), "abductors" to listOf("outer hip"),
         "warmup" to listOf("flow"), "strength" to listOf("strengthen"), "strong" to listOf("strengthen"), "hold" to listOf("hold"),
     )
     private val easyWords = setOf("easy", "easier", "easiest", "gentle", "beginner", "simple")

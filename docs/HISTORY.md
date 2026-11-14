@@ -563,3 +563,26 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
 - Checked the test can fail: with the 5→6 migration removed, it fails; restored.
 - Checks run: 84 JVM tests, assembleDebug, lintDebug (no issues), 2 emulator tests pass. The
   app stayed installed (leaveApksInstalledAfterRun).
+
+## Moves for the five empty muscles (2026-11-14, PLAN §8.2)
+- 14 new moves in their area files and at the end of `SampleCatalog.all`, one commit per muscle:
+  shins & ankles (`standing_shin`, `kneeling_shin` level 2, `ankle_pumps` flowing), biceps
+  (`wall_biceps` with the wall prop, `standing_biceps`, `seated_biceps` level 2), outer hip
+  (`standing_outer_hip`, `seated_outer_hip`, `side_leg_swings` flowing), deep hip rotators
+  (`seated_figure_four`, `pigeon` level 2 with knee cautions, `knee_to_opposite_shoulder` with
+  `spinalFlexion` like knee-to-chest), side body (`seated_side_bend`, `side_reaches` flowing).
+- Owner decisions: the standing side bend's main muscles are now Lats **and** Side body ("Yes,
+  main = both"); chest, shoulders and triceps (2, 2 and 1 main moves) are left for later ("No,
+  stop at side body").
+- Ground contact was worked out with a small script that repeats the figure's own maths, then
+  checked by eye in `tools/pose-preview` for every keyframe in all four views. Seated poses use
+  hip 87 degrees rather than 90 so the heels rest on the floor.
+- Sources: existing IDs only (S2, S3, S15 for holds; S3, S4, S5 for flowing moves).
+- Voice: 44 new af_heart clips made with `tools/voice/generate.py` (missing clips only, never
+  `--all`); git shows no existing clip changed.
+- Review log: 14 rows added as Not reviewed, plus history lines (including the side bend retag).
+- Other: `GeneratorTest` no longer assumes shins has no moves; new variant pairs; new search
+  words (foot, feet, itb, tfl, abductor(s), waist, "4" for figure 4).
+- Checks run: after each muscle and again on `main` after the fast-forward: 84 JVM tests pass,
+  assembleDebug, lintDebug (no issues). Not checked: the moves in the app on the emulator, and
+  how the new clips sound.

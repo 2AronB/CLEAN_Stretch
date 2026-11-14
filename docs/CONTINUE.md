@@ -1,10 +1,11 @@
 # Continue here
 
-**State on 2026-11-13:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
-foam rolling), S9 (range-of-motion checks), a 3D figure, 55 moves, the catalog split by body
+**State on 2026-11-14:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+foam rolling), S9 (range-of-motion checks), a 3D figure, 72 moves (every muscle in the body
+view now has moves, PLAN §8.2), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-83 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
+84 JVM tests pass and lint shows no warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
 `docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
@@ -60,8 +61,8 @@ Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 - 3D figure with Side / Angled / Front / Above views (view chip), floor, mat, shadows and black
   outlines (D-034, D-035); hands bend at the wrist when a pose sets a wrist angle (D-040). Rolling keeps hands or feet planted with two-bone IK.
 
-**Library (58 moves, 20 muscles in 7 areas)**
-- 37 holds, 8 flowing moves, 7 strengthen holds and 3 foam-rolling moves; easier/harder pairs
+**Library (72 moves, 20 muscles in 7 areas)**
+- 51 holds, 11 flowing moves, 7 strengthen holds and 3 foam-rolling moves; easier/harder pairs
   with "Other versions" links.
 - Search where every word must match and everyday words are understood ("easy hamstring",
   "roller calves", "twist"), plus filters for type, area, muscle, position, equipment, level and
@@ -84,6 +85,30 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 **Release build**: shrunk (4.2 MB APK); signing reads the git-ignored `keystore.properties`;
 `staging` build = shrunk + debug-signed, installed as a separate app for testing.
 
+## Added 2026-11-14: moves for the five empty muscles (PLAN §8.2)
+
+14 new moves, all `Not reviewed` in `docs/REVIEW_LOG.md`, each with poses checked in every view
+with `tools/pose-preview` and new af_heart voice clips (44 new clips; no existing clip changed):
+
+| Muscle | New moves (key) |
+|---|---|
+| Shins & ankles | Standing shin stretch (`standing_shin`), Kneeling shin stretch (`kneeling_shin`, level 2), Ankle pumps (`ankle_pumps`, flowing) |
+| Biceps | Wall biceps stretch (`wall_biceps`), Standing biceps stretch (`standing_biceps`), Seated biceps stretch (`seated_biceps`, level 2) |
+| Outer hip | Standing outer-hip stretch (`standing_outer_hip`), Seated outer-hip stretch (`seated_outer_hip`), Side leg swings (`side_leg_swings`, flowing) |
+| Deep hip rotators | Seated figure-four stretch (`seated_figure_four`), Pigeon stretch (`pigeon`, level 2), Knee to opposite shoulder (`knee_to_opposite_shoulder`) |
+| Side body | Seated side bend (`seated_side_bend`), Standing side reaches (`side_reaches`, flowing) |
+
+- **Standing side bend** now counts for Side body as well as Lats (owner: "Yes, main = both").
+  Nothing else about it changed.
+- New Easier/Harder links: standing shin → kneeling shin, standing biceps → seated biceps,
+  lying figure-four → pigeon. Search also understands foot/feet, itb, tfl, abductor, waist, "figure 4".
+- `GeneratorTest` used to assert that shins had no moves; it now expects a normal target.
+- Checks run after every muscle and again on `main` after the merge: 84 JVM tests pass,
+  `assembleDebug` builds, `lintDebug` reports no issues. Not run: the emulator (nothing in this
+  work touches the database or screens), so the new moves have **not** been seen in the app itself.
+- Owner chose not to fill these yet: **Chest (2 main moves), Shoulders (2) and Triceps (1)** have
+  fewer than three moves that mainly target them. They're the next gap.
+
 ## Verified vs not
 
 - **Verified:** JVM tests for generator, safety rules, weekly dose, library filter and search,
@@ -96,7 +121,8 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
   and wake lock gone), finish screen, rotating mid-run (same run continues).
 - **Still to see on the owner's phone:** a real routine with the phone locked (voice through the
   speaker, battery), Generator v2 suggestions day to day, library search/filters, Tender spot,
-  the setup section menu, round-5 moves in motion, TalkBack and the largest font size.
+  the setup section menu, round-5 moves in motion, TalkBack and the largest font size, and the
+  14 new moves from 2026-11-14 (in motion, and how their voice clips sound).
 
 ## Owner actions
 
@@ -106,7 +132,9 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
    before release (D-031). This blocks release.
 3. Review wording: the 12 round-5 cue sets and the level-2 choices (seated twist, side lunge,
    wide-leg), strength and rolling cautions, and ROM check levels.
-4. Review the drafts in `docs/PLAY_RELEASE.md` (privacy policy, Data safety, health declaration,
+4. Review the 14 new moves from 2026-11-14 in the app (pose, motion, cues, voice clips) and
+   say which are approved; they're listed above and in `docs/REVIEW_LOG.md`.
+5. Review the drafts in `docs/PLAY_RELEASE.md` (privacy policy, Data safety, health declaration,
    store text) and add a contact address.
 
 ## Next (recommended order)
@@ -117,10 +145,9 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
 
 1. Owner to try on the phone: colours, the Weekly goals setup page, the body view, tapping a
    single range-of-motion check.
-2. Owner review of the new wrist moves (wrist flexor, wrist extensor, prayer stretch, D-040) and
-   their voice clips. Then new moves for muscles that still have none: biceps (doorway or wall biceps), shins & ankles (kneeling shin stretch), side body
-   (standing side bend is tagged Back; consider retagging), outer hip (cross-body glute, IT-band
-   side stretch). Each needs poses, cues, sources and voice clips (ADDING_STRETCHES.md).
+2. Owner review of the wrist moves (D-040) and the 14 new moves from 2026-11-14, with their
+   voice clips. Then the remaining gap: one more chest move, one more shoulder move and two more
+   triceps moves, so every muscle has three that mainly target it (ADDING_STRETCHES.md).
 3. More range-of-motion checks (proposed, not built): back-scratch shoulder reach, hip-flexor
    "Thomas test" lying knee hug, neck turn, seated twist, butterfly knee height.
 4. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
@@ -142,5 +169,7 @@ Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
   all four views using the app's own drawing code.
 - Voice clips: `tools/voice/generate.py` with the Kokoro setup in
   `C:\Users\Kayli\Desktop\CLEAN Development\kokoro` (steps in ADDING_STRETCHES.md §6).
+- A new git worktree has no `local.properties` (it's git-ignored), so Gradle can't find the
+  Android SDK. Copy it from the main folder first.
 - Parallel sessions: use git worktrees; the only file that tends to conflict is this one.
   Merge into `main`, run the full checks, then push.

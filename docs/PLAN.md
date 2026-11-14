@@ -243,6 +243,9 @@ body view on Progress, tapping one range-of-motion check, a routine with the scr
 clips, TalkBack and the largest font size.
 
 ### 8.2 Fill the empty muscles (agent + owner review, L)
+**Built 2026-11-14:** 14 moves across the five muscles below, all waiting for owner review
+(list in CONTINUE.md). Still short of three main moves: chest, shoulders, triceps.
+
 Muscles with goals but no moves show grey bars. One muscle per session, in this order:
 
 | Muscle | Candidate moves (pick 2–3) | Notes |

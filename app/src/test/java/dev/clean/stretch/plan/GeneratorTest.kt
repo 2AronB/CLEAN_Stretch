@@ -110,8 +110,8 @@ class GeneratorTest {
         assertEquals(2.0, Generator.sessionTargets(legs, mapOf(Muscle.Hamstrings to 4.0), 3)[Muscle.Hamstrings]!!, 1e-9)
         // Last day with nothing done: capped at 4.
         assertEquals(4.0, Generator.sessionTargets(legs, emptyMap(), 1)[Muscle.Hamstrings]!!, 1e-9)
-        // A muscle with no moves yet gets no target.
-        assertEquals(null, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Shins])
+        // Shins & ankles has moves now (2026-11-14), so it gets a target like any other leg muscle.
+        assertEquals(2.0, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Shins]!!, 1e-9)
         val r = Generator.generate(legs, RoutineKind.Full, daysLeft = 5)
         assertTrue((Generator.minutesByMuscle(r.keys, r.holdSeconds)[Muscle.Hamstrings] ?: 0.0) > 0.0)
         // No muscle side ever gets more than 4 min in one routine, whatever the length.

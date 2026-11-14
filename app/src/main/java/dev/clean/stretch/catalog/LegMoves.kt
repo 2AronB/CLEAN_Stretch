@@ -8,7 +8,7 @@ import dev.clean.stretch.figure.Segment
 import dev.clean.stretch.figure.View
 
 /**
- * Legs (quadriceps, hamstrings, calves) moves: every move whose first main muscle is in this area.
+ * Legs (quadriceps, hamstrings, calves, shins & ankles) moves: every move whose first main muscle is in this area.
  * Library order is set by [SampleCatalog.all]; see docs/ADDING_STRETCHES.md.
  */
 object LegMoves {
@@ -435,5 +435,87 @@ object LegMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(seatedForwardFold, standingQuad, wallCalf, bentKneeCalf, standingHamstring, lyingHamstring, downwardDog, sideLyingQuad, kneelingQuad, towelCalf, calfRaiseHold, rollCalves, rollQuads, legSwings, hipHinge, ankleRocks)
+    // Shins & ankles (PLAN §8.2, 2026-11-14). Ground contact was checked numerically: the back
+    // foot's toes and the standing foot both rest on the floor in the stretch and deep poses.
+    val standingShin = Stretch(
+        key = "standing_shin",
+        name = "Standing shin stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Shins),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearShin, Segment.NearFoot),
+        summary = "Stand tall, rest the tops of your toes on the floor just behind you and gently press that ankle forward.",
+        cues = listOf(
+            "Stand tall. Hold a wall or chair for balance if you like.",
+            "Place one foot just behind you, with the tops of your toes resting on the floor.",
+            "Bend both knees a little and gently press the back ankle forward and down.",
+            "Feel the front of your shin and the top of your foot. Keep it gentle.",
+        ),
+        cautions = listOf("Ease off if your toes or the arch of your foot start to cramp."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearElbow = 6f, farElbow = 6f, nearHip = 5f, nearKnee = 45f, nearAnkle = -90f, farHip = 8f, farKnee = 16f, farAnkle = 8f),
+            deep = Pose(nearElbow = 6f, farElbow = 6f, nearHip = 9f, nearKnee = 50f, nearAnkle = -90f, farHip = 13f, farKnee = 26f, farAnkle = 13f),
+        ),
+    )
+
+    val kneelingShin = Stretch(
+        key = "kneeling_shin",
+        name = "Kneeling shin stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Shins),
+        secondary = listOf(Muscle.Quadriceps),
+        position = Position.Kneeling,
+        level = 2,
+        highlight = setOf(Segment.NearShin, Segment.NearFoot, Segment.FarShin, Segment.FarFoot),
+        summary = "Kneel and sit back toward your heels with the tops of your feet flat on the floor.",
+        cues = listOf(
+            "Kneel with the tops of your feet flat on the floor, toes pointing straight back.",
+            "Slowly sit your hips back toward your heels.",
+            "Rest your hands on your thighs and sit tall.",
+            "Feel the front of your shins and ankles. Lean back a little only if it feels easy.",
+        ),
+        cautions = listOf(
+            "Skip this one if kneeling or bending your knees fully hurts.",
+            "Put a cushion between your heels and hips, or a rolled towel under your ankles, to make it gentler.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            stretch = Pose(nearShoulder = 22f, nearElbow = 20f, farShoulder = 22f, farElbow = 20f, nearHip = 75f, nearKnee = 165f, nearAnkle = -90f, farHip = 75f, farKnee = 165f, farAnkle = -90f),
+            deep = Pose(torso = 187f, nearShoulder = 20f, nearElbow = 14f, farShoulder = 20f, farElbow = 14f, nearHip = 75f, nearKnee = 165f, nearAnkle = -90f, farHip = 75f, farKnee = 165f, farAnkle = -90f),
+        ),
+    )
+
+    val anklePumps = Stretch(
+        key = "ankle_pumps",
+        name = "Ankle pumps",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Shins),
+        secondary = listOf(Muscle.Calves),
+        position = Position.Seated,
+        highlight = setOf(Segment.NearShin, Segment.NearFoot, Segment.FarShin, Segment.FarFoot),
+        summary = "Sit with your legs long and slowly point your toes away, then draw them back toward you.",
+        cues = listOf(
+            "Sit with your legs long. Rest your hands on the floor behind you.",
+            "Point your toes away from you as far as is comfortable.",
+            "Then draw your toes back toward your shins.",
+            "Keep it slow and smooth. Feel the front of your ankles, then your calves.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, farHip = 90f),
+            stretch = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, nearAnkle = -42f, farHip = 90f, farAnkle = -42f),
+            deep = Pose(torso = 205f, nearShoulder = -48f, nearElbow = 4f, farShoulder = -48f, farElbow = 4f, nearHip = 90f, nearAnkle = 22f, farHip = 90f, farAnkle = 22f),
+        ),
+    )
+
+    val all: List<Stretch> = listOf(seatedForwardFold, standingQuad, wallCalf, bentKneeCalf, standingHamstring, lyingHamstring, downwardDog, sideLyingQuad, kneelingQuad, towelCalf, calfRaiseHold, rollCalves, rollQuads, legSwings, hipHinge, ankleRocks, standingShin, kneelingShin, anklePumps)
 }

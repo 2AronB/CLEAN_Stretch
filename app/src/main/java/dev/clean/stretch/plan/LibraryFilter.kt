@@ -107,6 +107,7 @@ object SearchWords {
         "quad" to listOf("quadriceps"), "quads" to listOf("quadriceps"), "thigh" to listOf("quadriceps", "hamstrings", "inner thigh"),
         "thighs" to listOf("quadriceps", "hamstrings", "inner thigh"), "groin" to listOf("inner thigh"), "adductor" to listOf("inner thigh"),
         "adductors" to listOf("inner thigh"), "calf" to listOf("calves"), "ankle" to listOf("calves", "shins & ankles"), "ankles" to listOf("calves", "shins & ankles"), "shin" to listOf("shins & ankles"),
+        "foot" to listOf("shins & ankles"), "feet" to listOf("shins & ankles"),
         "glute" to listOf("glutes"), "butt" to listOf("glutes"), "bum" to listOf("glutes"), "hip" to listOf("hips", "hip flexors", "glutes"),
         "pecs" to listOf("chest"), "pec" to listOf("chest"), "shoulder" to listOf("shoulders"), "lat" to listOf("lats"),
         "abs" to listOf("abdominals"), "stomach" to listOf("abdominals"), "spine" to listOf("back", "upper back", "lower back"),

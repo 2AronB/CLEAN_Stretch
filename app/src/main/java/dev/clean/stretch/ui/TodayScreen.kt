@@ -30,6 +30,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import dev.clean.stretch.catalog.Muscle
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +84,7 @@ fun TodayScreen(
     onOpenSetup: () -> Unit,
     savedRoutines: SavedRoutineDao,
     onOpenTender: () -> Unit,
+    onUpdateProfile: (Profile) -> Unit,
 ) {
     val saved by remember { savedRoutines.observe() }.collectAsState(initial = emptyList())
     var deleting by remember { mutableStateOf<SavedRoutineEntity?>(null) }
@@ -91,8 +95,12 @@ fun TodayScreen(
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val recent by remember { history.recentSessions(50) }.collectAsState(initial = emptyList())
     val activeDays = remember(recent) { Stats.activeDays(recent.filter { it.startedAt >= weekFrom }, zone) }
-    val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
-    val streak = remember(starts, prefs.daysPerWeek) { Stats.weekStreak(Stats.daysFromStarts(starts, zone), LocalDate.now(), prefs.daysPerWeek) }
+    // Day circles (owner, 2026-11-14): each day fills toward its share of the weekly goal.
+    val allSessions by remember { history.allSessions() }.collectAsState(initial = emptyList())
+    val allSteps by remember { history.allSteps() }.collectAsState(initial = emptyList())
+    val dayMinutes = remember(allSessions, allSteps) { Stats.minutesByDay(allSessions, allSteps, zone) }
+    val dayGoal = remember(profile, prefs.daysPerWeek) { Generator.dayGoalMinutes(profile, prefs.daysPerWeek) }
+    val streak = remember(dayMinutes, dayGoal, prefs.daysPerWeek) { Stats.weekStreakByGoal(dayMinutes, LocalDate.now(), prefs.daysPerWeek, dayGoal) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val weekMinutes = remember(weekSteps) { Stats.minutesByMuscle(weekSteps).mapValues { it.value.weaker } }
     var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
@@ -156,6 +164,10 @@ fun TodayScreen(
                 onOpenStretch = onOpenStretch,
                 onStart = { onStart(Route.Player(routine.keys, routine.title, holdSeconds = routine.holdSeconds)) },
                 onEdit = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
+                profile = profile,
+                onUpdateProfile = onUpdateProfile,
+                works = remember(routine) { Generator.minutesByMuscle(routine.keys, routine.holdSeconds) },
+                weekMinutes = weekMinutes,
             )
         }
         Spacer(Modifier.height(12.dp))
@@ -196,9 +208,7 @@ fun TodayScreen(
         }
         Spacer(Modifier.height(20.dp))
         SectionLabel("This week")
-        WeekCard(today, activeDays, prefs.daysPerWeek, streak)
-        Spacer(Modifier.height(20.dp))
-        EvidenceCard(onOpenSources)
+        WeekCard(today, Stats.weekFill(Stats.weekStart(today), dayMinutes, dayGoal), prefs.daysPerWeek, streak, dayGoal, onOpenSources)
         Spacer(Modifier.height(32.dp))
     }
 
@@ -226,7 +236,12 @@ private fun HeroRoutineCard(
     onOpenStretch: (String) -> Unit,
     onStart: () -> Unit,
     onEdit: () -> Unit,
+    profile: Profile,
+    onUpdateProfile: (Profile) -> Unit,
+    works: Map<Muscle, Double>,
+    weekMinutes: Map<Muscle, Double>,
 ) {
+    var showWorks by rememberSaveable { mutableStateOf(false) }
     val container = MaterialTheme.colorScheme.primaryContainer
     Surface(
         color = container,
@@ -237,7 +252,12 @@ private fun HeroRoutineCard(
         Column(Modifier.padding(20.dp)) {
             Text("Suggested for you", style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(4.dp))
-            Text(title, style = MaterialTheme.typography.headlineMedium)
+            // The title is a link: it opens which muscles this routine works (kept off the card).
+            Text(
+                title,
+                style = MaterialTheme.typography.headlineMedium.copy(textDecoration = TextDecoration.Underline),
+                modifier = Modifier.clickable(onClickLabel = "See which muscles this works") { showWorks = true },
+            )
             Text("${stretches.size} moves · about $minutes min · hands-free", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -280,13 +300,44 @@ private fun HeroRoutineCard(
                 }
                 OutlinedButton(onClick = onEdit, modifier = Modifier.height(52.dp)) { Text("Edit") }
             }
+            // Quick switches that rebuild the suggestion (owner, 2026-11-14).
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                FilterChip(selected = profile.hasRoller, onClick = { onUpdateProfile(profile.copy(hasRoller = !profile.hasRoller)) }, label = { Text("Foam roller") })
+                FilterChip(selected = profile.strengthenOn, onClick = { onUpdateProfile(profile.copy(strengthen = !profile.strengthenOn)) }, label = { Text("Strengthen") })
+            }
         }
     }
+    if (showWorks) {
+        AlertDialog(
+            onDismissRequest = { showWorks = false },
+            title = { Text(title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    works.entries.sortedBy { it.key.ordinal }.forEach { (m, min) ->
+                        val goal = profile.weeklyTarget(m)
+                        Row {
+                            Text(m.label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Text(
+                                "+${fmt(min)} min" + (goal?.let { " · ${fmt(weekMinutes[m] ?: 0.0)}/${fmt(it)}" } ?: ""),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Text("Per side · this week / goal", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = { TextButton(onClick = { showWorks = false }) { Text("Close") } },
+        )
+    }
+
 }
 
 @Composable
-private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>, daysTarget: Int, streak: Int) {
+private fun WeekCard(today: LocalDate, fill: List<Float>, daysTarget: Int, streak: Int, dayGoal: Double, onOpenSources: () -> Unit) {
     val monday = today.with(DayOfWeek.MONDAY)
+    val done = fill.count { it >= 0.999f }
+    var why by rememberSaveable { mutableStateOf(false) }
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(24.dp),
@@ -296,61 +347,79 @@ private fun WeekCard(today: LocalDate, activeDays: Set<LocalDate>, daysTarget: I
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 (0 until 7).forEach { i ->
                     val day = monday.plusDays(i.toLong())
-                    val isToday = day == today
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            day.dayOfWeek.getDisplayName(TextStyle.NARROW, LocalConfiguration.current.locales[0]),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Box(
-                            Modifier.size(34.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            val active = day in activeDays
-                            Surface(
-                                shape = CircleShape,
-                                color = when {
-                                    isToday -> MaterialTheme.colorScheme.primary
-                                    active -> MaterialTheme.colorScheme.tertiaryContainer
-                                    else -> MaterialTheme.colorScheme.surfaceContainerHighest
-                                },
-                                border = if (isToday && active) BorderStroke(3.dp, MaterialTheme.colorScheme.tertiary) else null,
-                                modifier = Modifier.size(if (isToday) 34.dp else 28.dp),
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        if (active && !isToday) "✓" else "${day.dayOfMonth}",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = when {
-                                            isToday -> MaterialTheme.colorScheme.onPrimary
-                                            active -> MaterialTheme.colorScheme.onTertiaryContainer
-                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                        },
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    DayCircle(day, fill[i], isToday = day == today)
                 }
             }
             Spacer(Modifier.height(14.dp))
-            Text(
-                if (activeDays.isEmpty()) {
-                    "Finish a routine to start your week. Missed days never break your streak — weeks that reach your goal do the counting."
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "$done of $daysTarget days" + if (streak > 0) " · $streak-week streak" else "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    "Why?",
+                    style = MaterialTheme.typography.labelLarge.copy(textDecoration = TextDecoration.Underline),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { why = true }.padding(8.dp),
+                )
+            }
+        }
+    }
+    if (why) {
+        AlertDialog(
+            onDismissRequest = { why = false },
+            title = { Text("Steady weeks") },
+            text = {
+                Text(
+                    "A day fills at about ${dayGoal.toInt()} min. Missed one? Extra minutes later in the week fill it.\n\n" +
+                        "Gains level off at about 10 min per muscle a week.",
+                )
+            },
+            confirmButton = { TextButton(onClick = { why = false }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = { why = false; onOpenSources() }) { Text("Sources") } },
+        )
+    }
+}
+
+/** A day's circle: a ring that fills toward the day's goal; a full day gets a check. */
+@Composable
+private fun DayCircle(day: LocalDate, fill: Float, isToday: Boolean) {
+    val scheme = MaterialTheme.colorScheme
+    val full = fill >= 0.999f
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            day.dayOfWeek.getDisplayName(TextStyle.NARROW, LocalConfiguration.current.locales[0]),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isToday) scheme.primary else scheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Box(Modifier.size(34.dp), contentAlignment = Alignment.Center) {
+            val track = scheme.surfaceContainerHighest
+            val color = scheme.primary
+            Canvas(Modifier.size(34.dp)) {
+                val stroke = 4.dp.toPx()
+                val inset = stroke / 2
+                val arc = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke)
+                val topLeft = androidx.compose.ui.geometry.Offset(inset, inset)
+                if (full) {
+                    drawCircle(color)
                 } else {
-                    "${activeDays.size} of $daysTarget days this week" +
-                        (if (streak > 0) " · $streak-week streak" else "") +
-                        ". Missed days never break your streak."
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Start,
+                    drawArc(track, 0f, 360f, false, topLeft, arc, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+                    if (fill > 0f) drawArc(color, -90f, 360f * fill, false, topLeft, arc, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = androidx.compose.ui.graphics.StrokeCap.Round))
+                }
+            }
+            Text(
+                if (full) "✓" else "${day.dayOfMonth}",
+                style = MaterialTheme.typography.labelMedium,
+                color = if (full) scheme.onPrimary else if (isToday) scheme.primary else scheme.onSurfaceVariant,
             )
         }
     }
 }
+
+private fun fmt(m: Double): String = if (m % 1.0 == 0.0) m.toInt().toString() else "%.1f".format(m)
 
 @Composable
 private fun SetupCard(onOpenSetup: () -> Unit) {
@@ -400,27 +469,6 @@ private fun NoticeCard(title: String, body: String) {
         Column(Modifier.padding(20.dp)) {
             Text(title, style = MaterialTheme.typography.labelLarge)
             Text(body, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-private fun EvidenceCard(onOpenSources: () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clickable(onClick = onOpenSources),
-    ) {
-        Column(Modifier.padding(20.dp)) {
-            Text("Why it works", style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Consistency matters most. About 10 minutes per muscle each week is where flexibility gains level off.",
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Spacer(Modifier.height(8.dp))
-            Text("Ingram et al. 2024 · 189 studies · See sources", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

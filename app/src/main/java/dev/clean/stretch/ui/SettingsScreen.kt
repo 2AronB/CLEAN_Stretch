@@ -1,6 +1,7 @@
 package dev.clean.stretch.ui
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.AlertDialog
@@ -9,6 +10,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import dev.clean.stretch.data.BackupCodec
 import dev.clean.stretch.data.BackupData
@@ -107,27 +109,23 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
     val version = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: ""
     }
+    // Settings is a short menu; each cluster opens on its own page (owner, 2026-11-14).
+    var section by rememberSaveable { mutableStateOf<String?>(null) }
+    BackHandler(enabled = section != null) { section = null }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ScreenTitle("Settings")
-
-        SectionLabel("Your routines")
-        // Highlighted: the main place to change routines, the schedule and the reminder.
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clickable(onClick = onOpenSetup),
-        ) {
-            Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("Goal, focus and limits", style = MaterialTheme.typography.titleMedium)
-                    Text("Goal, areas, limits, health, length, schedule and reminder", style = MaterialTheme.typography.bodyMedium)
+        when (section) {
+            null -> {
+                ScreenTitle("Settings")
+                Group {
+                    NavRow("Goals, focus and limits", "Weekly goals, areas, health, length, schedule", onOpenSetup)
+                    NavRow("Appearance", "Light or dark, colors, still figures", { section = "appearance" })
+                    NavRow("Routine settings", "Voice, chimes, vibration", { section = "routine" })
+                    NavRow("Your data", "Back up, restore, delete", { section = "data" })
+                    NavRow("About", "Sources, version", { section = "about" })
                 }
-                Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
             }
-        }
-
-        SectionLabel("Appearance")
+            "appearance" -> {
+                BackBar("Appearance", onBack = { section = null })
         Group {
             Column(Modifier.padding(16.dp)) {
                 Text("Light or dark", style = MaterialTheme.typography.titleMedium)
@@ -153,7 +151,9 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             )
         }
 
-        SectionLabel("During a routine")
+            }
+            "routine" -> {
+                BackBar("Routine settings", onBack = { section = null })
         Group {
             SwitchRow(
                 title = "Voice",
@@ -175,7 +175,9 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             )
         }
 
-        SectionLabel("Your data")
+            }
+            "data" -> {
+                BackBar("Your data", onBack = { section = null })
         Group {
             NavRow("Back up to a file", "History, goals and settings in one file you keep", { createFile.launch("stretch-backup-${java.time.LocalDate.now()}.json") })
             NavRow("Restore from a backup", "Replaces what's on this phone, after you confirm", { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) })
@@ -193,9 +195,12 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             }
         }
 
-        SectionLabel("About")
+            }
+            else -> {
+                BackBar("About", onBack = { section = null })
         Group {
             NavRow("Sources & credits", "The research behind the defaults", onOpenSources)
+            NavRow("Pose Studio", "For developers: tune the figure's poses", onOpenStudio)
             Column(Modifier.padding(16.dp)) {
                 Text("Stretch is a CLEAN app", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(4.dp))
@@ -209,9 +214,7 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             }
         }
 
-        SectionLabel("Developer")
-        Group {
-            NavRow("Pose Studio", "Tune the animated figure's poses", onOpenStudio)
+            }
         }
         Spacer(Modifier.height(24.dp))
     }

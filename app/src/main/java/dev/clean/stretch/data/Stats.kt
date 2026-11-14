@@ -85,6 +85,54 @@ object Stats {
         return streak
     }
 
+    /** Minutes held on each local date (every hold counts: stretches, strength and rolling). */
+    fun minutesByDay(sessions: List<SessionEntity>, steps: List<SessionStepEntity>, zone: ZoneId): Map<LocalDate, Double> {
+        val dayOf = sessions.associate { it.id to Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }
+        return steps.mapNotNull { s -> dayOf[s.sessionId]?.let { it to s.actualSeconds / 60.0 } }
+            .groupBy({ it.first }, { it.second }).mapValues { it.value.sum() }
+    }
+
+    /**
+     * How full each day of the week starting [monday] is, 0..1 (owner, 2026-11-14). A day fills
+     * toward [dayGoal] minutes with its own stretching; minutes beyond the goal fill earlier
+     * unfinished days of the same week, so a missed day can be caught up later in the week.
+     */
+    fun weekFill(monday: LocalDate, minutes: Map<LocalDate, Double>, dayGoal: Double): List<Float> {
+        val goal = dayGoal.coerceAtLeast(1.0)
+        val filled = DoubleArray(7)
+        for (i in 0 until 7) {
+            var left = minutes[monday.plusDays(i.toLong())] ?: 0.0
+            val own = minOf(left, goal)
+            filled[i] += own
+            left -= own
+            var j = 0
+            while (left > 1e-9 && j < i) {
+                val room = goal - filled[j]
+                if (room > 0) { val add = minOf(room, left); filled[j] += add; left -= add }
+                j++
+            }
+        }
+        return filled.map { (it / goal).toFloat().coerceIn(0f, 1f) }
+    }
+
+    /** Days of that week that reached their goal (a full circle). */
+    fun daysDone(monday: LocalDate, minutes: Map<LocalDate, Double>, dayGoal: Double): Int =
+        weekFill(monday, minutes, dayGoal).count { it >= 0.999f }
+
+    /**
+     * Week streak by full days: weeks where at least [daysTarget] days reached their goal. This
+     * week only counts once it does, so an unfinished week never breaks anything.
+     */
+    fun weekStreakByGoal(minutes: Map<LocalDate, Double>, today: LocalDate, daysTarget: Int, dayGoal: Double): Int {
+        fun met(monday: LocalDate) = daysDone(monday, minutes, dayGoal) >= daysTarget
+        var week = weekStart(today)
+        var streak = 0
+        if (met(week)) streak++
+        week = week.minusWeeks(1)
+        while (met(week)) { streak++; week = week.minusWeeks(1) }
+        return streak
+    }
+
     fun daysFromStarts(starts: List<Long>, zone: ZoneId): Set<LocalDate> =
         starts.map { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }.toSet()
 

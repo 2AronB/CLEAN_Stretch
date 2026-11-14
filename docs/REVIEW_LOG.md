@@ -95,6 +95,9 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | standing_outer_hip | Standing outer-hip stretch | Not reviewed | | | | |
 | seated_outer_hip | Seated outer-hip stretch | Not reviewed | | | | |
 | side_leg_swings | Side leg swings | Not reviewed | | | | |
+| seated_figure_four | Seated figure-four stretch | Not reviewed | | | | |
+| pigeon | Pigeon stretch | Not reviewed | | | | |
+| knee_to_opposite_shoulder | Knee to opposite shoulder | Not reviewed | | | | |
 
 ## History (append-only)
 
@@ -106,3 +109,4 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 - 2026-11-14 · wall_biceps, standing_biceps, seated_biceps · Not reviewed · Added (biceps, PLAN §8.2). First moves for this muscle.
 - 2026-11-14 · standing_outer_hip, seated_outer_hip, side_leg_swings · Not reviewed · Added (outer hip, PLAN §8.2). First stretches for this muscle; side_leg_raise was its only move.
 - 2026-11-14 · ankle_pumps · Not reviewed · Legs lowered 3 degrees so the heels rest on the floor (was floating slightly). Still not reviewed.
+- 2026-11-14 · seated_figure_four, pigeon, knee_to_opposite_shoulder · Not reviewed · Added (deep hip rotators, PLAN §8.2). Pigeon is level 2 with knee cautions; figure_four was the only move for this muscle before.

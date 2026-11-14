@@ -432,5 +432,92 @@ object HipMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(halfKneelingHipFlexor, kneeToChest, butterfly, standingLunge, standingKneeHug, activeLegRaise, gluteBridge, lungeReach, figureFour, wideLegFold, sideLunge, sideLegRaise, recliningButterfly, standingOuterHip, seatedOuterHip, sideLegSwings)
+    // Deep hip rotators (PLAN §8.2, 2026-11-14). Hands, knees and feet on the floor were placed numerically.
+    val seatedFigureFour = Stretch(
+        key = "seated_figure_four",
+        name = "Seated figure-four stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.DeepHip),
+        secondary = listOf(Muscle.Glutes),
+        position = Position.Seated,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Sit propped on your hands with your knees bent, cross one ankle over the other knee and sit up taller.",
+        cues = listOf(
+            "Sit with your knees bent and feet flat. Rest your hands on the floor behind you.",
+            "Cross one ankle over the other knee and let that knee open out to the side.",
+            "Walk your hands in and sit up taller, bringing your chest toward your legs.",
+            "Feel deep in the back of your crossed-leg hip. Keep your back long.",
+        ),
+        cautions = listOf("Move your supporting foot further away from you if the crossed knee feels strained."),
+        sourceIds = listOf("S3", "S15"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 210f, nearShoulder = -55.8f, farShoulder = -55.8f, nearHip = 137f, nearKnee = 106f, nearAnkle = -31f, farHip = 137f, farKnee = 106f, farAnkle = -31f),
+            stretch = Pose(torso = 200f, nearShoulder = -34.7f, farShoulder = -34.7f, nearHip = 173f, nearKnee = 112f, nearLegOut = 28f, nearLegTurn = 60f, farHip = 137f, farKnee = 106f, farAnkle = -31f),
+            deep = Pose(torso = 200f, nearShoulder = -34.7f, farShoulder = -34.7f, nearHip = 150f, nearKnee = 114f, nearLegOut = 36f, nearLegTurn = 86f, farHip = 137f, farKnee = 106f, farAnkle = -31f),
+            view = View.Angled,
+        ),
+    )
+
+    val pigeon = Stretch(
+        key = "pigeon",
+        name = "Pigeon stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.DeepHip),
+        secondary = listOf(Muscle.Glutes, Muscle.HipFlexors),
+        position = Position.HandsAndKnees,
+        level = 2,
+        highlight = setOf(Segment.NearThigh),
+        summary = "From hands and knees, bring one knee forward with the shin across the floor and slide the other leg straight back.",
+        cues = listOf(
+            "Start on your hands and knees.",
+            "Bring one knee forward toward the same-side hand, and let that foot slide across toward your other hip.",
+            "Slide your other leg straight back and lower your hips toward the floor, keeping them level.",
+            "Stay propped on your hands. Feel deep in the hip of your front leg, never in the knee.",
+        ),
+        cautions = listOf(
+            "Stop if you feel pain or twisting in your front knee, and try the lying figure-four instead.",
+            "Put a cushion under the hip of your front leg if it doesn't reach the floor.",
+        ),
+        sourceIds = listOf("S3", "S15"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 103f, nearShoulder = 77f, farShoulder = 77f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
+            stretch = Pose(torso = 160f, nearShoulder = 20f, nearElbow = 3f, nearArmOut = 10f, farShoulder = 20f, farElbow = 3f, farArmOut = 10f, nearHip = 84f, nearKnee = 88f, nearAnkle = -60f, nearLegOut = 24f, nearLegTurn = 90f, farHip = -84f, farKnee = 3.7f, farAnkle = -84.3f),
+            deep = Pose(torso = 140f, nearShoulder = 36f, nearElbow = 20f, nearArmOut = 10f, farShoulder = 36f, farElbow = 20f, farArmOut = 10f, nearHip = 84f, nearKnee = 88f, nearAnkle = -60f, nearLegOut = 24f, nearLegTurn = 90f, farHip = -84f, farKnee = 3.7f, farAnkle = -84.3f),
+            view = View.Angled,
+        ),
+    )
+
+    val kneeToOppositeShoulder = Stretch(
+        key = "knee_to_opposite_shoulder",
+        spinalFlexion = true,
+        name = "Knee to opposite shoulder",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.DeepHip),
+        secondary = listOf(Muscle.Glutes, Muscle.OuterHip),
+        position = Position.Lying,
+        highlight = setOf(Segment.NearThigh),
+        summary = "Lie on your back and draw one bent knee across your body toward the opposite shoulder.",
+        cues = listOf(
+            "Lie on your back with both legs long.",
+            "Bend one knee and hold it with both hands.",
+            "Draw the knee gently across your body, toward your opposite shoulder.",
+            "Feel deep in the back of that hip. Keep both shoulders resting on the floor.",
+        ),
+        cautions = listOf("Ease off if you feel pinching at the front of your hip."),
+        sourceIds = listOf("S3", "S15"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = -90f, head = -6f, nearShoulder = 4f, nearElbow = 4f, farShoulder = 4f, farElbow = 4f, nearHip = 87f, farHip = 87f),
+            stretch = Pose(torso = -90f, head = -6f, nearShoulder = 48f, nearArmOut = -20f, farShoulder = 48f, farArmOut = -10f, nearHip = 205f, nearKnee = 120f, nearLegOut = -20f, farHip = 87f),
+            deep = Pose(torso = -90f, head = -6f, nearShoulder = 48f, nearArmOut = -25f, farShoulder = 33f, farElbow = 30f, farArmOut = -5f, nearHip = 212f, nearKnee = 120f, nearLegOut = -26f, farHip = 87f),
+            view = View.Angled,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(halfKneelingHipFlexor, kneeToChest, butterfly, standingLunge, standingKneeHug, activeLegRaise, gluteBridge, lungeReach, figureFour, wideLegFold, sideLunge, sideLegRaise, recliningButterfly, standingOuterHip, seatedOuterHip, sideLegSwings, seatedFigureFour, pigeon, kneeToOppositeShoulder)
 }

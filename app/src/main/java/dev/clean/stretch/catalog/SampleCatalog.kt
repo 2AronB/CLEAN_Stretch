@@ -32,6 +32,7 @@ object SampleCatalog {
         HipMoves.sideLunge, ArmMoves.overheadTriceps, CoreMoves.torsoTurns, HipMoves.sideLegRaise,
         HipMoves.recliningButterfly, ArmMoves.wristFlexor, ArmMoves.wristExtensor, ArmMoves.prayerStretch,
         LegMoves.standingShin, LegMoves.kneelingShin, LegMoves.anklePumps,
+        ArmMoves.wallBiceps, ArmMoves.standingBiceps, ArmMoves.seatedBiceps,
     )
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }
@@ -58,6 +59,7 @@ object SampleCatalog {
         "butterfly" to "wide_leg_fold",
         "knee_drop_twist" to "seated_twist",
         "standing_shin" to "kneeling_shin",
+        "standing_biceps" to "seated_biceps",
     )
 
     fun easier(key: String): Stretch? = variantPairs.firstOrNull { it.second == key }?.first?.let(::byKey)

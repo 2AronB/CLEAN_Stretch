@@ -89,6 +89,9 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | standing_shin | Standing shin stretch | Not reviewed | | | | |
 | kneeling_shin | Kneeling shin stretch | Not reviewed | | | | |
 | ankle_pumps | Ankle pumps | Not reviewed | | | | |
+| wall_biceps | Wall biceps stretch | Not reviewed | | | | |
+| standing_biceps | Standing biceps stretch | Not reviewed | | | | |
+| seated_biceps | Seated biceps stretch | Not reviewed | | | | |
 
 ## History (append-only)
 
@@ -97,3 +100,4 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 - 2026-11-13 · wrist_flexor, wrist_extensor, prayer_stretch · Not reviewed · Added (forearms & wrists, owner request). The figure now draws a hand when a pose bends the wrist.
 - 2026-11-13 · overhead_triceps, figure_four, torso_turns, knee_drop_twist, seated_twist, side_leg_raise, wall_chest · Not reviewed · Muscle tags changed for the new muscles (D-039).
 - 2026-11-14 · standing_shin, kneeling_shin, ankle_pumps · Not reviewed · Added (shins & ankles, PLAN §8.2). First moves for this muscle.
+- 2026-11-14 · wall_biceps, standing_biceps, seated_biceps · Not reviewed · Added (biceps, PLAN §8.2). First moves for this muscle.

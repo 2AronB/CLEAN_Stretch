@@ -126,5 +126,92 @@ object ArmMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(overheadTriceps, wristFlexor, wristExtensor, prayerStretch)
+    // Biceps (PLAN §8.2, 2026-11-14). All three reach straight arms behind the body, which is how
+    // the biceps is stretched. Hands that rest on the wall or floor were placed numerically.
+    val wallBiceps = Stretch(
+        key = "wall_biceps",
+        name = "Wall biceps stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Biceps),
+        secondary = listOf(Muscle.Shoulders, Muscle.Chest),
+        position = Position.Standing,
+        equipment = Equipment.Wall,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "With your back to a wall, rest both palms on it behind you and slowly bend your knees.",
+        cues = listOf(
+            "Stand with your back to a wall, a small step away from it.",
+            "Reach both arms straight back and rest your palms on the wall at about hip height, fingers pointing down.",
+            "Keep your chest lifted and slowly bend your knees, leaving your hands where they are.",
+            "Feel the front of your upper arms and shoulders. Keep it gentle.",
+        ),
+        cautions = listOf("Ease off if the front of your shoulders pinches or you feel tingling down your arms."),
+        sourceIds = listOf("S3", "S2"),
+        prop = Prop(Equipment.Wall, x = -44f),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = -20f, nearElbow = 6f, farShoulder = -20f, farElbow = 6f),
+            stretch = Pose(nearShoulder = -45f, nearElbow = 2f, nearWrist = -45f, farShoulder = -45f, farElbow = 2f, farWrist = -45f, nearHip = 8f, nearKnee = 16f, nearAnkle = 8f, farHip = 8f, farKnee = 16f, farAnkle = 8f),
+            deep = Pose(shiftX = 4f, nearShoulder = -51.3f, nearElbow = 2f, nearWrist = -51f, farShoulder = -51.3f, farElbow = 2f, farWrist = -51f, nearHip = 17f, nearKnee = 40f, nearAnkle = 23f, farHip = 17f, farKnee = 40f, farAnkle = 23f),
+            view = View.Angled,
+        ),
+    )
+
+    val standingBiceps = Stretch(
+        key = "standing_biceps",
+        name = "Standing biceps stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Biceps),
+        secondary = listOf(Muscle.Shoulders, Muscle.Chest),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Clasp your hands behind you with straight arms, tip forward a little from your hips and let your arms lift.",
+        cues = listOf(
+            "Stand tall with your knees soft and clasp your hands behind your back.",
+            "Straighten your arms and turn your palms to face down.",
+            "Tip forward a little from your hips, back long, and let your arms lift away from your body.",
+            "Feel the front of your upper arms and shoulders. Keep breathing.",
+        ),
+        cautions = listOf(
+            "Hold a towel between your hands if they don't reach each other.",
+            "Come up slowly, and stay upright instead if tipping forward makes you light-headed.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearShoulder = -12f, nearElbow = 10f, farShoulder = -12f, farElbow = 10f),
+            stretch = Pose(torso = 165f, nearShoulder = -42f, nearElbow = 3f, nearArmOut = -21f, farShoulder = -42f, farElbow = 3f, farArmOut = -21f, nearHip = 4f, nearKnee = 8f, nearAnkle = 4f, farHip = 4f, farKnee = 8f, farAnkle = 4f),
+            deep = Pose(torso = 157f, nearShoulder = -52f, nearElbow = 3f, nearArmOut = -21f, farShoulder = -52f, farElbow = 3f, farArmOut = -21f, nearHip = 4f, nearKnee = 8f, nearAnkle = 4f, farHip = 4f, farKnee = 8f, farAnkle = 4f),
+        ),
+    )
+
+    val seatedBiceps = Stretch(
+        key = "seated_biceps",
+        name = "Seated biceps stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Biceps),
+        secondary = listOf(Muscle.Shoulders, Muscle.Chest),
+        position = Position.Seated,
+        level = 2,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Sit with your knees bent and your hands on the floor behind you, then slide your hips toward your feet.",
+        cues = listOf(
+            "Sit with your knees bent and your feet flat on the floor.",
+            "Place your hands on the floor behind you, fingers pointing away from you.",
+            "Keeping your hands still, slowly slide your hips forward toward your feet.",
+            "Feel the front of your upper arms and shoulders. Keep your chest lifted.",
+        ),
+        cautions = listOf("Stop sliding as soon as you feel the stretch. Ease off if the front of your shoulders pinches."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(torso = 190f, nearShoulder = -20.1f, nearElbow = 3f, farShoulder = -20.1f, farElbow = 3f, nearHip = 137f, nearKnee = 106f, nearAnkle = -31f, farHip = 137f, farKnee = 106f, farAnkle = -31f),
+            stretch = Pose(torso = 205f, nearShoulder = -46.9f, nearElbow = 3f, nearWrist = 68f, farShoulder = -46.9f, farElbow = 3f, farWrist = 68f, nearHip = 137f, nearKnee = 106f, nearAnkle = -31f, farHip = 137f, farKnee = 106f, farAnkle = -31f),
+            deep = Pose(torso = 212f, shiftX = 11f, nearShoulder = -61.3f, nearElbow = 3f, nearWrist = 61f, farShoulder = -61.3f, farElbow = 3f, farWrist = 61f, nearHip = 144f, nearKnee = 123.5f, nearAnkle = -20.5f, farHip = 144f, farKnee = 123.5f, farAnkle = -20.5f),
+        ),
+    )
+
+    val all: List<Stretch> = listOf(overheadTriceps, wristFlexor, wristExtensor, prayerStretch, wallBiceps, standingBiceps, seatedBiceps)
 }

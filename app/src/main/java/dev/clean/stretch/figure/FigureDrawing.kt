@@ -240,11 +240,25 @@ object FigureDrawing {
             g.segments.forEach { seg ->
                 out += if (seg in highlight) part(seg, Ink.Highlight, 0f, back * 0.35f) else part(seg, Ink.Body, 0f, back * 0.55f)
             }
-            if (g.withHead) out += Shape.Dot(map(head), headR, Ink.Body)
+            if (g.withHead) {
+                out += Shape.Dot(map(head), headR, Ink.Body)
+                // A turned head shows a small nose, unless it faces away (then the head hides it).
+                figure.nose?.let { tip ->
+                    val n = proj.project(tip)
+                    if (n.depth >= head.depth - Body.HEAD_RADIUS * 0.35f) {
+                        val r = NOSE_RADIUS * n.scale * px
+                        out += Shape.Dot(map(n), r + OUTLINE * n.scale * px, Ink.Outline)
+                        out += Shape.Dot(map(n), r, Ink.Body)
+                    }
+                }
+            }
         }
         out += wallInFront
         return out
     }
 
     private const val PI_F = Math.PI.toFloat()
+
+    /** Size of the nose drawn on a turned head, in body units. */
+    private const val NOSE_RADIUS = 3.2f
 }

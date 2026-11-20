@@ -67,7 +67,8 @@ private fun Graphics2D.paint(s: Shape) {
 }
 
 /**
- * Args: [outDir] [key ...]. With keys, only those stretches are drawn.
+ * Args: [outDir] [key ...]. With keys, only those stretches are drawn; "rom" or "rom:<key>" draws
+ * range-of-motion check pictures (one column per level).
  * Each PNG: one row per view (the stretch's starting view first, marked *), one column per keyframe.
  */
 fun main(args: Array<String>) {
@@ -99,5 +100,28 @@ fun main(args: Array<String>) {
         g.dispose()
         ImageIO.write(img, "png", File(outDir, "${s.key}.png"))
     }
-    println("Wrote ${stretches.size} previews to ${outDir.path}")
+    // Range-of-motion check pictures: "rom" draws every check, "rom:<key>" one check. One column per level.
+    val roms = dev.clean.stretch.plan.RomTests.all.filter { t -> "rom" in only || "rom:${t.key}" in only }
+    for (t in roms) {
+        val views = listOf(t.view) + View.entries.filter { it != t.view }
+        val img = BufferedImage(cell * t.pictures.size, cell * views.size + 28, BufferedImage.TYPE_INT_RGB)
+        val g = img.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g.color = paper; g.fillRect(0, 0, img.width, img.height)
+        g.color = Color.DARK_GRAY; g.font = Font(Font.SANS_SERIF, Font.BOLD, 14)
+        g.drawString("Check: ${t.name}  (${t.key})", 8, 19)
+        views.forEachIndexed { row, view ->
+            val stage = Stage.of(t.pictures, view.camera, null)
+            t.pictures.forEachIndexed { col, pose ->
+                val sub = g.create(col * cell, 28 + row * cell, cell, cell) as Graphics2D
+                FigureDrawing.shapes(pose, stage, t.highlight, cell.toFloat(), cell.toFloat()).forEach { sub.paint(it) }
+                sub.color = Color.DARK_GRAY; sub.font = Font(Font.SANS_SERIF, Font.PLAIN, 11)
+                sub.drawString("${view.label}${if (row == 0) " *" else ""} · ${t.levels[col]}", 6, 14)
+                sub.dispose()
+            }
+        }
+        g.dispose()
+        ImageIO.write(img, "png", File(outDir, "rom_${t.key}.png"))
+    }
+    println("Wrote ${stretches.size + roms.size} previews to ${outDir.path}")
 }

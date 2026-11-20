@@ -69,6 +69,8 @@ class Figure3d(
     val handTips: Map<Joint, Vec3> = emptyMap(),
     /** Thumb tips for hands with a palm direction set, same keys as [handTips]. Drawing only. */
     val thumbTips: Map<Joint, Vec3> = emptyMap(),
+    /** Tip of the nose when the head is turned ([Pose.headTurn] not 0), else null. Drawing only. */
+    val nose: Vec3? = null,
 ) {
     operator fun get(j: Joint): Vec3 = points.getValue(j)
 
@@ -116,6 +118,11 @@ class Figure3d(
             val neckDir = (up * cosd(pose.head) - fwd * sind(pose.head)).let { if (pose.headTilt == 0f) it else it.rotate(fwd, -pose.headTilt) }
             val neck = shoulder + neckDir * Body.NECK
             val head = neck + neckDir * Body.HEAD_RADIUS
+            // Face direction: forward from the head, nodding with it, then turned about the neck.
+            val noseRaw = if (pose.headTurn == 0f) null else {
+                val face = (fwd * cosd(pose.head) + up * sind(pose.head)).let { if (pose.headTilt == 0f) it else it.rotate(fwd, -pose.headTilt) }
+                head + face.rotate(neckDir, pose.headTurn) * Body.HEAD_RADIUS
+            }
 
             // [turn] rotates the arm about the upper arm (shoulder rotation), which changes the
             // direction the elbow bends: with the arm out to the side, +90 bends the forearm up.
@@ -209,7 +216,8 @@ class Figure3d(
             val chest = rolledDir(side)
             val pelvisSide = rolledDir(Vec3.Side)
             val rolledShoulder = raw.getValue(Joint.Shoulder)
-            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide, tips, thumbs)
+            val nose = noseRaw?.let(::rolled)
+            if (!grounded) return Figure3d(raw, spine, chest, roots, pose.torso, neckAngle, pelvisSide, tips, thumbs, nose)
             // A curved spine bulges past the hip-shoulder line; include its outer edge.
             val spineBottom = (hip * 0.25f + spine * 0.5f + rolledShoulder * 0.25f).y + Body.width(Segment.Torso) / 2f
             val lowest = max(raw.maxOf { (j, p) -> p.y + Body.radius(j) }, spineBottom)
@@ -219,6 +227,7 @@ class Figure3d(
                 roots.mapValues { it.value + drop }, pose.torso, neckAngle, pelvisSide,
                 tips.mapValues { it.value + drop },
                 thumbs.mapValues { it.value + drop },
+                nose?.let { it + drop },
             )
         }
     }
@@ -238,6 +247,8 @@ enum class View(val label: String, val camera: Camera) {
     Angled("Angled", Camera(38f, 24f)),
     Front("Front", Camera(90f, 10f)),
     Above("Above", Camera(0f, 72f)),
+    /** From behind: shows hands that reach behind the back (back-scratch check, towel triceps). */
+    Back("Back", Camera(-90f, 10f)),
     ;
 
     fun next(): View = entries[(ordinal + 1) % entries.size]

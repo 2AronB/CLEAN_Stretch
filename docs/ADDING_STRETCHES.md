@@ -79,6 +79,7 @@ mirror them.
 | `nearLegOut` / `farLegOut` | Leg swings out to its own side (+) or across (−) | −50…65 | Side leg raise 28; knee-drop twist +45 / −40 |
 | `nearLegTurn` / `farLegTurn` | Turns the leg at the hip; + turns the knee out so a bent knee brings the foot **in** | −40…70 | Butterfly: leg out 55 + leg turn 60, knee 140 |
 | `roll` | Turns the whole body about its long axis through the hip; +90 lies on the far side with the near side up | −90…90 | Side-lying quad: roll 90, seen from Above |
+| `headTurn` | Turns the head to look toward the near side (+) or far side (−); a small nose shows the direction (0 = no nose, as in older poses) | −90…90 | Neck-turn check 22–80 |
 
 Tips:
 - Twists and side bends happen in the torso; the hips stay square. To make knees fall to one
@@ -97,6 +98,7 @@ and player screens; this only picks the first view.
 | `Angled` | Limbs would hide each other in the Side view, or a prop needs to look 3D (rollers read as cylinders) | Butterfly, figure-four, seated twist, side lunge, foam rolling |
 | `Front` | The move is sideways: side bends, arms across or out, head tilts, legs out | Cross-body, side bend, ear-to-shoulder, wall angel, reclining butterfly |
 | `Above` | The body lies on its side, so the side profile faces up | Side-lying quad |
+| `Back` | Hands reach behind the back | Back-scratch check (towel triceps can be turned to it) |
 
 **Check it** with `tools/pose-preview`: each image shows every keyframe from all four views,
 the starting view first (marked `*`). It draws with the app's own `FigureDrawing`, so what you

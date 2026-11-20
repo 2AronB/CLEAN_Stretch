@@ -8,5 +8,5 @@ STD=$(ls $L/kotlin-stdlib-2*.jar | head -1)
 SRC=app/src/main/java/dev/clean/stretch
 OUT=tools/pose-preview/out
 java -cp "$CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-stdlib -cp "$STD" -nowarn \
-  $SRC/figure/*.kt $SRC/catalog/*.kt tools/pose-preview/PosePreview.kt -d $OUT/classes
+  $SRC/figure/*.kt $SRC/catalog/*.kt $SRC/plan/RomTests.kt tools/pose-preview/PosePreview.kt -d $OUT/classes
 java -Djava.awt.headless=true -cp "$OUT/classes:$STD" PosePreviewKt $OUT "$@"

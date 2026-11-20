@@ -8,6 +8,19 @@ import kotlin.math.abs
 import kotlin.math.max
 
 class Figure3dTest {
+    @Test
+    fun headTurnShowsANoseThatTurnsWithTheHead() {
+        assertTrue("no nose on older poses", Figure3d.solve(Pose()).nose == null)
+        val f = Figure3d.solve(Pose(headTurn = 1f))
+        val ahead = f.nose!! - f[Joint.Head]
+        assertTrue("faces forward", ahead.x > 0.99f * Body.HEAD_RADIUS)
+        // +90 looks toward the near side (+z), -90 toward the far side.
+        val near = Figure3d.solve(Pose(headTurn = 90f)).let { it.nose!! - it[Joint.Head] }
+        val far = Figure3d.solve(Pose(headTurn = -90f)).let { it.nose!! - it[Joint.Head] }
+        assertTrue("near ${near.z}", near.z > 0.99f * Body.HEAD_RADIUS)
+        assertTrue("far ${far.z}", far.z < -0.99f * Body.HEAD_RADIUS)
+    }
+
 
     // A hand appears only when a pose bends the wrist, so every older pose draws exactly as before.
     @Test

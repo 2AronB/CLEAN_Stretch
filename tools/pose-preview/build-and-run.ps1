@@ -16,7 +16,7 @@ $cp = $jars -join ';'
 $std = (Get-ChildItem $lib -Filter 'kotlin-stdlib-2*.jar' | Select-Object -First 1).FullName
 $src = 'app\src\main\java\dev\clean\stretch'
 $out = 'tools\pose-preview\out'
-$sources = @(Get-ChildItem "$src\figure\*.kt", "$src\catalog\*.kt" | ForEach-Object { $_.FullName }) + 'tools\pose-preview\PosePreview.kt'
+$sources = @(Get-ChildItem "$src\figure\*.kt", "$src\catalog\*.kt" | ForEach-Object { $_.FullName }) + "$src\plan\RomTests.kt" + 'tools\pose-preview\PosePreview.kt'
 & $java -cp $cp org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-stdlib -cp $std -nowarn @sources -d "$out\classes"
 if ($LASTEXITCODE -ne 0) { throw 'Kotlin compile failed' }
 & $java '-Djava.awt.headless=true' -cp "$out\classes;$std" PosePreviewKt $out @args

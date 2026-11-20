@@ -185,7 +185,48 @@ object RomTests {
         highlight = setOf(Segment.FarThigh),
     )
 
-    val all: List<RomTest> = listOf(toeReach, overheadReach, ankleLunge, legRaise, butterflyKnees, seatedTwist, kneeHug)
+    // Round 2, last two (owner, D-043): the figure can now reach behind its back and turn its head.
+    /** Top arm reaches down behind the head; the far arm reaches up the back with its fingers bent up. Hands are drawn so fingertips show the gap. */
+    private val scratchTop = Pose(nearShoulder = 189f, nearElbow = 136f, nearArmOut = -13f, nearArmTurn = -50f, nearWrist = -10f)
+
+    val backScratch = RomTest(
+        key = "back_scratch",
+        name = "Back-scratch reach",
+        region = Region.Shoulders,
+        sided = true,
+        howTo = listOf(
+            "Stand tall. Reach one hand over your shoulder and down your back, palm toward you.",
+            "Reach the other hand behind your lower back and up, palm facing out.",
+            "Pick the picture closest to how close your fingers get. Don't force them. The side named is the top arm.",
+        ),
+        levels = listOf("Hands far apart", "About a hand apart", "Fingertips touch", "Fingers overlap"),
+        pictures = listOf(
+            Pose(farShoulder = -17.5f, farElbow = 61f, farArmOut = 14f, farArmTurn = -89f),
+            Pose(farShoulder = -20f, farElbow = 79f, farArmOut = 18f, farArmTurn = -91f),
+            Pose(farShoulder = -22f, farElbow = 102f, farArmOut = 23f, farArmTurn = -95f),
+            Pose(farShoulder = -22f, farElbow = 115f, farArmOut = 23f, farArmTurn = -101f),
+        ).map { scratchTop.copy(farShoulder = it.farShoulder, farElbow = it.farElbow, farArmOut = it.farArmOut, farArmTurn = it.farArmTurn, farWrist = 70f) },
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        view = View.Back,
+    )
+
+    val neckTurn = RomTest(
+        key = "neck_turn",
+        name = "Neck turn",
+        region = Region.Neck,
+        sided = true,
+        howTo = listOf(
+            "Sit or stand tall with your shoulders still and facing forward.",
+            "Slowly turn your head to look over the side named. Keep your chin level.",
+            "Pick the picture closest to how far your chin turns. Stop before it feels strained.",
+        ),
+        levels = listOf("A small turn", "About halfway", "Most of the way", "Chin over the shoulder"),
+        pictures = listOf(22f, 42f, 62f, 80f).map { t -> Pose(nearElbow = 6f, farElbow = 6f, headTurn = t) },
+        highlight = setOf(Segment.Neck),
+        view = View.Front,
+    )
+
+    val all: List<RomTest> = listOf(toeReach, overheadReach, ankleLunge, legRaise, butterflyKnees, seatedTwist, kneeHug, backScratch, neckTurn)
 
     fun byKey(key: String): RomTest? = all.firstOrNull { it.key == key }
 

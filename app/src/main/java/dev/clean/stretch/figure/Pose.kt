@@ -31,6 +31,9 @@ package dev.clean.stretch.figure
  *   -70 with the arm reaching forward = fingers pointing to the floor.
  * - Palms (only with a bent wrist): 0 = no thumb drawn; 90 = palm down (thumb toward the body's
  *   middle), -90 = palm up (thumb pointing out to the side). Shows which way the palm faces.
+ * - [headTurn]: turns the head to look toward the near side (+) or far side (-), as in "look over
+ *   your shoulder". 0 = facing ahead and no nose drawn (every older pose); any other value draws a
+ *   small nose so the direction shows.
  *
  * "Near" limbs face the viewer and are drawn in front; "far" limbs are drawn behind.
  */
@@ -65,6 +68,7 @@ data class Pose(
     val farWrist: Float = 0f,
     val nearPalm: Float = 0f,
     val farPalm: Float = 0f,
+    val headTurn: Float = 0f,
 ) {
     fun lerp(to: Pose, t: Float): Pose = Pose(
         torso = mix(torso, to.torso, t),
@@ -97,6 +101,7 @@ data class Pose(
         farWrist = mix(farWrist, to.farWrist, t),
         nearPalm = mix(nearPalm, to.nearPalm, t),
         farPalm = mix(farPalm, to.farPalm, t),
+        headTurn = mix(headTurn, to.headTurn, t),
     )
 
     operator fun get(param: PoseParam): Float = param.read(this)
@@ -163,4 +168,5 @@ enum class PoseParam(
     FarWrist("Far wrist", "farWrist", -90f, 90f, { it.farWrist }, { p, v -> p.copy(farWrist = v) }),
     NearPalm("Near palm", "nearPalm", -90f, 90f, { it.nearPalm }, { p, v -> p.copy(nearPalm = v) }),
     FarPalm("Far palm", "farPalm", -90f, 90f, { it.farPalm }, { p, v -> p.copy(farPalm = v) }),
+    HeadTurn("Head turn", "headTurn", -90f, 90f, { it.headTurn }, { p, v -> p.copy(headTurn = v) }),
 }

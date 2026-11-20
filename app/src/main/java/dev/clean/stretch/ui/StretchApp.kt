@@ -1,5 +1,8 @@
 package dev.clean.stretch.ui
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.MutableIntState
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -50,6 +53,9 @@ import dev.clean.stretch.settings.ThemeMode
 import dev.clean.stretch.ui.theme.StretchTheme
 
 /** Every place the app can show. Encoded as text so the back stack survives rotation. */
+/** Hold length of routes saved before holds became a choice (D-044); old checkpoints resume with it. */
+private const val LEGACY_HOLD_SECONDS = 40
+
 sealed interface Route {
     data object Today : Route
     data object Library : Route
@@ -98,14 +104,14 @@ sealed interface Route {
                     keys = parts.getOrElse(2) { "" }.split(",").filter { it.isNotBlank() },
                     title = parts.getOrElse(1) { "Routine" },
                     firstSide = if (parts.getOrNull(3) == "L") Side.Left else Side.Right,
-                    holdSeconds = parts.getOrNull(4)?.toIntOrNull() ?: (HOLD_MS / 1000).toInt(),
+                    holdSeconds = parts.getOrNull(4)?.toIntOrNull() ?: LEGACY_HOLD_SECONDS,
                 )
                 "setup" -> Setup
                 "romcheck" -> RomCheck(parts.getOrNull(1)?.takeIf { it.isNotBlank() })
                 "tender" -> TenderSpot
                 "preview" -> Preview(
                     kind = RoutineKind.entries.firstOrNull { it.name == parts.getOrNull(1) } ?: RoutineKind.Full,
-                    holdSeconds = parts.getOrNull(2)?.toIntOrNull() ?: (HOLD_MS / 1000).toInt(),
+                    holdSeconds = parts.getOrNull(2)?.toIntOrNull() ?: LEGACY_HOLD_SECONDS,
                     keys = parts.getOrElse(3) { "" }.split(",").filter { it.isNotBlank() },
                 )
                 else -> Today
@@ -124,7 +130,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity) {
+fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager, activity: ComponentActivity, openPlan: MutableIntState) {
     val dark = when (prefs.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -138,12 +144,12 @@ fun StretchRoot(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao
         onDispose { }
     }
     StretchTheme(dark = dark, palette = prefs.palette) {
-        StretchApp(prefs, history, profiles, routines, romChecks, saver, backup)
+        StretchApp(prefs, history, profiles, routines, romChecks, saver, backup, openPlan)
     }
 }
 
 @Composable
-fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager) {
+fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao, routines: SavedRoutineDao, romChecks: RomCheckDao, saver: SessionSaver, backup: BackupManager, openPlan: MutableIntState = mutableIntStateOf(0)) {
     // null until the saved profile has loaded, so first-run cards don't flash.
     val profile by remember { profiles.profile() }.collectAsState(initial = null)
     val stack: SnapshotStateList<Route> = rememberSaveable(
@@ -168,6 +174,10 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
     fun switchTab(r: Route) { forget(stack.toList()); stack.clear(); stack.add(r) }
 
     BackHandler(enabled = stack.size > 1 || current != Route.Today) { pop() }
+    // A tapped reminder (D-044) opens Today with its routine, unless a routine is playing.
+    LaunchedEffect(openPlan.intValue) {
+        if (openPlan.intValue != 0 && current.isTab && current != Route.Today) switchTab(Route.Today)
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -198,11 +208,11 @@ fun StretchApp(prefs: AppPreferences, history: HistoryDao, profiles: ProfileDao,
                     Route.Today -> profile?.let { p ->
                         TodayScreen(prefs = prefs, profile = p, saver = saver, history = history, onStart = ::push, onOpenStretch = { push(Route.Detail(it)) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) }, savedRoutines = routines, onOpenTender = { push(Route.TenderSpot) },
                             onUpdateProfile = { edited -> AppScope.launch { profiles.save(ProfileMapper.toEntity(edited, System.currentTimeMillis())) } },
-                            romChecks = romChecks, onOpenRomCheck = { push(Route.RomCheck()) })
+                            romChecks = romChecks, onOpenRomCheck = { push(Route.RomCheck()) }, openPlan = openPlan)
                     }
                     Route.Library -> LibraryScreen(onOpen = { push(Route.Detail(it)) }, profile = profile)
                     Route.Progress -> ProgressScreen(history, profile ?: Profile(), prefs.daysPerWeek, romChecks, onCheck = { push(Route.RomCheck(it)) },
-                        onStretchMuscle = { m -> profile?.let { p -> Generator.forMuscle(p, m).takeIf { it.keys.isNotEmpty() }?.let { r -> push(Route.Player(r.keys, r.title, holdSeconds = r.holdSeconds)) } } })
+                        onStretchMuscle = { m -> profile?.let { p -> Generator.forMuscle(p, m, prefs.holdSeconds).takeIf { it.keys.isNotEmpty() }?.let { r -> push(Route.Player(r.keys, r.title, holdSeconds = r.holdSeconds)) } } })
                     Route.Settings -> SettingsScreen(prefs = prefs, backup = backup, onOpenStudio = { push(Route.Studio) }, onOpenSources = { push(Route.Sources) }, onOpenSetup = { push(Route.Setup) })
                     is Route.Detail -> StretchDetailScreen(key = route.key, prefs = prefs, onBack = ::pop, onTry = ::push, onOpenSources = { push(Route.Sources) }, onOpenStretch = { push(Route.Detail(it)) })
                     is Route.Player -> PlayerScreen(route = route, prefs = prefs, saver = saver, onClose = ::pop)

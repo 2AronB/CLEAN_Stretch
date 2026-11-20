@@ -19,7 +19,8 @@ class RunEngineTest {
     fun setupThenHoldAdvanceByTheClock() {
         val e = engine()
         assertEquals(listOf(RunEvent.StepStarted(0, buzz = false)), e.start())
-        assertTrue(e.tick(SETUP_FIRST_MS - 1).isEmpty())
+        // Getting into position only says its 3-2-1 (here the first tick lands in the last second).
+        assertEquals(listOf(RunEvent.Countdown(1, toStart = true)), e.tick(SETUP_FIRST_MS - 1))
         assertEquals(listOf(RunEvent.StepStarted(1, buzz = true)), e.tick(SETUP_FIRST_MS))
         val end = SETUP_FIRST_MS + HOLD_MS
         assertEquals(listOf(RunEvent.HoldDone, RunEvent.StepStarted(2, buzz = true)), e.tick(end))
@@ -50,14 +51,15 @@ class RunEngineTest {
     }
 
     @Test
-    fun countdownAndNextAreAnnouncedOnce() {
+    fun countdownsPlayOnceAndNothingIsAnnouncedDuringAHold() {
         val e = engine()
-        e.ready(0L)
-        val events = (0L..HOLD_MS - 1 step 100L).flatMap { e.tick(it) }
-        assertEquals(
-            listOf(RunEvent.AnnounceNext(2), RunEvent.Countdown(3), RunEvent.Countdown(2), RunEvent.Countdown(1)),
-            events,
-        )
+        // Getting into position ends with a spoken 3-2-1 (D-044).
+        val setup = (0L until SETUP_FIRST_MS step 100L).flatMap { e.tick(it) }
+        assertEquals((3 downTo 1).map { RunEvent.Countdown(it, toStart = true) }, setup)
+        e.ready(SETUP_FIRST_MS)
+        // The hold only ticks 3-2-1 at its end; the next stretch is announced at its own setup.
+        val hold = (SETUP_FIRST_MS..SETUP_FIRST_MS + HOLD_MS - 1 step 100L).flatMap { e.tick(it) }
+        assertEquals((3 downTo 1).map { RunEvent.Countdown(it) }, hold)
     }
 
     @Test

@@ -22,16 +22,41 @@ data class Routine(
 /** Pure-Kotlin routine builder (Slice S5). Deterministic for a given seed. */
 object Generator {
     /** Rough seconds of setup per side, used only to fit the time budget. */
-    private const val SETUP_ESTIMATE_S = 10
+    private const val SETUP_ESTIMATE_S = 15
 
     private val positionOrder = listOf(Position.Standing, Position.Kneeling, Position.HandsAndKnees, Position.Seated, Position.Lying)
 
-    /** Hold length: 30 s inside warm-ups and quick breaks (P-3), 60 s for 65+ (P-2), else 40 s. */
-    fun holdSeconds(profile: Profile, kind: RoutineKind): Int = when {
-        kind == RoutineKind.WarmUp || kind == RoutineKind.Quick -> 30
+    /**
+     * Hold length. Warm-ups always use 30 s (P-3: long holds right before activity aren't advised).
+     * Otherwise the 30 / 45 / 60 s chip on Today ([chosen], D-044), or when none is picked 60 s for
+     * 65+ (P-2) and 45 s for everyone else.
+     */
+    fun holdSeconds(profile: Profile, kind: RoutineKind, chosen: Int = 0): Int = when {
+        kind == RoutineKind.WarmUp -> WARM_UP_HOLD_SECONDS
+        chosen in HOLD_CHOICES -> chosen
         profile.olderAdult -> 60
-        else -> 40
+        else -> 45
     }
+
+    val HOLD_CHOICES = listOf(30, 45, 60)
+    const val WARM_UP_HOLD_SECONDS = 30
+
+    /**
+     * How long today's suggested routine should be (D-044: no length setting): the day's share of
+     * the weekly goals ([dayGoalMinutes], holding time) plus time to get into position, kept to
+     * 5–30 min. Warm-ups stay short (5–8 min) and quick breaks are about 4 min.
+     */
+    fun routineMinutes(profile: Profile, daysPerWeek: Int, kind: RoutineKind, hold: Int): Int {
+        val holding = dayGoalMinutes(profile, daysPerWeek)
+        val total = kotlin.math.ceil(holding * (hold + SETUP_ESTIMATE_S) / hold).toInt()
+        return when (kind) {
+            RoutineKind.Quick -> QUICK_MINUTES
+            RoutineKind.WarmUp -> total.coerceIn(5, 8)
+            else -> total.coerceIn(5, 30)
+        }
+    }
+
+    const val QUICK_MINUTES = 4
 
     /** Why a stretch is left out for this profile, or null if it's allowed. Safety rules: EVIDENCE §9. */
     fun exclusionReason(s: Stretch, profile: Profile, kind: RoutineKind): String? {
@@ -40,7 +65,6 @@ object Generator {
             regions.any { it in profile.avoid } -> "an area you're avoiding"
             profile.noFloor && s.position != Position.Standing -> "no floor work"
             profile.noKneeling && (s.position == Position.Kneeling || s.position == Position.HandsAndKnees) -> "no kneeling"
-            !profile.hasWall && s.equipment == Equipment.Wall -> "needs a wall"
             s.equipment == Equipment.FoamRoller && !profile.hasRoller -> "needs a foam roller"
             Condition.Osteoporosis in profile.conditions && s.kind == StretchKind.Roll && s.primary.any { it.region == Region.Back } -> "rolling on the spine (osteoporosis)"
             Condition.Pregnancy in profile.conditions && s.position == Position.Lying -> "lying down (pregnancy)"
@@ -131,15 +155,21 @@ object Generator {
         profile: Profile,
         kind: RoutineKind,
         minutes: Int = profile.minutes,
+        /** Hold length from Today's chips (0 = default); see [holdSeconds]. */
+        chosenHold: Int = 0,
+        /** Areas to stick to (a reminder's routine, D-044); empty = the whole body as usual. */
+        onlyAreas: Set<Region> = emptySet(),
         /** This week's minutes per muscle on its weaker side ([dev.clean.stretch.data.SideMinutes.weaker]). */
         weekMinutes: Map<Muscle, Double> = emptyMap(),
         seed: Long = 0L,
         daysLeft: Int = 3,
         weekCounts: Map<String, Int> = emptyMap(),
     ): Routine {
-        val hold = holdSeconds(profile, kind)
-        val budget = (if (kind == RoutineKind.Quick) minutes.coerceAtMost(4) else minutes) * 60
-        val everything = allowed(profile, kind).shuffled(Random(seed))
+        val hold = holdSeconds(profile, kind, chosenHold)
+        val budget = (if (kind == RoutineKind.Quick) minutes.coerceAtMost(QUICK_MINUTES) else minutes) * 60
+        val everything = allowed(profile, kind)
+            .filter { s -> onlyAreas.isEmpty() || s.primary.any { it.region in onlyAreas } }
+            .shuffled(Random(seed))
         val focusFirst = compareBy<Stretch> { s -> if (s.primary.any { it.region in profile.effectiveFocus }) 0 else 1 }
         // Blocks (P-5, P-10): rolling opens warm-ups and cool-downs if the user has a roller;
         // a short Strengthen block closes full routines, cool-downs and quick breaks when it's on.
@@ -272,9 +302,9 @@ object Generator {
      * stretches that mainly target it, holds first and easiest first, at the usual full-routine
      * hold. Stretches only (no rolling or strengthening), so it all counts toward the muscle.
      */
-    fun forMuscle(profile: Profile, muscle: Muscle): Routine {
+    fun forMuscle(profile: Profile, muscle: Muscle, chosenHold: Int = 0): Routine {
         val kind = RoutineKind.Full
-        val hold = holdSeconds(profile, kind)
+        val hold = holdSeconds(profile, kind, chosenHold)
         val title = "Stretch: ${muscle.label.lowercase()}"
         if (muscle.region in profile.avoid) {
             return Routine(kind, title, emptyList(), hold,

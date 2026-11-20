@@ -72,17 +72,17 @@ import dev.clean.stretch.ui.figure.figureColors
 import dev.clean.stretch.ui.figure.rememberReducedMotion
 import kotlin.math.ceil
 
-/** Evidence default P-2: 40 s holds for adults. Setup ("get into position") time isn't counted. */
-const val HOLD_MS = 40_000L
+/** Default hold: 45 s (D-044 chips 30 / 45 / 60; P-2 asks for at least 30 s). Setup time isn't counted. */
+const val HOLD_MS = 45_000L
 
 /**
- * Setup time depends on the move (owner feedback 2026-11-08): switching sides is quick, a new
- * stretch in the same position needs a little longer, and changing position (e.g. getting up
- * from the floor) needs the most. "I'm ready" in the player starts the hold early.
+ * "Get into position" time (owner, D-044): 15 s for every new stretch, so there's time to hear what
+ * it is, watch it once and get set before the spoken 3-2-1. Switching sides of the same stretch
+ * needs less. "I'm ready" in the player starts the hold early.
  */
-const val SETUP_SIDE_SWITCH_MS = 5_000L
-const val SETUP_FIRST_MS = 10_000L
-const val SETUP_SAME_POSITION_MS = 10_000L
+const val SETUP_SIDE_SWITCH_MS = 10_000L
+const val SETUP_FIRST_MS = 15_000L
+const val SETUP_SAME_POSITION_MS = 15_000L
 const val SETUP_NEW_POSITION_MS = 15_000L
 
 enum class Side(val label: String) { Both(""), Right("Right side"), Left("Left side") }
@@ -175,7 +175,15 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
     val holdSteps = steps.filter { !it.setup }
     val holdIndex = steps.take(index + 1).count { !it.setup } - if (step.setup) 0 else 1
     val stage = MaterialTheme.colorScheme.surfaceContainerLow
-    val pose = if (step.setup) step.stretch.motion.start else MotionPlayer.sessionPose(step.stretch.motion, t, reduced)
+    // "Get into position" plays the new stretch once so it's clear before it starts, then rests in
+    // its start position for the 3-2-1 (D-044). Switching sides just shows the start position.
+    val sideSwitch = step.setup && index > 0 && steps[index - 1].stretch.key == step.stretch.key
+    val pose = when {
+        !step.setup -> MotionPlayer.sessionPose(step.stretch.motion, t, reduced)
+        reduced -> step.stretch.motion.stretch
+        sideSwitch || t >= Timing.DEMO_LOOP_MS -> step.stretch.motion.start
+        else -> MotionPlayer.demoPose(step.stretch.motion, t, reducedMotion = false)
+    }
     var figureView by remember(step.stretch.key) { mutableStateOf(step.stretch.motion.view) }
     val camera = rememberViewCamera(figureView, reduced)
     val figureStage = rememberFigureStage(step.stretch.key, MotionPlayer.keyframes(step.stretch.motion), camera, step.stretch.prop)
@@ -221,7 +229,8 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.align(Alignment.TopCenter).padding(top = 20.dp),
                     ) {
-                        Text("Get into position", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        val left = ceil((duration - t).coerceAtLeast(0L) / 1000.0).toInt()
+                        Text(if (left in 1..3) "Starting in $left" else "Get into position", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                     }
                 }
             }
@@ -260,7 +269,8 @@ fun PlayerScreen(route: Route.Player, prefs: AppPreferences, saver: SessionSaver
             } else {
                 TextButton(onClick = session::addTime) { Text("+15 s") }
             }
-            if (nextStretch != null && (step.setup || duration - t < 8_000L)) {
+            // What comes after this stretch shows only while getting into position (D-044).
+            if (nextStretch != null && step.setup) {
                 Text(
                     "Next: ${nextStretch.stretch.name}${if (nextStretch.side != Side.Both) " · ${nextStretch.side.label.lowercase()}" else ""}",
                     style = MaterialTheme.typography.labelLarge,

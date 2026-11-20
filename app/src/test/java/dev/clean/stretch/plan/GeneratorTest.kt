@@ -52,7 +52,7 @@ class GeneratorTest {
     fun warmUpsUseShortHoldsAndOlderAdultsLongHolds() {
         assertEquals(30, Generator.generate(Profile(), RoutineKind.WarmUp).holdSeconds)
         assertEquals(60, Generator.generate(Profile(olderAdult = true), RoutineKind.Full).holdSeconds)
-        assertEquals(40, Generator.generate(Profile(), RoutineKind.CoolDown).holdSeconds)
+        assertEquals(45, Generator.generate(Profile(), RoutineKind.CoolDown).holdSeconds)
     }
 
     @Test
@@ -103,7 +103,7 @@ class GeneratorTest {
     // planned days left and never more than 4 min for one muscle on one side in a session.
     @Test
     fun weeklyTargetIsSpreadOverPlannedDaysAndCapped() {
-        val legs = Profile(focus = setOf(Region.Legs), minutes = 15) // primary, 10 min default
+        val legs = Profile(focus = setOf(Region.Legs), minutes = 15, weeklyDose = 10) // primary, 10 min
         // Monday, 5 planned days: 10 / 5 = 2 min.
         assertEquals(2.0, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Hamstrings]!!, 1e-9)
         // Wednesday after 4 min, 3 days left: (10 - 4) / 3 = 2 min.
@@ -206,8 +206,46 @@ class GeneratorTest {
         assertTrue(Generator.forMuscle(Profile(avoid = setOf(Region.Shoulders)), chest).keys.isEmpty())
         val easy = Generator.forMuscle(Profile(conditions = setOf(Condition.Hypermobility)), dev.clean.stretch.catalog.Muscle.Triceps)
         assertTrue(easy.keys.isNotEmpty() && easy.keys.all { SampleCatalog.byKey(it)!!.level == 1 })
-        val noWall = Generator.forMuscle(Profile(hasWall = false), dev.clean.stretch.catalog.Muscle.Triceps)
-        assertTrue(noWall.keys.none { it == "wall_triceps" })
+        // Everyone has a wall (owner, D-044): the old "no wall" answer no longer leaves wall moves out.
+        assertTrue(Generator.exclusionReason(SampleCatalog.byKey("wall_triceps")!!, Profile(hasWall = false), RoutineKind.Full) == null)
+    }
+
+    @Test
+    fun holdLengthFollowsTheTodayChipExceptInWarmUps() {
+        assertEquals(45, Generator.holdSeconds(Profile(), RoutineKind.Full))
+        assertEquals(60, Generator.holdSeconds(Profile(olderAdult = true), RoutineKind.Full))
+        assertEquals(30, Generator.holdSeconds(Profile(), RoutineKind.Full, chosen = 30))
+        assertEquals(60, Generator.holdSeconds(Profile(), RoutineKind.Quick, chosen = 60))
+        assertEquals(30, Generator.holdSeconds(Profile(olderAdult = true), RoutineKind.WarmUp, chosen = 60))
+        assertEquals(45, Generator.holdSeconds(Profile(), RoutineKind.CoolDown, chosen = 17)) // not a choice
+    }
+
+    @Test
+    fun routineLengthFollowsTheWeeklyGoals() {
+        val light = Generator.routineMinutes(Profile(weeklyDose = 5), 7, RoutineKind.Full, 45)
+        val heavy = Generator.routineMinutes(Profile(weeklyDose = 15, focus = Region.entries.toSet()), 3, RoutineKind.Full, 45)
+        assertTrue("$light <= $heavy", light <= heavy)
+        assertTrue(light in 5..30 && heavy in 5..30)
+        assertEquals(Generator.QUICK_MINUTES, Generator.routineMinutes(Profile(), 3, RoutineKind.Quick, 45))
+        assertTrue(Generator.routineMinutes(Profile(weeklyDose = 15, focus = Region.entries.toSet()), 2, RoutineKind.WarmUp, 30) <= 8)
+        // The generated routine fits the length it was given.
+        val r = Generator.generate(Profile(), RoutineKind.Full, minutes = light, chosenHold = 45)
+        assertTrue(Generator.estimateMinutes(r.keys, r.holdSeconds) <= light)
+    }
+
+    @Test
+    fun aReminderCanKeepARoutineToSomeAreas() {
+        val areas = setOf(Region.Neck, Region.Shoulders)
+        val r = Generator.generate(Profile(), RoutineKind.Quick, minutes = 4, onlyAreas = areas)
+        assertTrue(r.keys.isNotEmpty())
+        r.keys.map { SampleCatalog.byKey(it)!! }.forEach { s -> assertTrue(s.key, s.primary.any { it.region in areas }) }
+    }
+
+    @Test
+    fun newUsersStartOnSevenMinutes() {
+        assertEquals(7, Profile().weeklyDose)
+        assertEquals(listOf(5, 7, 10, 15), Dose.entries.map { it.minutes })
+        assertEquals(Dose.Starter, Dose.of(99))
     }
 
     @Test

@@ -1,5 +1,7 @@
 package dev.clean.stretch.settings
 
+import dev.clean.stretch.plan.ReminderPlan
+import dev.clean.stretch.plan.RoutineKind
 import android.content.Context
 import androidx.core.content.edit
 import androidx.compose.runtime.getValue
@@ -24,14 +26,6 @@ enum class Palette(val label: String, val description: String) {
     }
 }
 
-/** The "if" in "If [cue], then I stretch" (P-7, [S22]). */
-enum class PlanCue(val label: String, val reminderText: String) {
-    Wake("After I wake up", "after you wake up"),
-    Teeth("After I brush my teeth", "after you brush your teeth"),
-    Workout("After a workout", "after your workout"),
-    Bed("Before bed", "before bed"),
-    SetTime("At a set time", "now"),
-}
 
 /** Small on-device settings. User data (session history) lives in Room (data/History.kt). */
 class AppPreferences(context: Context) {
@@ -52,29 +46,39 @@ class AppPreferences(context: Context) {
     var vibrationCues by mutableStateOf(prefs.getBoolean(KEY_VIBRATION, true))
         private set
 
-    // If-then plan and reminder (P-7, R-007).
-    var planCue by mutableStateOf(PlanCue.entries.firstOrNull { it.name == prefs.getString(KEY_PLAN_CUE, null) } ?: PlanCue.Teeth)
-        private set
     var daysPerWeek by mutableIntStateOf(prefs.getInt(KEY_DAYS, 3))
         private set
-    var reminderOn by mutableStateOf(prefs.getBoolean(KEY_REMINDER, false))
+    /** Up to three reminders, each with its own routine (D-044). Replaces the single reminder and if-then cue. */
+    var reminders by mutableStateOf(loadReminders())
         private set
-    /** Minutes after midnight. */
-    var reminderTime by mutableIntStateOf(prefs.getInt(KEY_REMINDER_TIME, 19 * 60))
+    /** Hold length picked on Today's card (30 / 45 / 60 s, D-044); 0 = not picked yet (45 s, or 60 s for 65+). */
+    var holdSeconds by mutableIntStateOf(prefs.getInt(KEY_HOLD, 0))
         private set
+    /** The routine type last picked on Today (D-044). */
+    var routineKind by mutableStateOf(RoutineKind.entries.firstOrNull { it.name == prefs.getString(KEY_KIND, null) } ?: RoutineKind.Full)
+        private set
+
+    /** Reminders as saved; a phone that only had the old single daily reminder gets it as reminder 1. */
+    private fun loadReminders(): List<ReminderPlan> = if (prefs.contains(KEY_REMINDERS)) {
+        ReminderPlan.decodeAll(prefs.getString(KEY_REMINDERS, null))
+    } else if (prefs.getBoolean(KEY_REMINDER, false)) {
+        listOf(ReminderPlan(id = 1, time = prefs.getInt(KEY_REMINDER_TIME, 19 * 60)))
+    } else {
+        emptyList()
+    }
 
     /** Monday (epoch day) of the week the weekly flexibility check was last offered. Not backed up. */
     var romPromptWeek: Long
         get() = prefs.getLong(KEY_ROM_PROMPT, 0L)
         set(value) { prefs.edit { putLong(KEY_ROM_PROMPT, value) } }
 
-    fun updatePlanCue(cue: PlanCue) { planCue = cue; prefs.edit { putString(KEY_PLAN_CUE, cue.name) } }
     fun updateDaysPerWeek(days: Int) { daysPerWeek = days; prefs.edit { putInt(KEY_DAYS, days) } }
-    fun updateReminder(on: Boolean, time: Int = reminderTime) {
-        reminderOn = on
-        reminderTime = time
-        prefs.edit { putBoolean(KEY_REMINDER, on); putInt(KEY_REMINDER_TIME, time) }
+    fun updateReminders(list: List<ReminderPlan>) {
+        reminders = ReminderPlan.decodeAll(ReminderPlan.encodeAll(list))
+        prefs.edit { putString(KEY_REMINDERS, ReminderPlan.encodeAll(reminders)) }
     }
+    fun updateHoldSeconds(seconds: Int) { holdSeconds = seconds; prefs.edit { putInt(KEY_HOLD, seconds) } }
+    fun updateRoutineKind(kind: RoutineKind) { routineKind = kind; prefs.edit { putString(KEY_KIND, kind.name) } }
 
     fun updateVoiceCues(enabled: Boolean) {
         voiceCues = enabled
@@ -117,14 +121,16 @@ class AppPreferences(context: Context) {
 
     /** Restores backed-up settings, ignoring unknown keys, then reloads the visible values. */
     fun importSettings(values: Map<String, String>) {
-        val ints = setOf(KEY_THEME, KEY_DAYS, KEY_REMINDER_TIME)
+        val ints = setOf(KEY_THEME, KEY_DAYS, KEY_REMINDER_TIME, KEY_HOLD)
         val bools = setOf(KEY_STILL, KEY_VOICE, KEY_CHIMES, KEY_VIBRATION, KEY_REMINDER)
         prefs.edit {
             values.forEach { (k, v) ->
                 when (k) {
                     in ints -> v.toIntOrNull()?.let { putInt(k, it) }
                     in bools -> putBoolean(k, v.toBoolean())
-                    KEY_PLAN_CUE, KEY_PALETTE -> putString(k, v)
+                    KEY_PALETTE, KEY_KIND -> putString(k, v)
+                    // Backups store newlines as-is; anything unreadable is dropped by decodeAll.
+                    KEY_REMINDERS -> putString(k, v)
                 }
             }
         }
@@ -134,10 +140,10 @@ class AppPreferences(context: Context) {
         voiceCues = prefs.getBoolean(KEY_VOICE, true)
         chimeCues = prefs.getBoolean(KEY_CHIMES, true)
         vibrationCues = prefs.getBoolean(KEY_VIBRATION, true)
-        planCue = PlanCue.entries.firstOrNull { it.name == prefs.getString(KEY_PLAN_CUE, null) } ?: PlanCue.Teeth
         daysPerWeek = prefs.getInt(KEY_DAYS, 3)
-        reminderOn = prefs.getBoolean(KEY_REMINDER, false)
-        reminderTime = prefs.getInt(KEY_REMINDER_TIME, 19 * 60)
+        reminders = loadReminders()
+        holdSeconds = prefs.getInt(KEY_HOLD, 0)
+        routineKind = RoutineKind.entries.firstOrNull { it.name == prefs.getString(KEY_KIND, null) } ?: RoutineKind.Full
     }
 
     private companion object {
@@ -145,7 +151,10 @@ class AppPreferences(context: Context) {
         const val KEY_PALETTE = "palette"
         const val KEY_ROM_PROMPT = "rom_prompt_week"
         const val KEY_STILL = "still_figures"
-        const val KEY_PLAN_CUE = "plan_cue"
+        // "plan_cue" (the if-then cue) is no longer read (D-044).
+        const val KEY_REMINDERS = "reminders"
+        const val KEY_HOLD = "hold_seconds"
+        const val KEY_KIND = "routine_kind"
         const val KEY_DAYS = "plan_days_per_week"
         const val KEY_REMINDER = "reminder_on"
         const val KEY_REMINDER_TIME = "reminder_time"

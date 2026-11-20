@@ -115,8 +115,10 @@ class RunSession private constructor(
                 cues.say(voiceFor(steps[event.index]))
             }
             RunEvent.HoldDone -> cues.chime()
-            is RunEvent.Countdown -> cues.tick()
-            is RunEvent.AnnounceNext -> steps[event.index].let { cues.say(VoiceLines.next(it.stretch, it.side)) }
+            is RunEvent.Countdown -> {
+                cues.tick()
+                if (event.toStart) VoiceLines.count(event.secondsLeft)?.let(cues::say)
+            }
             RunEvent.Finished -> {
                 saveOnce(completed = true)
                 cues.say(VoiceLines.COMPLETE)

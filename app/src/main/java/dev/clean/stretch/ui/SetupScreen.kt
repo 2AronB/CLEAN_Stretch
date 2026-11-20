@@ -11,7 +11,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.ui.platform.LocalContext
 import dev.clean.stretch.settings.AppPreferences
-import dev.clean.stretch.settings.PlanCue
 import dev.clean.stretch.settings.Reminders
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,6 +65,8 @@ import dev.clean.stretch.plan.Dose
 import dev.clean.stretch.plan.Generator
 import dev.clean.stretch.plan.Goal
 import dev.clean.stretch.plan.Profile
+import dev.clean.stretch.plan.ReminderPlan
+import dev.clean.stretch.plan.RoutineKind
 
 /** Draft profile survives rotation as text. */
 private val profileSaver = Saver<Profile, String>(
@@ -85,19 +86,21 @@ private val profileSaver = Saver<Profile, String>(
             conditions = f[7].split(",").mapNotNull { n -> Condition.entries.firstOrNull { it.name == n } }.toSet(),
             minutes = f[8].toInt(), setupDone = f[9].toBoolean(),
             hasRoller = f.getOrNull(10).toBoolean(), strengthen = f.getOrNull(11)?.takeIf { it != "auto" }?.toBoolean(),
-            secondary = regions(f.getOrElse(12) { "" }), weeklyDose = f.getOrNull(13)?.toIntOrNull() ?: Dose.Recommended.minutes,
+            secondary = regions(f.getOrElse(12) { "" }), weeklyDose = f.getOrNull(13)?.toIntOrNull() ?: Dose.DEFAULT.minutes,
         )
     },
 )
 
-private const val PAGES = 6
+private const val PAGES = 3
 private const val MENU = -1
-private val SECTIONS = listOf("Goal", "Weekly goals", "Limits and equipment", "Health conditions", "Routine length", "Schedule and reminder")
-
 /**
- * First-run setup, also opened from Settings (Slice S4). Five short pages: goal, focus,
- * limits, health conditions (D-029) and routine length. Nothing leaves the phone.
+ * Three sections (owner, D-044): goal and weekly goals together; 65+, areas to avoid and health
+ * conditions together; days a week and reminders. Equipment and floor/kneeling choices live on
+ * Today's suggested card, and routine length now follows the weekly goals.
  */
+private val SECTIONS = listOf("Goal and weekly goals", "Health and limits", "Days and reminders")
+
+/** First-run setup, also opened from Settings (Slice S4). Nothing leaves the phone. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Unit, onBack: () -> Unit) {
@@ -120,7 +123,7 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
     BackHandler { back() }
 
     Column(Modifier.fillMaxSize()) {
-        BackBar(if (!editing) "Set up" else if (page == MENU) "Goal, focus and limits" else SECTIONS[page], ::back)
+        BackBar(if (!editing) "Set up" else if (page == MENU) "Goals, health and reminders" else SECTIONS[page], ::back)
         if (!editing) LinearProgressIndicator(progress = { (page + 1f) / PAGES }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp)) {
             when (page) {
@@ -130,29 +133,19 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
                     Goal.entries.forEach { g ->
                         ChoiceRow(g.label, g.blurb, selected = draft.goal == g) { draft = draft.copy(goal = g) }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    ToggleRow("I'm 65 or older", "Uses longer, 60-second holds.", draft.olderAdult) { draft = draft.copy(olderAdult = it) }
+                    Spacer(Modifier.height(20.dp))
+                    GoalsPage(draft, prefs.daysPerWeek) { draft = it }
                 }
-                1 -> GoalsPage(draft, prefs.daysPerWeek) { draft = it }
-                2 -> {
-                    Heading("Anything to avoid?", "Areas with pain, an injury or recent surgery are left out of routines.")
+                1 -> {
+                    Heading("Health and limits", "Your answers stay on this phone. Stretch is not medical advice.")
+                    ToggleRow("I'm 65 or older", "Uses longer, 60-second holds unless you pick another length on Today.", draft.olderAdult) { draft = draft.copy(olderAdult = it) }
+                    Text("Anything to avoid?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
+                    Text("Areas with pain, an injury or recent surgery are left out of routines.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
                     RegionChips(draft.avoid) { draft = draft.copy(avoid = it) }
-                    Spacer(Modifier.height(12.dp))
-                    ToggleRow("No floor exercises", "Standing stretches only.", draft.noFloor) { draft = draft.copy(noFloor = it) }
-                    ToggleRow("No kneeling", "Leaves out kneeling and hands-and-knees.", draft.noKneeling) { draft = draft.copy(noKneeling = it) }
-                    ToggleRow("I have a wall to use", "Some stretches lean on a wall.", draft.hasWall) { draft = draft.copy(hasWall = it) }
-                    ToggleRow("I have a foam roller", "Adds a minute of rolling to warm-ups and cool-downs.", draft.hasRoller) { draft = draft.copy(hasRoller = it) }
-                    ToggleRow(
-                        "Strengthen block",
-                        "Short strength holds at the end of routines. On by default for Desk and hypermobility.",
-                        draft.strengthenOn,
-                    ) { draft = draft.copy(strengthen = it) }
-                }
-                3 -> {
-                    Heading("Do any of these apply to you?", "Your answers stay on this phone. Stretch is not medical advice.")
+                    Text("Do any of these apply to you?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
                     Condition.entries.forEach { c ->
                         val yes = c in draft.conditions
-                        Text(c.label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
+                        Text(c.label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
                         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 6.dp)) {
                             SegmentedButton(
                                 selected = !yes,
@@ -170,20 +163,7 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
                         if (yes) Text(c.limits, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
-                4 -> {
-                    Heading("How long is a usual routine?", "Each routine is a suggestion. You can change it before you start.")
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        listOf(5, 10, 15).forEachIndexed { i, m ->
-                            SegmentedButton(
-                                selected = draft.minutes == m,
-                                onClick = { draft = draft.copy(minutes = m) },
-                                shape = SegmentedButtonDefaults.itemShape(i, 3),
-                                label = { Text("$m min") },
-                            )
-                        }
-                    }
-                }
-                else -> PlanPage(prefs)
+                else -> RemindersPage(prefs, draft)
             }
         }
         Row(
@@ -305,8 +285,9 @@ private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> U
         Column(Modifier.padding(16.dp)) {
             Text("About $weekly min of stretching a week", style = MaterialTheme.typography.titleMedium)
             Text(
-                "About $perDay min on each of your $daysPerWeek days. Moves that stretch several muscles at once count for each of them." +
-                    if (perDay > draft.minutes) " That's longer than your usual ${draft.minutes}-minute routine; try fewer primary areas or a smaller goal." else "",
+                "About $perDay min of holding on each of your $daysPerWeek days, so each day's suggested routine is about " +
+                    "${Generator.routineMinutes(draft, daysPerWeek, RoutineKind.Full, Generator.holdSeconds(draft, RoutineKind.Full))} min. " +
+                    "Moves that stretch several muscles at once count for each of them.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -324,58 +305,91 @@ private fun RegionChips(selected: Set<Region>, onChange: (Set<Region>) -> Unit) 
     }
 }
 
-/** If-then plan (P-7, [S22]), days per week for the week streak, and an optional daily reminder (R-007). */
+/**
+ * Days a week for the week streak, and up to three reminders (R-007, D-044), each with its own
+ * time and routine: type, optional areas, and foam roller / strengthen on or off. Replaces the
+ * if-then cue: the app can't know when someone brushes their teeth, but it can remind at a time.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun PlanPage(prefs: AppPreferences) {
+private fun RemindersPage(prefs: AppPreferences, draft: Profile) {
     val context = LocalContext.current
     var denied by rememberSaveable { mutableStateOf(false) }
-    var pickingTime by rememberSaveable { mutableStateOf(false) }
+    var editingTime by rememberSaveable { mutableIntStateOf(0) } // reminder id whose time is being picked
+    var explainAround by rememberSaveable { mutableStateOf(false) }
+    fun save(list: List<ReminderPlan>) { prefs.updateReminders(list); Reminders.sync(context, prefs) }
+    fun update(plan: ReminderPlan) = save(prefs.reminders.map { if (it.id == plan.id) plan else it })
+    fun addReminder() {
+        val id = ReminderPlan.nextId(prefs.reminders) ?: return
+        // Morning, midday, evening: the first of these not already taken.
+        val time = listOf(8 * 60, 12 * 60, 19 * 60).firstOrNull { t -> prefs.reminders.none { it.time == t } } ?: (19 * 60)
+        save(prefs.reminders + ReminderPlan(id = id, time = time, roller = draft.hasRoller, strengthen = draft.strengthenOn))
+        editingTime = id
+    }
     val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         denied = !granted
-        prefs.updateReminder(granted)
-        Reminders.sync(context, prefs)
+        if (granted) addReminder()
     }
 
-    Heading("When will you stretch?", "People who pick a moment, like \"after I brush my teeth\", find it easier to stick with.")
-    PlanCue.entries.forEach { cue ->
-        ChoiceRow(cue.label, "", selected = prefs.planCue == cue) { prefs.updatePlanCue(cue) }
-    }
-    Spacer(Modifier.height(16.dp))
+    Heading("Days and reminders", "Pick how many days a week you'd like to stretch, and when you'd like a nudge.")
     Text("Days a week", style = MaterialTheme.typography.titleMedium)
     Text("A week counts toward your streak when you stretch on this many days. Missed days never break it.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
         (2..7).forEach { d -> FilterChip(selected = prefs.daysPerWeek == d, onClick = { prefs.updateDaysPerWeek(d) }, label = { Text("$d") }) }
     }
-    Spacer(Modifier.height(12.dp))
-    var explainAround by rememberSaveable { mutableStateOf(false) }
-    val onReminder: (Boolean) -> Unit = { on ->
-        if (on && !Reminders.canNotify(context)) { // only possible on Android 13+
-            askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            denied = false
-            prefs.updateReminder(on)
-            Reminders.sync(context, prefs)
+    Spacer(Modifier.height(20.dp))
+    Text("Reminders", style = MaterialTheme.typography.titleMedium)
+    // "around" links to why the time isn't exact (minimal permissions).
+    val linkColor = MaterialTheme.colorScheme.primary
+    Text(
+        buildAnnotatedString {
+            append("Up to ${ReminderPlan.MAX} a day, each with its own routine, for example a morning warm-up and an evening cool-down. Each arrives ")
+            withLink(LinkAnnotation.Clickable("around", TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline))) { explainAround = true }) {
+                append("around")
+            }
+            append(" its time.")
+        },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    prefs.reminders.forEach { plan ->
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            Column(Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { editingTime = plan.id }) { Text(formatTime(plan.time), style = MaterialTheme.typography.titleLarge) }
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = { save(prefs.reminders.filter { it.id != plan.id }) }) { Text("Remove") }
+                }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RoutineKind.entries.forEach { k -> FilterChip(selected = plan.kind == k, onClick = { update(plan.copy(kind = k)) }, label = { Text(k.label) }) }
+                }
+                Text("Areas (leave all off to follow your weekly goals)", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+                RegionChips(plan.areas) { update(plan.copy(areas = it)) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    val roller = plan.roller ?: draft.hasRoller
+                    val strengthen = plan.strengthen ?: draft.strengthenOn
+                    FilterChip(selected = roller, onClick = { update(plan.copy(roller = !roller)) }, label = { Text("Foam roller") })
+                    FilterChip(selected = strengthen, onClick = { update(plan.copy(strengthen = !strengthen)) }, label = { Text("Strengthen") })
+                }
+            }
         }
     }
-    Row(Modifier.fillMaxWidth().clickable { onReminder(!prefs.reminderOn) }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(end = 12.dp)) {
-            Text("Daily reminder", style = MaterialTheme.typography.titleMedium)
-            // "around" links to why the time isn't exact (minimal permissions).
-            val linkColor = MaterialTheme.colorScheme.primary
-            Text(
-                buildAnnotatedString {
-                    append("A gentle nudge at ")
-                    withLink(LinkAnnotation.Clickable("around", TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline))) { explainAround = true }) {
-                        append("around")
-                    }
-                    append(" ${formatTime(prefs.reminderTime)}.")
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = prefs.reminderOn, onCheckedChange = onReminder)
+    if (prefs.reminders.size < ReminderPlan.MAX) {
+        OutlinedButton(
+            onClick = {
+                if (!Reminders.canNotify(context)) askPermission.launch(Manifest.permission.POST_NOTIFICATIONS) // only on Android 13+
+                else addReminder()
+            },
+            modifier = Modifier.padding(top = 12.dp),
+        ) { Text(if (prefs.reminders.isEmpty()) "Add a reminder" else "Add another reminder") }
+    }
+    if (denied || (prefs.reminders.isNotEmpty() && !Reminders.canNotify(context))) {
+        Text(
+            "Notifications are off, so reminders can't show. Everything else works. You can allow notifications for Stretch in Android settings.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(top = 8.dp),
+        )
     }
     if (explainAround) {
         AlertDialog(
@@ -384,27 +398,19 @@ private fun PlanPage(prefs: AppPreferences) {
             text = {
                 Text(
                     "Stretch asks for as few permissions as possible. Without the \"exact alarm\" permission, " +
-                        "Android may deliver your reminder up to about 10 minutes after the time you pick, " +
+                        "Android may deliver a reminder up to about 10 minutes after the time you pick, " +
                         "so it can save battery. Your routine is ready whenever the nudge arrives.",
                 )
             },
             confirmButton = { TextButton(onClick = { explainAround = false }) { Text("Got it") } },
         )
     }
-    if (prefs.reminderOn) TextButton(onClick = { pickingTime = true }) { Text("Change time") }
-    if (denied) {
-        Text(
-            "Notifications are off, so reminders can't show. Everything else works. You can allow notifications for Stretch in Android settings.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.error,
-        )
-    }
-    if (pickingTime) {
-        val state = rememberTimePickerState(initialHour = prefs.reminderTime / 60, initialMinute = prefs.reminderTime % 60)
+    prefs.reminders.firstOrNull { it.id == editingTime }?.let { plan ->
+        val state = rememberTimePickerState(initialHour = plan.time / 60, initialMinute = plan.time % 60)
         AlertDialog(
-            onDismissRequest = { pickingTime = false },
-            confirmButton = { TextButton(onClick = { prefs.updateReminder(true, state.hour * 60 + state.minute); Reminders.sync(context, prefs); pickingTime = false }) { Text("OK") } },
-            dismissButton = { TextButton(onClick = { pickingTime = false }) { Text("Cancel") } },
+            onDismissRequest = { editingTime = 0 },
+            confirmButton = { TextButton(onClick = { update(plan.copy(time = state.hour * 60 + state.minute)); editingTime = 0 }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = { editingTime = 0 }) { Text("Cancel") } },
             text = { TimePicker(state = state) },
         )
     }
@@ -415,22 +421,21 @@ private fun formatTime(minutes: Int): String =
 
 /** One line per section showing what's set now, so the user can jump straight to it. */
 private fun sectionSummaries(d: Profile, prefs: AppPreferences): List<String> = listOf(
-    d.goal.label + if (d.olderAdult) " · 65 or older" else "",
     buildList {
+        add(d.goal.label)
         add(d.effectiveFocus.joinToString { it.label }.ifEmpty { "No primary areas" } + " · ${d.dose.minutes} min")
         if (d.effectiveSecondary.isNotEmpty()) add("secondary: " + d.effectiveSecondary.joinToString { it.label.lowercase() })
     }.joinToString(" · "),
     buildList {
+        if (d.olderAdult) add("65 or older")
         if (d.avoid.isNotEmpty()) add("Avoid " + d.avoid.joinToString { it.label.lowercase() })
-        if (d.noFloor) add("no floor")
-        if (d.noKneeling) add("no kneeling")
-        if (d.hasRoller) add("foam roller")
-        add(if (d.strengthenOn) "Strengthen on" else "Strengthen off")
-    }.joinToString(" · "),
-    d.conditions.joinToString { it.label }.ifEmpty { "None" },
-    "${d.minutes} min",
-    prefs.planCue.label + " · " + (if (prefs.reminderOn) "reminder around ${formatTime(prefs.reminderTime)}" else "no reminder") +
-        " · ${prefs.daysPerWeek} days a week",
+        addAll(d.conditions.map { it.label })
+    }.joinToString(" · ").ifEmpty { "Nothing set" },
+    "${prefs.daysPerWeek} days a week · " + when (prefs.reminders.size) {
+        0 -> "no reminders"
+        1 -> "reminder around ${formatTime(prefs.reminders[0].time)}"
+        else -> "${prefs.reminders.size} reminders"
+    },
 )
 
 @Composable

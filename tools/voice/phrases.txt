@@ -1,240 +1,129 @@
 Routine complete. Nice work.
-Hold for 30 seconds.
-Hold for 40 seconds.
-Hold for 60 seconds.
-Roll slowly for 60 seconds.
-Keep moving for 30 seconds.
-Keep moving for 40 seconds.
-Keep moving for 60 seconds.
+Three.
+Two.
+One.
+Begin. Hold for 30 seconds.
+Begin. Keep moving for 30 seconds.
+Begin. Hold for 40 seconds.
+Begin. Keep moving for 40 seconds.
+Begin. Hold for 45 seconds.
+Begin. Keep moving for 45 seconds.
+Begin. Hold for 60 seconds.
+Begin. Keep moving for 60 seconds.
+Begin. Roll slowly for 60 seconds.
 Seated forward fold. Get into position.
-Next: Seated forward fold.
 Standing quad stretch, left side. Get into position.
-Next: Standing quad stretch, left side.
 Standing quad stretch, right side. Get into position.
-Next: Standing quad stretch, right side.
 Half-kneeling hip flexor, left side. Get into position.
-Next: Half-kneeling hip flexor, left side.
 Half-kneeling hip flexor, right side. Get into position.
-Next: Half-kneeling hip flexor, right side.
 Child's pose. Get into position.
-Next: Child's pose.
 Wall calf stretch, left side. Get into position.
-Next: Wall calf stretch, left side.
 Wall calf stretch, right side. Get into position.
-Next: Wall calf stretch, right side.
 Cat–cow. Get into position.
-Next: Cat–cow.
 Chin-to-chest neck stretch. Get into position.
-Next: Chin-to-chest neck stretch.
 Behind-the-back chest opener. Get into position.
-Next: Behind-the-back chest opener.
 Wall lat stretch. Get into position.
-Next: Wall lat stretch.
 Knee-to-chest stretch, left side. Get into position.
-Next: Knee-to-chest stretch, left side.
 Knee-to-chest stretch, right side. Get into position.
-Next: Knee-to-chest stretch, right side.
 Butterfly stretch. Get into position.
-Next: Butterfly stretch.
 Bent-knee calf stretch, left side. Get into position.
-Next: Bent-knee calf stretch, left side.
 Bent-knee calf stretch, right side. Get into position.
-Next: Bent-knee calf stretch, right side.
 Standing hamstring hinge, left side. Get into position.
-Next: Standing hamstring hinge, left side.
 Standing hamstring hinge, right side. Get into position.
-Next: Standing hamstring hinge, right side.
 Sphinx stretch. Get into position.
-Next: Sphinx stretch.
 Lying hamstring stretch, left side. Get into position.
-Next: Lying hamstring stretch, left side.
 Lying hamstring stretch, right side. Get into position.
-Next: Lying hamstring stretch, right side.
 Downward dog. Get into position.
-Next: Downward dog.
 Standing upper-back stretch. Get into position.
-Next: Standing upper-back stretch.
 Standing lunge hip flexor, left side. Get into position.
-Next: Standing lunge hip flexor, left side.
 Standing lunge hip flexor, right side. Get into position.
-Next: Standing lunge hip flexor, right side.
 Overhead reach. Get into position.
-Next: Overhead reach.
 Standing back bend. Get into position.
-Next: Standing back bend.
 Standing knee hug, left side. Get into position.
-Next: Standing knee hug, left side.
 Standing knee hug, right side. Get into position.
-Next: Standing knee hug, right side.
 Side-lying quad stretch, left side. Get into position.
-Next: Side-lying quad stretch, left side.
 Side-lying quad stretch, right side. Get into position.
-Next: Side-lying quad stretch, right side.
 Kneeling quad stretch, left side. Get into position.
-Next: Kneeling quad stretch, left side.
 Kneeling quad stretch, right side. Get into position.
-Next: Kneeling quad stretch, right side.
 Seated towel calf stretch. Get into position.
-Next: Seated towel calf stretch.
 Wall chest stretch, left side. Get into position.
-Next: Wall chest stretch, left side.
 Wall chest stretch, right side. Get into position.
-Next: Wall chest stretch, right side.
 Cobra stretch. Get into position.
-Next: Cobra stretch.
 Cross-body shoulder stretch, left side. Get into position.
-Next: Cross-body shoulder stretch, left side.
 Cross-body shoulder stretch, right side. Get into position.
-Next: Cross-body shoulder stretch, right side.
 Puppy stretch. Get into position.
-Next: Puppy stretch.
 Chin tuck hold. Get into position.
-Next: Chin tuck hold.
 Wall angel hold. Get into position.
-Next: Wall angel hold.
 Active leg raise, left side. Get into position.
-Next: Active leg raise, left side.
 Active leg raise, right side. Get into position.
-Next: Active leg raise, right side.
 Glute bridge hold. Get into position.
-Next: Glute bridge hold.
 Forearm plank. Get into position.
-Next: Forearm plank.
 Calf raise hold. Get into position.
-Next: Calf raise hold.
 Roll: upper back. Get into position.
-Next: Roll: upper back.
 Roll: calves. Get into position.
-Next: Roll: calves.
 Roll: front of thighs. Get into position.
-Next: Roll: front of thighs.
 Leg swings, left side. Get into position.
-Next: Leg swings, left side.
 Leg swings, right side. Get into position.
-Next: Leg swings, right side.
 Arm swings. Get into position.
-Next: Arm swings.
 Hip hinge. Get into position.
-Next: Hip hinge.
 Ankle rocks, left side. Get into position.
-Next: Ankle rocks, left side.
 Ankle rocks, right side. Get into position.
-Next: Ankle rocks, right side.
 Lunge with reach, left side. Get into position.
-Next: Lunge with reach, left side.
 Lunge with reach, right side. Get into position.
-Next: Lunge with reach, right side.
 Slow neck nods. Get into position.
-Next: Slow neck nods.
 Ear-to-shoulder neck stretch, left side. Get into position.
-Next: Ear-to-shoulder neck stretch, left side.
 Ear-to-shoulder neck stretch, right side. Get into position.
-Next: Ear-to-shoulder neck stretch, right side.
 Standing side bend, left side. Get into position.
-Next: Standing side bend, left side.
 Standing side bend, right side. Get into position.
-Next: Standing side bend, right side.
 Lying figure-four stretch, left side. Get into position.
-Next: Lying figure-four stretch, left side.
 Lying figure-four stretch, right side. Get into position.
-Next: Lying figure-four stretch, right side.
 Lying knee-drop twist, left side. Get into position.
-Next: Lying knee-drop twist, left side.
 Lying knee-drop twist, right side. Get into position.
-Next: Lying knee-drop twist, right side.
 Seated twist, left side. Get into position.
-Next: Seated twist, left side.
 Seated twist, right side. Get into position.
-Next: Seated twist, right side.
 Thread the needle, left side. Get into position.
-Next: Thread the needle, left side.
 Thread the needle, right side. Get into position.
-Next: Thread the needle, right side.
 Wide-leg seated stretch. Get into position.
-Next: Wide-leg seated stretch.
 Side lunge stretch, left side. Get into position.
-Next: Side lunge stretch, left side.
 Side lunge stretch, right side. Get into position.
-Next: Side lunge stretch, right side.
 Overhead triceps stretch, left side. Get into position.
-Next: Overhead triceps stretch, left side.
 Overhead triceps stretch, right side. Get into position.
-Next: Overhead triceps stretch, right side.
 Standing torso turns. Get into position.
-Next: Standing torso turns.
 Side leg raise hold, left side. Get into position.
-Next: Side leg raise hold, left side.
 Side leg raise hold, right side. Get into position.
-Next: Side leg raise hold, right side.
 Reclining butterfly. Get into position.
-Next: Reclining butterfly.
 Wrist flexor stretch, left side. Get into position.
-Next: Wrist flexor stretch, left side.
 Wrist flexor stretch, right side. Get into position.
-Next: Wrist flexor stretch, right side.
 Wrist extensor stretch, left side. Get into position.
-Next: Wrist extensor stretch, left side.
 Wrist extensor stretch, right side. Get into position.
-Next: Wrist extensor stretch, right side.
 Prayer stretch. Get into position.
-Next: Prayer stretch.
 Standing shin stretch, left side. Get into position.
-Next: Standing shin stretch, left side.
 Standing shin stretch, right side. Get into position.
-Next: Standing shin stretch, right side.
 Kneeling shin stretch. Get into position.
-Next: Kneeling shin stretch.
 Ankle pumps. Get into position.
-Next: Ankle pumps.
 Wall biceps stretch. Get into position.
-Next: Wall biceps stretch.
 Standing biceps stretch. Get into position.
-Next: Standing biceps stretch.
 Seated biceps stretch. Get into position.
-Next: Seated biceps stretch.
 Standing outer-hip stretch, left side. Get into position.
-Next: Standing outer-hip stretch, left side.
 Standing outer-hip stretch, right side. Get into position.
-Next: Standing outer-hip stretch, right side.
 Seated outer-hip stretch, left side. Get into position.
-Next: Seated outer-hip stretch, left side.
 Seated outer-hip stretch, right side. Get into position.
-Next: Seated outer-hip stretch, right side.
 Side leg swings, left side. Get into position.
-Next: Side leg swings, left side.
 Side leg swings, right side. Get into position.
-Next: Side leg swings, right side.
 Seated figure-four stretch, left side. Get into position.
-Next: Seated figure-four stretch, left side.
 Seated figure-four stretch, right side. Get into position.
-Next: Seated figure-four stretch, right side.
 Pigeon stretch, left side. Get into position.
-Next: Pigeon stretch, left side.
 Pigeon stretch, right side. Get into position.
-Next: Pigeon stretch, right side.
 Knee to opposite shoulder, left side. Get into position.
-Next: Knee to opposite shoulder, left side.
 Knee to opposite shoulder, right side. Get into position.
-Next: Knee to opposite shoulder, right side.
 Seated side bend, left side. Get into position.
-Next: Seated side bend, left side.
 Seated side bend, right side. Get into position.
-Next: Seated side bend, right side.
 Standing side reaches. Get into position.
-Next: Standing side reaches.
 Hands-behind-head chest stretch. Get into position.
-Next: Hands-behind-head chest stretch.
 Eagle arms stretch, left side. Get into position.
-Next: Eagle arms stretch, left side.
 Eagle arms stretch, right side. Get into position.
-Next: Eagle arms stretch, right side.
 Wall triceps stretch, left side. Get into position.
-Next: Wall triceps stretch, left side.
 Wall triceps stretch, right side. Get into position.
-Next: Wall triceps stretch, right side.
 Towel triceps stretch, left side. Get into position.
-Next: Towel triceps stretch, left side.
 Towel triceps stretch, right side. Get into position.
-Next: Towel triceps stretch, right side.
 Arm circles. Get into position.
-Next: Arm circles.

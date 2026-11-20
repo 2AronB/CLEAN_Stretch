@@ -10,14 +10,17 @@ import dev.clean.stretch.catalog.Region
  */
 enum class Dose(val minutes: Int, val label: String, val info: String) {
     Minimum(5, "Minimum · 5 min", "The smallest weekly amount linked with clear gains in studies."),
-    Recommended(10, "Recommended · 10 min", "Where gains peaked in the largest review. More time added no measurable benefit."),
+    Starter(7, "Starter · 7 min", "Between the minimum and the peak, and easier to fit into a week. A good place to start."),
+    Recommended(10, "Peak · 10 min", "Where gains peaked in the largest review. More time added no measurable benefit."),
     More(15, "More · 15 min", "For people who enjoy extra stretching. Studies measured no further gain beyond about 10 minutes."),
     ;
 
     companion object {
         /** Secondary areas keep this much each week. */
         val SECONDARY = Minimum
-        fun of(minutes: Int): Dose = entries.firstOrNull { it.minutes == minutes } ?: Recommended
+        /** New users start here (owner, D-044: easier to stick with than 10). */
+        val DEFAULT = Starter
+        fun of(minutes: Int): Dose = entries.firstOrNull { it.minutes == minutes } ?: DEFAULT
     }
 }
 
@@ -57,8 +60,8 @@ data class Profile(
     val focus: Set<Region> = emptySet(),
     /** Secondary areas: their muscles aim for the minimum dose. */
     val secondary: Set<Region> = emptySet(),
-    /** Minutes per muscle per side each week for primary areas (5, 10 or 15). */
-    val weeklyDose: Int = Dose.Recommended.minutes,
+    /** Minutes per muscle per side each week for primary areas (5, 7, 10 or 15; D-044). */
+    val weeklyDose: Int = Dose.DEFAULT.minutes,
     val avoid: Set<Region> = emptySet(),
     val noFloor: Boolean = false,
     val noKneeling: Boolean = false,

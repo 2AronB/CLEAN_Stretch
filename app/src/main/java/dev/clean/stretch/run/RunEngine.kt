@@ -10,10 +10,11 @@ sealed interface RunEvent {
     data class StepStarted(val index: Int, val buzz: Boolean) : RunEvent
     /** A hold ran to its end (chime). */
     data object HoldDone : RunEvent
-    /** 3-2-1 tick near the end of a hold. */
-    data class Countdown(val secondsLeft: Int) : RunEvent
-    /** Six seconds left: say what's next ([index] is the next setup step). */
-    data class AnnounceNext(val index: Int) : RunEvent
+    /**
+     * 3-2-1 in the last seconds of a step. [toStart] = the end of "get into position" (spoken
+     * "three, two, one", then the hold says "Begin", D-044); otherwise the end of a hold (ticks).
+     */
+    data class Countdown(val secondsLeft: Int, val toStart: Boolean = false) : RunEvent
     data object Finished : RunEvent
 }
 
@@ -59,14 +60,12 @@ class RunEngine(val steps: List<Step>, startIndex: Int, records: Map<Int, StepRe
         if (paused || finished) return emptyList()
         // Recorded time is capped at the step length, so a late tick never over-counts.
         if (elapsed(now) >= durationMs) return advance(index + 1, now, heldMs = durationMs)
-        if (step.setup) return emptyList()
         val left = secondsLeft(now)
         if (left == lastSecondsLeft) return emptyList()
         lastSecondsLeft = left
-        val events = mutableListOf<RunEvent>()
-        if (left in 1..3) events += RunEvent.Countdown(left)
-        if (left == 6) nextSetupIndex()?.let { events += RunEvent.AnnounceNext(it) }
-        return events
+        // The next stretch is announced when its "get into position" step starts, never during
+        // a hold (owner, D-044).
+        return if (left in 1..3) listOf(RunEvent.Countdown(left, toStart = step.setup)) else emptyList()
     }
 
     /** Index of the next "get into position" step, i.e. the next new stretch or side. */

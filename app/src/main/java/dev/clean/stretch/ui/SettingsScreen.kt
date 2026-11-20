@@ -117,7 +117,7 @@ fun SettingsScreen(prefs: AppPreferences, backup: BackupManager, onOpenStudio: (
             null -> {
                 ScreenTitle("Settings")
                 Group {
-                    NavRow("Goals, focus and limits", "Weekly goals, areas, health, length, schedule", onOpenSetup)
+                    NavRow("Goals, health and reminders", "Goal and weekly goals, health and limits, days and reminders", onOpenSetup)
                     NavRow("Appearance", "Light or dark, colors, still figures", { section = "appearance" })
                     NavRow("Routine settings", "Voice, chimes, vibration", { section = "routine" })
                     NavRow("Your data", "Back up, restore, delete", { section = "data" })
@@ -322,7 +322,7 @@ private fun DeleteDialog(onConfirm: () -> Unit, onCancel: () -> Unit) {
             Column {
                 Text(
                     "This erases your stretching history, goals and limits (including health answers), saved routines, " +
-                        "range-of-motion check-ins, settings, your reminder and any unfinished routine. " +
+                        "range-of-motion check-ins, settings, your reminders and any unfinished routine. " +
                         "Stretch goes back to how it was when first installed.\n\n" +
                         "If you might want them later, use \"Back up to a file\" first.",
                 )

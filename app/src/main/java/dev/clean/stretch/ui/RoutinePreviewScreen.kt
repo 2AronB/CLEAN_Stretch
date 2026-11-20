@@ -60,12 +60,13 @@ fun RoutinePreviewScreen(
     var naming by rememberSaveable { mutableStateOf(false) }
     var saved by rememberSaveable { mutableStateOf(false) }
     var keysText by rememberSaveable { mutableStateOf(route.keys.joinToString(",")) }
-    var minutes by rememberSaveable { mutableIntStateOf(profile.minutes) }
+    // Starts on the length chip closest to the suggested routine (routine length follows the weekly goals, D-044).
+    var minutes by rememberSaveable { mutableIntStateOf(listOf(5, 10, 15).minBy { kotlin.math.abs(it - Generator.estimateMinutes(route.keys, route.holdSeconds)) }) }
     var seed by rememberSaveable { mutableIntStateOf(0) }
     val keys = keysText.split(",").filter { it.isNotBlank() }
     fun set(newKeys: List<String>) { keysText = newKeys.joinToString(",") }
-    fun regenerate() { set(Generator.generate(profile, route.kind, minutes = minutes, seed = seed.toLong()).keys) }
-    val notes = Generator.generate(profile, route.kind, minutes = minutes).notes
+    fun regenerate() { set(Generator.generate(profile, route.kind, minutes = minutes, seed = seed.toLong(), chosenHold = route.holdSeconds).keys) }
+    val notes = Generator.generate(profile, route.kind, minutes = minutes, chosenHold = route.holdSeconds).notes
     val estimate = Generator.estimateMinutes(keys, route.holdSeconds)
 
     Column(Modifier.fillMaxSize()) {

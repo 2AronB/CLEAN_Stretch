@@ -15,21 +15,30 @@ object VoiceLines {
 
     fun setup(stretch: Stretch, side: Side) = "${stretch.name}${sideText(side)}. Get into position."
 
-    fun hold(seconds: Long) = "Hold for $seconds seconds."
+    // Each hold starts with "Begin" right after the spoken 3-2-1 (owner, D-044).
+    fun hold(seconds: Long) = "Begin. Hold for $seconds seconds."
 
-    fun roll(seconds: Long) = "Roll slowly for $seconds seconds."
+    fun roll(seconds: Long) = "Begin. Roll slowly for $seconds seconds."
 
-    fun flow(seconds: Long) = "Keep moving for $seconds seconds."
+    fun flow(seconds: Long) = "Begin. Keep moving for $seconds seconds."
 
-    fun next(stretch: Stretch, side: Side) = "Next: ${stretch.name}${sideText(side)}."
+    /** "Three." / "Two." / "One." at the end of "get into position"; null for other numbers. */
+    fun count(secondsLeft: Int): String? = COUNT.getOrNull(secondsLeft - 1)
+
+    private val COUNT = listOf("One.", "Two.", "Three.")
+
+    /** Hold lengths a routine can use: 30 / 45 / 60 s chips (D-044), and 40 s from routines saved before that. */
+    val HOLD_LENGTHS = listOf(30L, 40L, 45L, 60L)
 
     /** All lines for the current catalog. */
     fun all(): List<String> {
-        // Hold lengths the generator uses: 30 s (warm-up, quick break), 40 s (default), 60 s (65+).
-        val lines = mutableListOf(COMPLETE, hold(30), hold(HOLD_MS / 1000), hold(60), roll(60), flow(30), flow(40), flow(60))
+        val lines = mutableListOf(COMPLETE)
+        lines += COUNT.reversed()
+        HOLD_LENGTHS.forEach { lines += hold(it); lines += flow(it) }
+        lines += roll(60)
         SampleCatalog.all.forEach { s ->
             val sides = if (s.sided) listOf(Side.Left, Side.Right) else listOf(Side.Both)
-            sides.forEach { side -> lines += setup(s, side); lines += next(s, side) }
+            sides.forEach { side -> lines += setup(s, side) }
         }
         return lines.distinct()
     }

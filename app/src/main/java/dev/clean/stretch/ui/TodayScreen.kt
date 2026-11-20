@@ -1,5 +1,10 @@
 package dev.clean.stretch.ui
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -88,6 +93,8 @@ fun TodayScreen(
     onUpdateProfile: (Profile) -> Unit,
     romChecks: RomCheckDao,
     onOpenRomCheck: () -> Unit,
+    /** Reminder whose notification opened the app (D-044); Today takes it and sets it back to 0. */
+    openPlan: MutableIntState = mutableIntStateOf(0),
 ) {
     val saved by remember { savedRoutines.observe() }.collectAsState(initial = emptyList())
     var deleting by remember { mutableStateOf<SavedRoutineEntity?>(null) }
@@ -106,16 +113,28 @@ fun TodayScreen(
     val streak = remember(dayMinutes, dayGoal, prefs.daysPerWeek) { Stats.weekStreakByGoal(dayMinutes, LocalDate.now(), prefs.daysPerWeek, dayGoal) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val weekMinutes = remember(weekSteps) { Stats.minutesByMuscle(weekSteps).mapValues { it.value.weaker } }
-    var kindName by rememberSaveable { mutableStateOf(RoutineKind.Full.name) }
-    val kind = RoutineKind.valueOf(kindName)
+    // A reminder's routine (D-044) shows until the user picks another type or clears it.
+    var planId by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(openPlan.intValue) {
+        if (openPlan.intValue != 0) { planId = openPlan.intValue; openPlan.intValue = 0 }
+    }
+    val plan = prefs.reminders.firstOrNull { it.id == planId }
+    // The routine type last picked is remembered (D-044).
+    val kind = plan?.kind ?: prefs.routineKind
+    val routineProfile = plan?.applyTo(profile) ?: profile
+    val hold = Generator.holdSeconds(routineProfile, kind, prefs.holdSeconds)
+    val routineMinutes = Generator.routineMinutes(routineProfile, prefs.daysPerWeek, kind, hold)
     // The recommendation (D-029): the user reviews and changes it before starting.
     // Generator v2 inputs: this week's minutes per area, planned days still to come, how often
     // each move was used this week, and today's date so the suggestion changes day to day.
     val weekCounts = remember(weekSteps) { weekSteps.groupingBy { it.stretchKey }.eachCount() }
     val todayDate = remember { LocalDate.now() }
     val daysLeft = (prefs.daysPerWeek - activeDays.count { it != todayDate }).coerceAtLeast(1)
-    val routine = remember(profile, kind, weekMinutes, weekCounts, daysLeft) {
-        Generator.generate(profile, kind, weekMinutes = weekMinutes, seed = todayDate.toEpochDay() * 7 + kind.ordinal, daysLeft = daysLeft, weekCounts = weekCounts)
+    val routine = remember(routineProfile, kind, weekMinutes, weekCounts, daysLeft, prefs.holdSeconds, routineMinutes, plan) {
+        Generator.generate(
+            routineProfile, kind, minutes = routineMinutes, weekMinutes = weekMinutes, seed = todayDate.toEpochDay() * 7 + kind.ordinal,
+            daysLeft = daysLeft, weekCounts = weekCounts, chosenHold = prefs.holdSeconds, onlyAreas = plan?.areas.orEmpty(),
+        ).let { r -> if (plan != null) r.copy(title = plan.title) else r }
     }
     val greeting = remember {
         when (LocalTime.now().hour) {
@@ -151,7 +170,18 @@ fun TodayScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             RoutineKind.entries.forEach { k ->
-                FilterChip(selected = k == kind, onClick = { kindName = k.name }, label = { Text(k.label) })
+                FilterChip(selected = k == kind, onClick = { planId = 0; prefs.updateRoutineKind(k) }, label = { Text(k.label) })
+            }
+        }
+        plan?.let { p ->
+            Row(Modifier.padding(horizontal = 16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "From your ${formatClock(p.time)} reminder",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { planId = 0 }) { Text("Back to usual") }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -169,6 +199,9 @@ fun TodayScreen(
                 onEdit = { onStart(Route.Preview(kind, routine.holdSeconds, routine.keys)) },
                 profile = profile,
                 onUpdateProfile = onUpdateProfile,
+                hold = hold,
+                warmUp = kind == RoutineKind.WarmUp,
+                onHold = prefs::updateHoldSeconds,
                 works = remember(routine) { Generator.minutesByMuscle(routine.keys, routine.holdSeconds) },
                 weekMinutes = weekMinutes,
             )
@@ -251,6 +284,7 @@ fun TodayScreen(
  * The day's recommendation (D-032): the stretches as tiles, then Start (straight into the
  * routine) or Edit (optional changes). Getting it right on generation is the goal.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HeroRoutineCard(
     title: String,
@@ -264,6 +298,9 @@ private fun HeroRoutineCard(
     onUpdateProfile: (Profile) -> Unit,
     works: Map<Muscle, Double>,
     weekMinutes: Map<Muscle, Double>,
+    hold: Int,
+    warmUp: Boolean,
+    onHold: (Int) -> Unit,
 ) {
     var showWorks by rememberSaveable { mutableStateOf(false) }
     val container = MaterialTheme.colorScheme.primaryContainer
@@ -324,8 +361,20 @@ private fun HeroRoutineCard(
                 }
                 OutlinedButton(onClick = onEdit, modifier = Modifier.height(52.dp)) { Text("Edit") }
             }
-            // Quick switches that rebuild the suggestion (owner, 2026-11-14).
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+            // Hold length (D-044): remembered. Warm-ups keep 30 s holds (P-3).
+            Text("Hold each stretch", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 12.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Generator.HOLD_CHOICES.forEach { s ->
+                    FilterChip(selected = hold == s, enabled = !warmUp, onClick = { onHold(s) }, label = { Text("$s s") })
+                }
+            }
+            if (warmUp) Text("Warm-ups use short 30 s holds before activity.", style = MaterialTheme.typography.bodySmall)
+            // What this routine can include (owner, D-044; these replace Setup's "Limits and
+            // equipment"). They're saved, so the next suggestion keeps them.
+            Text("Include", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = !profile.noKneeling, onClick = { onUpdateProfile(profile.copy(noKneeling = !profile.noKneeling)) }, label = { Text("Kneeling") })
+                FilterChip(selected = !profile.noFloor, onClick = { onUpdateProfile(profile.copy(noFloor = !profile.noFloor)) }, label = { Text("Floor") })
                 FilterChip(selected = profile.hasRoller, onClick = { onUpdateProfile(profile.copy(hasRoller = !profile.hasRoller)) }, label = { Text("Foam roller") })
                 FilterChip(selected = profile.strengthenOn, onClick = { onUpdateProfile(profile.copy(strengthen = !profile.strengthenOn)) }, label = { Text("Strengthen") })
             }
@@ -496,3 +545,6 @@ private fun NoticeCard(title: String, body: String) {
         }
     }
 }
+
+private fun formatClock(minutes: Int): String =
+    LocalTime.of(minutes / 60, minutes % 60).format(DateTimeFormatter.ofPattern("h:mm a"))

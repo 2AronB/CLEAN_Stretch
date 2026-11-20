@@ -330,9 +330,11 @@ object BackMoves {
         motion = Motion(
             kind = MotionKind.Hold,
             start = Pose(torso = 103f, nearShoulder = 77f, farShoulder = 77f, nearKnee = 90f, nearAnkle = -90f, farKnee = 90f, farAnkle = -90f),
-            stretch = Pose(torso = 112f, twist = -35f, head = -10f, nearShoulder = 80f, nearElbow = 4f, nearArmOut = -62f, farShoulder = 68f, farElbow = 50f, nearHip = -8f, nearKnee = 90f, nearAnkle = -90f, farHip = -8f, farKnee = 90f, farAnkle = -90f),
-            deep = Pose(torso = 116f, twist = -42f, head = -12f, nearShoulder = 82f, nearElbow = 4f, nearArmOut = -70f, farShoulder = 66f, farElbow = 58f, nearHip = -10f, nearKnee = 90f, nearAnkle = -90f, farHip = -10f, farKnee = 90f, farAnkle = -90f),
-            view = View.Front,
+            // Support hand flat on the floor; the threading arm and that shoulder rest on the floor
+            // (owner feedback 2026-11-09, fixed 2026-11-19 with D-043's approval; solved numerically).
+            stretch = Pose(torso = 50f, twist = -41f, head = 1.5f, headTilt = -25f, nearShoulder = 82f, nearElbow = 4.6f, nearArmOut = -34f, nearArmTurn = -120f, farShoulder = 84.3f, farElbow = 126.5f, farArmOut = 3.7f, farArmTurn = -37.4f, nearHip = -8f, nearKnee = 90f, nearAnkle = -90f, farHip = -8f, farKnee = 90f, farAnkle = -90f),
+            deep = Pose(torso = 49.4f, twist = -52.7f, head = 1.8f, headTilt = -25.2f, nearShoulder = 88.9f, nearElbow = 0.1f, nearArmOut = -34f, nearArmTurn = -120f, farShoulder = 89.6f, farElbow = 123.5f, farArmOut = -3.6f, farArmTurn = -40.9f, nearHip = -10f, nearKnee = 90f, nearAnkle = -90f, farHip = -10f, farKnee = 90f, farAnkle = -90f),
+            view = View.Angled,
         ),
     )
 

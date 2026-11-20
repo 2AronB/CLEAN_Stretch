@@ -79,6 +79,8 @@ fun main(args: Array<String>) {
     val names = listOf("start", "stretch", "deep")
     for (s in stretches) {
         val poses = MotionPlayer.keyframes(s.motion)
+        val deepCount = if (s.motion.deep != null) 1 else 0
+        fun frameName(i: Int) = if (i < 2 + deepCount) names[i] else "step ${i - deepCount}"
         val views = listOf(s.motion.view) + View.entries.filter { it != s.motion.view }
         val img = BufferedImage(cell * poses.size, cell * views.size + 28, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
@@ -93,7 +95,7 @@ fun main(args: Array<String>) {
                 val sub = g.create(col * cell, 28 + row * cell, cell, cell) as Graphics2D
                 FigureDrawing.shapes(pose, stage, s.highlight, cell.toFloat(), cell.toFloat()).forEach { sub.paint(it) }
                 sub.color = Color.DARK_GRAY; sub.font = Font(Font.SANS_SERIF, Font.PLAIN, 12)
-                sub.drawString("${view.label}${if (row == 0) " *" else ""} · ${names[col]}", 6, 14)
+                sub.drawString("${view.label}${if (row == 0) " *" else ""} · ${frameName(col)}", 6, 14)
                 sub.dispose()
             }
         }

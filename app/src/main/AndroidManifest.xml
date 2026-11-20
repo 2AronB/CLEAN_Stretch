@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- D-043: re-arm the daily reminder after a phone restart (normal permission, no prompt). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Lets the app find the phone's built-in text-to-speech engine (Android 11+). No Internet. -->
     <queries>
         <intent>
@@ -27,6 +29,13 @@
             </intent-filter>
         </activity>
         <receiver android:name=".settings.ReminderReceiver" android:exported="false" />
+        <!-- Exported only so the system can deliver these protected broadcasts; apps can't send them. -->
+        <receiver android:name=".settings.BootReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <service android:name=".run.RunService" android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
     </application>

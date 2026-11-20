@@ -603,3 +603,33 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   `main` (85 JVM tests; lint 0 errors, 0 warnings, 2 style hints in the D-042 screens): all pass,
   assembleDebug, lintDebug (no issues). Not checked: the moves in the app on the emulator, and
   how the new clips sound.
+
+## Owner round D-043 (2026-11-19): three moves per muscle, body view, last two checks, engine
+- Owner's order: (1) at least 3 main moves per muscle, (2) body view round, (3) the last two
+  motion checks, (4) engine/figure work; approved `RECEIVE_BOOT_COMPLETED`.
+- Moves (5 new, all Not reviewed): `hands_behind_head_chest` (chest), `eagle_arms` (shoulders,
+  level 2, harder version of cross-body), `wall_triceps` (wall prop) and `towel_triceps` (strap,
+  level 2, harder version of overhead triceps), and `arm_circles` (flowing, shoulders, the first
+  sequence flow). Arm positions were solved numerically with a scratch script against the
+  figure's own maths, then checked by eye in pose-preview. 16 new af_heart clips (missing only).
+  New test: every muscle has at least three main moves.
+- Body view (PLAN 8.4): tap a muscle → "Stretch this now · N moves · about M min" starts up to
+  three allowed stretches that mainly target it (`Generator.forMuscle`, unit-tested with limits).
+  Figure/List switch; list mode (rows by area, a bar per side, one TalkBack item per row) starts
+  on with TalkBack or text scale ≥ 1.5. This week / Last week switch on Progress, recomputed from
+  history (`HistoryDao.stepsBetween`, a query only; database still v6).
+- Motion checks: `back_scratch` (Back view; hands drawn so fingertip gaps show) and `neck_turn`
+  (Front view; nose shows the turn). Figure: `Pose.headTurn` (0 = no nose, so older poses are
+  unchanged) and `View.Back` (also in the view chip and Pose Studio). Pose preview draws checks
+  with `rom` / `rom:<key>`.
+- Engine (PLAN 8.5): `Motion.sequence` loops a Flow through several positions with Catmull-Rom
+  curves (unit-tested); Pose Studio edits and copies sequence steps. Thread the needle: support
+  hand flat on the floor, threading arm, shoulder and head resting low, start view Angled (stays
+  "Changes requested" until the owner looks).
+- Reminders: `BootReceiver` re-arms the daily reminder after a restart or app update;
+  `RECEIVE_BOOT_COMPLETED` in the manifest; PLAY_RELEASE permission facts updated.
+- Checks run: unit tests after each part (final: 89 JVM tests, 0 failures), assembleDebug,
+  lintDebug (0 errors; 2 warnings that newer Gradle 9.9.2 / Compose BOM 2026.11.01 exist, not
+  acted on; 2 old style hints). Debug APK installed on the API 37 emulator (data kept), but the
+  emulator then shut down and the only one running belonged to CLEAN Sensors, so **nothing from
+  this round was seen in the app**. Not checked: the reboot receiver on a real restart.

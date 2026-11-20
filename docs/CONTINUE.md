@@ -1,14 +1,14 @@
 # Continue here
 
-**State on 2026-11-14:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
-foam rolling), S9 (range-of-motion checks), a 3D figure, 72 moves (every muscle in the body
-view now has moves, PLAN §8.2), the catalog split by body
+**State on 2026-11-19:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+foam rolling), S9 (range-of-motion checks, now 9), a 3D figure, 77 moves (every muscle has at
+least three main moves, D-043), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-85 JVM tests pass and lint shows no errors or warnings. Pushed to https://github.com/2AronB/CLEAN_Stretch.
+89 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
-`docs/DECISIONS.md` (D-001…D-036). How to add a move: `docs/ADDING_STRETCHES.md`. Play
+`docs/DECISIONS.md` (D-001…D-043). How to add a move: `docs/ADDING_STRETCHES.md`. Play
 Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 
 ## What the app does now
@@ -85,6 +85,28 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 **Release build**: shrunk (4.2 MB APK); signing reads the git-ignored `keystore.properties`;
 `staging` build = shrunk + debug-signed, installed as a separate app for testing.
 
+## Added 2026-11-19: owner round D-043 (not yet seen in the app)
+
+Owner's order: moves (min 3 per muscle) → body view → last two checks → engine work; plus
+approval for `RECEIVE_BOOT_COMPLETED`. All four are built, tested and committed:
+
+- **5 new moves** (Not reviewed in `docs/REVIEW_LOG.md`, new voice clips): Hands-behind-head
+  chest stretch, Eagle arms (level 2), Wall triceps, Towel triceps (level 2), Arm circles (the
+  first move that loops through several positions). Chest, shoulders and triceps now have three
+  main moves each; a test keeps it that way for every muscle.
+- **Body view:** tap a muscle → **Stretch this now** (up to three stretches for it, your limits
+  respected). **Figure / List** switch (list starts on with TalkBack or very large text).
+  **This week / Last week** switch.
+- **Motion checks:** **Back-scratch reach** (seen from behind) and **Neck turn** (a small nose
+  shows the turn).
+- **Figure and engine:** head turn and a Back view (also in the view chip); flowing moves can loop
+  through several positions (circles); **thread the needle** now has a hand flat on the floor and
+  the threading arm resting on the floor (still "Changes requested" until you look).
+- **Reminders** come back by themselves after a phone restart or app update.
+
+Checks: 89 JVM tests pass, debug build and lint fine. **Not seen on the emulator**: it shut down
+during this session and the only one running belonged to CLEAN Sensors, so it was left alone.
+
 ## Added 2026-11-14: moves for the five empty muscles (PLAN §8.2)
 
 14 new moves, all `Not reviewed` in `docs/REVIEW_LOG.md`, each with poses checked in every view
@@ -107,8 +129,7 @@ with `tools/pose-preview` and new af_heart voice clips (44 new clips; no existin
   (85 JVM tests; lint 0 errors, 0 warnings, 2 style hints in BodyMap.kt and TodayScreen.kt): all pass,
   `assembleDebug` builds, `lintDebug` reports no issues. Not run: the emulator (nothing in this
   work touches the database or screens), so the new moves have **not** been seen in the app itself.
-- Owner chose not to fill these yet: **Chest (2 main moves), Shoulders (2) and Triceps (1)** have
-  fewer than three moves that mainly target them. They're the next gap.
+- Chest, shoulders and triceps were filled on 2026-11-19 (D-043).
 
 ## Verified vs not
 
@@ -120,6 +141,9 @@ with `tools/pose-preview` and new af_heart voice clips (44 new clips; no existin
   holds recorded at full length and steps advanced on time; voice clips played; notification
   countdown, Pause (timer stops, wake lock released), Resume, tap-to-return, End (saved, service
   and wake lock gone), finish screen, rotating mid-run (same run continues).
+- **Still to see on the emulator (agent) and phone (owner):** everything from 2026-11-19 (D-043):
+  the five new moves and their clips, Stretch this now, list mode, last week, the two new checks,
+  the Back view, thread the needle's new pose, and a reminder after a restart.
 - **Still to see on the owner's phone:** a real routine with the phone locked (voice through the
   speaker, battery), Generator v2 suggestions day to day, library search/filters, Tender spot,
   the setup section menu, round-5 moves in motion, TalkBack and the largest font size, and the
@@ -133,29 +157,24 @@ with `tools/pose-preview` and new af_heart voice clips (44 new clips; no existin
    before release (D-031). This blocks release.
 3. Review wording: the 12 round-5 cue sets and the level-2 choices (seated twist, side lunge,
    wide-leg), strength and rolling cautions, and ROM check levels.
-4. Review the 14 new moves from 2026-11-14 in the app (pose, motion, cues, voice clips) and
-   say which are approved; they're listed above and in `docs/REVIEW_LOG.md`.
+4. Review the 14 new moves from 2026-11-14 and the 5 from 2026-11-19 in the app (pose, motion,
+   cues, voice clips), plus thread the needle's new pose, and say which are approved; they're
+   listed above and in `docs/REVIEW_LOG.md`.
 5. Review the drafts in `docs/PLAY_RELEASE.md` (privacy policy, Data safety, health declaration,
    store text) and add a contact address.
 
 ## Next (recommended order)
 
-Owner said 2026-11-13: publishing is still a way off, so focus on improvements.
+Owner said 2026-11-19: they're using the app and will give feedback when ready.
 
-**The full next-stage plan, in order and with sizes, is `docs/PLAN.md` §8.** The list below is the short version.
+**The full plan is `docs/PLAN.md` §8.** Short version:
 
-1. Owner to try on the phone (2026-11-14 round, D-042): Settings menus, the Today link popup and
-   chips, the filling day circles and "Why?", the anatomy chart (side views are the roughest),
-   the three new motion checks and the weekly check-in pop-up, the wrist moves' thumbs.
-2. Owner review of the wrist moves (D-040) and the 14 new moves from 2026-11-14, with their
-   voice clips. Then the remaining gap: one more chest move, one more shoulder move and two more
-   triceps moves, so every muscle has three that mainly target it (ADDING_STRETCHES.md).
-3. More range-of-motion checks (proposed, not built): back-scratch shoulder reach, hip-flexor
-   "Thomas test" lying knee hug, neck turn, seated twist, butterfly knee height.
-4. Multi-keyframe flows (circles, sequences) in `figure/Motion.kt`; optional Advanced toggle to
-   count foam-rolling minutes toward the area rings (explained to owner, not decided).
-5. Before release: screenshots and store graphics, content rating, foreground-service
-   declaration, `bundleRelease` with the upload key.
+1. Agent: walk through the D-043 work on the emulator (when no other project is using it).
+2. Owner feedback round from using the app; owner reviews of the new moves (see Owner actions).
+3. Goals tuning (PLAN §8.7): "goal met" moment, optional foam-rolling toggle (not decided).
+4. More sequence flows where they'd help (e.g. hip circles, ankle circles) — propose first.
+5. Before release (§8.8): clinical review of health conditions (blocks release), screenshots and
+   store graphics, content rating, foreground-service declaration, `bundleRelease` with the upload key.
 
 ## Working on this project (practical notes)
 

@@ -317,3 +317,10 @@ seated twist, knee hug, weekly check-in pop-up and history dots; finish-screen f
 direction on the figure. Still open from 8.3: back-scratch reach and neck turn (need arms behind
 the back and a head-turn value on the figure). From 8.4: "Stretch this now" from a tapped muscle,
 list mode for screen readers, last-week toggle.
+
+### Done 2026-11-19 (D-043)
+8.2 finished: chest, shoulders and triceps have three main moves (plus arm circles). 8.4 finished:
+"Stretch this now", list mode, last-week toggle (Today's routine link already showed its muscles).
+8.3 finished: back-scratch reach and neck turn. 8.5: sequence flows (circles) and thread the
+needle's planted hand; forearm rotation was done in D-042. 8.6: `RECEIVE_BOOT_COMPLETED`
+approved and used. Left from §8: 8.1 (owner's phone pass), 8.7 and 8.8.

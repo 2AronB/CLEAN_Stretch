@@ -38,6 +38,7 @@ object SampleCatalog {
         CoreMoves.seatedSideBend, CoreMoves.sideReaches,
         ShoulderMoves.handsBehindHeadChest, ShoulderMoves.eagleArms,
         ArmMoves.wallTriceps, ArmMoves.towelTriceps,
+        ShoulderMoves.armCircles,
     )
 
     fun byKey(key: String): Stretch? = all.firstOrNull { it.key == key }

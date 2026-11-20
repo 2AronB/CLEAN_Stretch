@@ -74,7 +74,15 @@ fun PoseStudioScreen(onBack: () -> Unit) {
     val safeFrame = frameIndex.coerceAtMost(frameCount - 1)
     fun editKey(i: Int) = "${stretch.key}#$i"
     fun poseAt(i: Int): Pose = edits[editKey(i)] ?: original[i]
-    val edited = stretch.motion.copy(start = poseAt(0), stretch = poseAt(1), deep = if (frameCount > 2) poseAt(2) else null, view = view)
+    val deepCount = if (stretch.motion.deep != null) 1 else 0
+    val edited = stretch.motion.copy(
+        start = poseAt(0), stretch = poseAt(1), deep = if (deepCount == 1) poseAt(2) else null, view = view,
+        sequence = stretch.motion.sequence.indices.map { poseAt(2 + deepCount + it) },
+    )
+    fun frameName(i: Int) = when {
+        i < 2 + deepCount -> frameNames[i]
+        else -> "Step ${i - deepCount}"
+    }
     val pose = poseAt(safeFrame)
     val camera = rememberViewCamera(view, reducedMotion = false)
     val figureStage = figureStage(MotionPlayer.keyframes(edited), camera, stretch.prop)
@@ -111,7 +119,7 @@ fun PoseStudioScreen(onBack: () -> Unit) {
                     selected = i == safeFrame,
                     onClick = { frameIndex = i; playing = false },
                     shape = SegmentedButtonDefaults.itemShape(index = i, count = frameCount),
-                    label = { Text(frameNames[i]) },
+                    label = { Text(frameName(i), maxLines = 1) },
                 )
             }
         }
@@ -163,6 +171,11 @@ fun PoseStudioScreen(onBack: () -> Unit) {
                             append("    start = ${edited.start.toKotlin()},\n")
                             append("    stretch = ${edited.stretch.toKotlin()},\n")
                             edited.deep?.let { append("    deep = ${it.toKotlin()},\n") }
+                            if (edited.sequence.isNotEmpty()) {
+                                append("    sequence = listOf(\n")
+                                edited.sequence.forEach { append("        ${it.toKotlin()},\n") }
+                                append("    ),\n")
+                            }
                             if (edited.pins.isNotEmpty()) append("    pins = setOf(${edited.pins.joinToString { "Pin.${it.name}" }}),\n")
                             if (edited.view != View.Side) append("    view = View.${edited.view.name},\n")
                             append("),")

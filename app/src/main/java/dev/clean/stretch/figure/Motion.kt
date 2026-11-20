@@ -16,6 +16,9 @@ enum class MotionKind {
  * - [stretch]: the stretch position.
  * - [deep]: optional slightly deeper position reached on each exhale (Hold) or the
  *   second position of a Flow.
+ * - [sequence]: Flow only. When set, the flow loops through [stretch] and then each of these
+ *   positions in order, smoothly, and back to [stretch] (circles, multi-step moves) instead of
+ *   swinging between two positions. [deep] is ignored by a sequence flow.
  */
 data class Motion(
     val kind: MotionKind,
@@ -26,6 +29,7 @@ data class Motion(
     val pins: Set<Pin> = emptySet(),
     /** Viewpoint the stretch is shown from first; people can turn the view in the app. */
     val view: View = View.Side,
+    val sequence: List<Pose> = emptyList(),
 )
 
 object Timing {
@@ -37,6 +41,11 @@ object Timing {
     const val BREATH_MS = 8000L
     /** Half a cycle of a Flow movement. */
     const val FLOW_HALF_MS = 2600L
+    /** Shortest time between two positions of a sequence flow, so many-step loops don't rush. */
+    const val SEQUENCE_STEP_MIN_MS = 1000L
+
+    /** Time from one sequence position to the next: one Flow cycle spread over the loop. */
+    fun sequenceStepMs(positions: Int): Long = maxOf(SEQUENCE_STEP_MIN_MS, FLOW_HALF_MS * 2 / positions)
 
     val DEMO_LOOP_MS get() = ENTER_MS + DEMO_HOLD_MS + EXIT_MS + REST_MS
 }
@@ -62,7 +71,10 @@ object MotionPlayer {
             val deep = motion.deep ?: motion.stretch.copy(spine = motion.stretch.spine - 2f, head = motion.stretch.head + 1.5f)
             motion.stretch.lerp(deep, Easing.breath(tMs))
         }
-        MotionKind.Flow -> {
+        MotionKind.Flow -> if (motion.sequence.isNotEmpty()) {
+            val pose = sequencePose(listOf(motion.stretch) + motion.sequence, tMs)
+            if (motion.pins.isEmpty()) pose else Ik.pin(pose, motion.stretch, Ik.targets(motion.stretch, motion.pins))
+        } else {
             val other = motion.deep ?: motion.start
             val half = Timing.FLOW_HALF_MS
             val cycle = tMs % (half * 2)
@@ -97,8 +109,27 @@ object MotionPlayer {
         }
     }
 
+    /**
+     * A closed loop through [frames] (at least 2), [tMs] into it. Catmull-Rom curves through
+     * every value, so a circle stays round and the motion has no corners at the positions.
+     */
+    fun sequencePose(frames: List<Pose>, tMs: Long): Pose {
+        val n = frames.size
+        val step = Timing.sequenceStepMs(n)
+        val loop = tMs.mod(step * n)
+        val i = (loop / step).toInt()
+        val t = (loop % step).toFloat() / step
+        val p0 = frames[(i - 1 + n) % n]; val p1 = frames[i]; val p2 = frames[(i + 1) % n]; val p3 = frames[(i + 2) % n]
+        return PoseParam.entries.fold(p1) { pose, prm ->
+            val a = p0[prm]; val b = p1[prm]; val c = p2[prm]; val d = p3[prm]
+            val v = 0.5f * (2f * b + (c - a) * t + (2f * a - 5f * b + 4f * c - d) * t * t + (3f * b - a - 3f * c + d) * t * t * t)
+            // Values that are 0 at both ends stay 0 (e.g. no hand drawn), so nothing flickers.
+            pose.with(prm, if (b == 0f && c == 0f) 0f else v)
+        }
+    }
+
     /** Every keyframe, so a screen can frame the figure once without it jumping around. */
-    fun keyframes(motion: Motion): List<Pose> = listOfNotNull(motion.start, motion.stretch, motion.deep)
+    fun keyframes(motion: Motion): List<Pose> = listOfNotNull(motion.start, motion.stretch, motion.deep) + motion.sequence
 
     fun frameFor(motion: Motion): Box =
         keyframes(motion).map { Figure.solve(it).bounds() }.reduce { a, b -> a.union(b) }

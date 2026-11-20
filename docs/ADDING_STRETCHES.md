@@ -13,8 +13,9 @@ through. All stretch work happens on the PC (D-030).
 | `Strengthen` | Timed strength/control hold (P-5) | `Hold` | 30 s |
 | `Roll` | Foam rolling (P-10), `equipment = FoamRoller` | `Flow`, body slides via `shiftX`; plant hands/feet with `pins` | 60 s |
 
-`Flow` has only two end points. Circles or multi-step sequences need an engine change
-(a keyframe list in `figure/Motion.kt`); talk to the owner first.
+`Flow` swings between two end points. For circles or multi-step moves, set
+`Motion.sequence`: the flow loops `stretch` → each sequence pose → back to `stretch`, with smooth
+curves (see `arm_circles`). Pose preview and Pose Studio show each step.
 
 ## 2. Write the catalog entry (`catalog/<Area>Moves.kt`)
 

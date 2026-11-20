@@ -171,5 +171,37 @@ object ShoulderMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings, handsBehindHeadChest, eagleArms)
+    // First move that loops through several positions (Motion.sequence, PLAN §8.5): the hands trace
+    // a small circle forward, up, back and down. Arm "out" above 90 lifts the arm above shoulder height.
+    val armCircles = Stretch(
+        key = "arm_circles",
+        name = "Arm circles",
+        kind = StretchKind.Dynamic,
+        sided = false,
+        primary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.UpperBack, Muscle.Chest),
+        position = Position.Standing,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Hold your arms out to the sides and draw small, smooth circles with your hands.",
+        cues = listOf(
+            "Stand tall and lift both arms out to the sides at shoulder height.",
+            "Draw small, slow circles with your hands, keeping your shoulders down.",
+            "Let the circles grow a little as your shoulders warm up.",
+            "Halfway through, switch direction.",
+        ),
+        sourceIds = listOf("S3", "S4", "S5"),
+        motion = Motion(
+            kind = MotionKind.Flow,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 90f, nearArmOut = 72f, nearElbow = 4f, farShoulder = 90f, farArmOut = 72f, farElbow = 4f),
+            sequence = listOf(
+                Pose(nearArmOut = 106f, nearElbow = 4f, farArmOut = 106f, farElbow = 4f),
+                Pose(nearShoulder = -90f, nearArmOut = 72f, nearElbow = 4f, farShoulder = -90f, farArmOut = 72f, farElbow = 4f),
+                Pose(nearArmOut = 70f, nearElbow = 4f, farArmOut = 70f, farElbow = 4f),
+            ),
+            view = View.Angled,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings, handsBehindHeadChest, eagleArms, armCircles)
 }

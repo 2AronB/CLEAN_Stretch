@@ -22,8 +22,8 @@ import java.time.ZoneId
  * window (no special permission; Android may deliver it up to ~10 minutes late to save battery).
  * Each time it fires it schedules the next day's, and it is re-armed whenever a reminder setting
  * changes. Inexact repeating alarms were tried first and proved unreliable on the owner's phone.
- * Not yet handled: rescheduling after a phone restart needs RECEIVE_BOOT_COMPLETED (not approved),
- * so the reminder is rescheduled every time the app opens instead.
+ * A phone restart clears alarms, so [BootReceiver] re-arms it after a restart (RECEIVE_BOOT_COMPLETED,
+ * owner-approved D-043) and after an app update; it is also re-armed every time the app opens.
  */
 object Reminders {
     private const val CHANNEL = "reminders"
@@ -87,5 +87,17 @@ class ReminderReceiver : BroadcastReceiver() {
         Reminders.show(context)
         // One-shot alarm: arm tomorrow's.
         Reminders.sync(context, AppPreferences(context))
+    }
+}
+
+/**
+ * Re-arms the daily reminder after the phone restarts or the app is updated (both clear alarms).
+ * Only the system can send these broadcasts. With the reminder off it does nothing.
+ */
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            Reminders.sync(context, AppPreferences(context))
+        }
     }
 }

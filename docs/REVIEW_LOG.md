@@ -104,6 +104,7 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | eagle_arms | Eagle arms stretch | Not reviewed | | | | |
 | wall_triceps | Wall triceps stretch | Not reviewed | | | | |
 | towel_triceps | Towel triceps stretch | Not reviewed | | | | |
+| arm_circles | Arm circles | Not reviewed | | | | |
 
 ## History (append-only)
 
@@ -119,3 +120,5 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 - 2026-11-14 · seated_side_bend, side_reaches · Not reviewed · Added (side body, PLAN §8.2).
 - 2026-11-14 · standing_side_bend · Not reviewed · Main muscles are now Lats and Side body (was Lats only). Owner chose "Yes, main = both" when asked; pose, cues and voice clips unchanged. This is a tagging decision, not a review approval.
 - 2026-11-19 · hands_behind_head_chest, eagle_arms, wall_triceps, towel_triceps · Not reviewed · Added (owner, D-043: at least three main moves per muscle). Chest, shoulders and triceps now have three each. Eagle arms and towel triceps are level 2 (harder versions of cross-body shoulder and overhead triceps).
+- 2026-11-19 · thread_the_needle · Changes requested · Owner approved the planted-hands work (D-043: "Approved to work on this too"). Change made: the support hand rests flat on the floor and the threading arm, shoulder and head rest low on the floor; starting view is now Angled (Front mostly showed the torso). Pose and view only; cues unchanged. Still needs the owner's look and approval.
+- 2026-11-19 · arm_circles · Not reviewed · Added (flowing, shoulders). First move that loops through several positions (forward, up, back, down) with the new sequence flows (PLAN §8.5, D-043).

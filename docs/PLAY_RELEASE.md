@@ -30,7 +30,8 @@ Play policy pages. Nothing here is legal advice.
 - **Permissions:** `VIBRATE` (buzz between steps), `POST_NOTIFICATIONS` (daily reminder,
   asked only when the user turns it on; also lets the "routine in progress" notification show),
   and, for running with the screen off (D-037), `FOREGROUND_SERVICE`,
-  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `WAKE_LOCK` (none of these three shows a prompt).
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `WAKE_LOCK` (none of these three shows a prompt), and
+  `RECEIVE_BOOT_COMPLETED` (D-043: re-arms the daily reminder after a phone restart; no prompt).
   **No `INTERNET` permission**, so the app cannot send anything anywhere.
 - **No accounts, ads, analytics, crash reporting or third-party SDKs** that collect data.
   Libraries: AndroidX/Compose and Room (local database).
@@ -61,7 +62,8 @@ Play policy pages. Nothing here is legal advice.
 >
 > **Permissions:** vibration (a short buzz between steps), notifications (the daily reminder, if
 > you turn it on, and a "routine in progress" notification), and permission to keep a routine's
-> voice and timer running while your screen is off.
+> voice and timer running while your screen is off, and to set your daily reminder again after
+> your phone restarts.
 >
 > **Deleting your information:** use Settings → Your data → Delete my data, or uninstall Stretch.
 >

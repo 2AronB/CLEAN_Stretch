@@ -9,6 +9,24 @@ import kotlin.math.max
 
 class Figure3dTest {
     @Test
+    fun sequenceFlowsLoopThroughEveryPosition() {
+        val frames = listOf(Pose(nearArmOut = 70f), Pose(nearArmOut = 100f, nearShoulder = 20f), Pose(nearShoulder = -90f, nearArmOut = 70f))
+        val step = Timing.sequenceStepMs(frames.size)
+        frames.forEachIndexed { i, f ->
+            val p = MotionPlayer.sequencePose(frames, step * i)
+            assertEquals(f.nearArmOut, p.nearArmOut, 0.01f)
+            assertEquals(f.nearShoulder, p.nearShoulder, 0.01f)
+        }
+        // It loops: one full lap later it's back at the first position.
+        assertEquals(frames[0].nearArmOut, MotionPlayer.sequencePose(frames, step * frames.size).nearArmOut, 0.01f)
+        // Every move with a sequence is a Flow, and its frames are all framed by the camera.
+        SampleCatalog.all.filter { it.motion.sequence.isNotEmpty() }.forEach { s ->
+            assertEquals(s.key, MotionKind.Flow, s.motion.kind)
+            assertTrue(MotionPlayer.keyframes(s.motion).containsAll(s.motion.sequence))
+        }
+    }
+
+    @Test
     fun headTurnShowsANoseThatTurnsWithTheHead() {
         assertTrue("no nose on older poses", Figure3d.solve(Pose()).nose == null)
         val f = Figure3d.solve(Pose(headTurn = 1f))

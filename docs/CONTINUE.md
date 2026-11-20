@@ -1,14 +1,14 @@
 # Continue here
 
-**State on 2026-11-19:** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+**State on 2026-11-19 (evening, D-044):** every first-release slice (S0–S7) exists, plus S8 (strengthen and
 foam rolling), S9 (range-of-motion checks, now 9), a 3D figure, 77 moves (every muscle has at
 least three main moves, D-043), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-89 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
+97 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
-`docs/DECISIONS.md` (D-001…D-043). How to add a move: `docs/ADDING_STRETCHES.md`. Play
+`docs/DECISIONS.md` (D-001…D-044). How to add a move: `docs/ADDING_STRETCHES.md`. Play
 Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 
 ## What the app does now
@@ -85,7 +85,22 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 **Release build**: shrunk (4.2 MB APK); signing reads the git-ignored `keystore.properties`;
 `staging` build = shrunk + debug-signed, installed as a separate app for testing.
 
-## Added 2026-11-19: owner round D-043 (not yet seen in the app)
+## Added 2026-11-19 (later): owner round D-044 — seen on the emulator
+
+- **Player:** 15 s to get into position (10 s to switch sides) while the figure shows the new
+  stretch once; "Starting in 3-2-1" with spoken numbers, then "Begin. Hold for N seconds."
+  Nothing is announced during a hold.
+- **Today:** routine type remembered; **Hold each stretch 30 / 45 / 60 s** (warm-ups 30 s);
+  **Include: Kneeling / Floor / Foam roller / Strengthen** (replaces Setup's limits page; no
+  wall question). Routine length follows the weekly goals, capped at 15 min.
+- **Weekly goals:** 5 / 7 / 10 / 15 min, new users start on 7.
+- **Setup:** three sections — Goal and weekly goals; Health and limits (65+, avoid,
+  conditions); Days and reminders (1–3 reminders, each with its own routine).
+- **Open question for the owner:** with no areas picked, the whole body counts as secondary,
+  which adds up to ~137 min a week (~46 min of holding a day on 3 days). Routines stop at
+  15 min, so the day circles can't fill. See "Next".
+
+## Added 2026-11-19: owner round D-043 (seen on the emulator during D-044 only in part)
 
 Owner's order: moves (min 3 per muscle) → body view → last two checks → engine work; plus
 approval for `RECEIVE_BOOT_COMPLETED`. All four are built, tested and committed:
@@ -169,7 +184,11 @@ Owner said 2026-11-19: they're using the app and will give feedback when ready.
 
 **The full plan is `docs/PLAN.md` §8.** Short version:
 
-1. Agent: walk through the D-043 work on the emulator (when no other project is using it).
+1. **Owner decision:** what "nothing picked" should mean for weekly goals (today: whole body
+   secondary ≈ 137 min/week, far more than 15-min routines can cover). Options: no goals until
+   areas are picked, the goal's default areas only, or a smaller secondary amount.
+2. Agent: emulator walk-through of the D-043 body view, motion checks and new moves (the D-044
+   pass covered the player, Today, Setup and reminders).
 2. Owner feedback round from using the app; owner reviews of the new moves (see Owner actions).
 3. Goals tuning (PLAN §8.7): "goal met" moment, optional foam-rolling toggle (not decided).
 4. More sequence flows where they'd help (e.g. hip circles, ankle circles) — propose first.

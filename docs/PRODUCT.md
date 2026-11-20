@@ -31,17 +31,24 @@ Works fully offline (expected: no Internet permission, as in Words/Sensors).
   so locked-screen/background running can be added later without a rewrite.
   Voice (Android's built-in offline text-to-speech), chime with 3-2-1 countdown,
   and vibration are all on by default and individually switchable (agreed).
+  Each new stretch gets 15 s to get into position (10 s to switch sides) while
+  the figure shows it once; a spoken "3, 2, 1" then "Begin" starts the hold, and
+  nothing is announced during a hold (D-044). Holds: 30 / 45 / 60 s chips on
+  Today (warm-ups 30 s).
 - R-003 Stretch library with target muscles, cues, cautions and evidence notes. Size open (60–100 suggested).
 - R-004 Animated figure per stretch: one consistent faceless figure drawn in code,
   moving into the pose and breathing during holds. No new dependency. (agreed)
 - R-005 Limitations: painful/injured areas, position limits (floor, kneeling,
   standing/chair), conditions/precautions (e.g., pregnancy, hypermobility,
   recent surgery — cautions, not medical advice), equipment available. Used to
-  avoid, swap or soften stretches. (agreed scope)
+  avoid, swap or soften stretches. (agreed scope) Since D-044: areas to avoid and conditions sit in
+  Setup's "Health and limits"; kneeling, floor, foam roller and strengthen are
+  chips on Today's suggested card; everyone is assumed to have a wall.
 - R-006 Progress: consistency (sessions, minutes, streaks, weekly time per
   muscle group) and optional periodic range-of-motion self-checks. (agreed)
-- R-007 Reminders: first release has a daily reminder at a user-chosen time
-  (agreed). Desk-break nudges and a CLEAN Lift cool-down prompt are wanted
+- R-007 Reminders: up to three a day (D-044), each at a user-chosen time and
+  opening its own routine (type, optional areas, foam roller / strengthen on or
+  off). Re-armed after a phone restart (RECEIVE_BOOT_COMPLETED, D-043). Desk-break nudges and a CLEAN Lift cool-down prompt are wanted
   later (deferred). Notification permission is approved as an offer, not a
   requirement: ask once on first launch; if declined, ask again (with a short
   explanation) only when the user sets up a reminder. Everything except

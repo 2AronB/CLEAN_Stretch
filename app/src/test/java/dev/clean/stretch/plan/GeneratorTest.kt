@@ -225,7 +225,9 @@ class GeneratorTest {
         val light = Generator.routineMinutes(Profile(weeklyDose = 5), 7, RoutineKind.Full, 45)
         val heavy = Generator.routineMinutes(Profile(weeklyDose = 15, focus = Region.entries.toSet()), 3, RoutineKind.Full, 45)
         assertTrue("$light <= $heavy", light <= heavy)
-        assertTrue(light in 5..30 && heavy in 5..30)
+        assertTrue(light in 5..15 && heavy in 5..15)
+        assertEquals(Generator.MAX_ROUTINE_MINUTES, heavy) // capped; Setup explains
+        assertTrue(Generator.neededMinutes(Profile(weeklyDose = 15, focus = Region.entries.toSet()), 3, 45) > heavy)
         assertEquals(Generator.QUICK_MINUTES, Generator.routineMinutes(Profile(), 3, RoutineKind.Quick, 45))
         assertTrue(Generator.routineMinutes(Profile(weeklyDose = 15, focus = Region.entries.toSet()), 2, RoutineKind.WarmUp, 30) <= 8)
         // The generated routine fits the length it was given.

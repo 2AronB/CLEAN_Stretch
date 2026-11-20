@@ -44,17 +44,24 @@ object Generator {
     /**
      * How long today's suggested routine should be (D-044: no length setting): the day's share of
      * the weekly goals ([dayGoalMinutes], holding time) plus time to get into position, kept to
-     * 5–30 min. Warm-ups stay short (5–8 min) and quick breaks are about 4 min.
+     * 5–[MAX_ROUTINE_MINUTES] min so a day never asks too much. Warm-ups stay short (5–8 min) and
+     * quick breaks are about 4 min.
      */
     fun routineMinutes(profile: Profile, daysPerWeek: Int, kind: RoutineKind, hold: Int): Int {
-        val holding = dayGoalMinutes(profile, daysPerWeek)
-        val total = kotlin.math.ceil(holding * (hold + SETUP_ESTIMATE_S) / hold).toInt()
+        val total = neededMinutes(profile, daysPerWeek, hold)
         return when (kind) {
             RoutineKind.Quick -> QUICK_MINUTES
             RoutineKind.WarmUp -> total.coerceIn(5, 8)
-            else -> total.coerceIn(5, 30)
+            else -> total.coerceIn(5, MAX_ROUTINE_MINUTES)
         }
     }
+
+    /** Minutes a day the weekly goals would need, before the [MAX_ROUTINE_MINUTES] cap (for Setup's note). */
+    fun neededMinutes(profile: Profile, daysPerWeek: Int, hold: Int): Int =
+        kotlin.math.ceil(dayGoalMinutes(profile, daysPerWeek) * (hold + SETUP_ESTIMATE_S) / hold).toInt()
+
+    /** Longest suggested routine (the old 15-minute top choice). */
+    const val MAX_ROUTINE_MINUTES = 15
 
     const val QUICK_MINUTES = 4
 

@@ -1,5 +1,6 @@
 package dev.clean.stretch.ui
 
+import androidx.compose.runtime.key
 import androidx.activity.compose.BackHandler
 import dev.clean.stretch.R
 import androidx.compose.ui.res.painterResource
@@ -125,7 +126,9 @@ fun SetupScreen(initial: Profile, prefs: AppPreferences, onSave: (Profile) -> Un
     Column(Modifier.fillMaxSize()) {
         BackBar(if (!editing) "Set up" else if (page == MENU) "Goals, health and reminders" else SECTIONS[page], ::back)
         if (!editing) LinearProgressIndicator(progress = { (page + 1f) / PAGES }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp)) {
+        // Each section opens at its top (one scroll position per section).
+        val scroll = key(page) { rememberScrollState() }
+        Column(Modifier.weight(1f).verticalScroll(scroll).padding(16.dp)) {
             when (page) {
                 MENU -> SectionMenu(sectionSummaries(draft, prefs)) { page = it }
                 0 -> {
@@ -285,9 +288,18 @@ private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> U
         Column(Modifier.padding(16.dp)) {
             Text("About $weekly min of stretching a week", style = MaterialTheme.typography.titleMedium)
             Text(
-                "About $perDay min of holding on each of your $daysPerWeek days, so each day's suggested routine is about " +
-                    "${Generator.routineMinutes(draft, daysPerWeek, RoutineKind.Full, Generator.holdSeconds(draft, RoutineKind.Full))} min. " +
-                    "Moves that stretch several muscles at once count for each of them.",
+                run {
+                    val hold = Generator.holdSeconds(draft, RoutineKind.Full)
+                    val needed = Generator.neededMinutes(draft, daysPerWeek, hold)
+                    "About $perDay min of holding on each of your $daysPerWeek days" +
+                        if (needed > Generator.MAX_ROUTINE_MINUTES) {
+                            ", which needs about $needed min a day. Suggested routines stop at ${Generator.MAX_ROUTINE_MINUTES} min, " +
+                                "so try fewer primary or secondary areas, a smaller goal, or more days a week."
+                        } else {
+                            ", so each day's suggested routine is about ${Generator.routineMinutes(draft, daysPerWeek, RoutineKind.Full, hold)} min." +
+                                " Moves that stretch several muscles at once count for each of them."
+                        }
+                },
                 style = MaterialTheme.typography.bodySmall,
             )
         }

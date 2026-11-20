@@ -633,3 +633,32 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   acted on; 2 old style hints). Debug APK installed on the API 37 emulator (data kept), but the
   emulator then shut down and the only one running belonged to CLEAN Sensors, so **nothing from
   this round was seen in the app**. Not checked: the reboot receiver on a real restart.
+
+## Owner round D-044 (2026-11-19): player timing, Today chips, setup regrouped, reminders
+- Owner feedback after a session; choices asked and answered: routine length from weekly goals,
+  new users start on 7 min, reminders set type + areas + foam roller / strengthen.
+- Player: setup 15 s (side switch 10 s); the new stretch's demo plays once during setup, then
+  rests in its start pose; "Starting in 3/2/1" label with spoken "Three. Two. One." (new
+  `RunEvent.Countdown(toStart)`), holds open with "Begin. Hold for N seconds."; the 6-seconds-left
+  "Next: …" announcement and the "Next" label during holds are gone. 12 new clips; the voice
+  script removed 123 unused ones ("Next: …", old hold lines).
+- Today: routine type remembered (`AppPreferences.routineKind`); 30/45/60 s chips
+  (`holdSeconds`; warm-ups stay 30 s, P-3); Include chips Kneeling / Floor / Foam roller /
+  Strengthen; reminder routines with "From your … reminder · Back to usual".
+- Generator: `holdSeconds(…, chosen)`, default 45 s (60 s for 65+); wall rule removed;
+  `routineMinutes` from the weekly goals, capped at 15 min (`MAX_ROUTINE_MINUTES`) after the
+  emulator showed a 30-min, 19-move default; `onlyAreas` for reminder routines.
+- Dose: Minimum 5 / Starter 7 (new default) / Peak 10 / More 15.
+- Setup: three sections (Goal and weekly goals; Health and limits; Days and reminders); the
+  if-then cue page and routine length are gone; each section opens at its top.
+- Reminders: `plan/ReminderPlan.kt` (1–3, unit-tested), one alarm per reminder, notification
+  tap opens Today with that routine (`Reminders.EXTRA_PLAN`); the old single reminder carries
+  over as reminder 1.
+- Checks run: 97 JVM tests pass; assembleDebug; lintDebug 0 errors (2 version warnings).
+  Emulator (API 37, emulator-5554 only): Today chips and 15-min routine; player change-over
+  (demo, "Starting in 2", 45 s hold, no "Next" during hold, no missing-clip warnings in logcat);
+  all three Setup sections; adding a reminder (notification permission allowed on the
+  emulator), choosing Quick break + Neck; opening the app from reminder 1 shows "Quick break:
+  neck"; the 8:00 alarm in `dumpsys alarm`; after an emulator reboot `BootReceiver` re-set it
+  without opening the app. Not checked: hearing the clips (no audio check), the notification
+  itself firing at its time.

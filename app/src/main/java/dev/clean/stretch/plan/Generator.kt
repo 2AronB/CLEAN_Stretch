@@ -104,6 +104,12 @@ object Generator {
         return ((seconds + 59) / 60).coerceAtLeast(1)
     }
 
+    /**
+     * A move that stretches both sides at once (not [Stretch.sided]) gives both sides a full hold
+     * in the time a one-side move gives one, so it is worth twice as much per minute (D-046).
+     */
+    internal fun bothSidesBonus(s: Stretch): Int = if (s.sided) 1 else 2
+
     /** P-1: never more than 4 minutes for one muscle on one side in a single session [S2]. */
     const val SESSION_CAP_MINUTES = 4.0
 
@@ -142,7 +148,7 @@ object Generator {
             .associateWith { profile.weeklyTarget(it) ?: 0.0 }.toMutableMap()
         var seconds = 0
         while (true) {
-            val best = moves.maxByOrNull { s -> s.primary.count { (left[it] ?: 0.0) > 1e-9 } } ?: break
+            val best = moves.maxByOrNull { s -> s.primary.count { (left[it] ?: 0.0) > 1e-9 } * bothSidesBonus(s) } ?: break
             if (best.primary.none { (left[it] ?: 0.0) > 1e-9 }) break
             best.primary.forEach { m -> left[m]?.let { left[m] = it - hold / 60.0 } }
             seconds += hold * (if (best.sided) 2 else 1) // a two-sided move is held on each side
@@ -216,8 +222,10 @@ object Generator {
             val muscle = targets.filter { (m, goal) -> (given[m] ?: 0.0) < goal - 1e-9 && pool.any { s -> m in s.primary && forGoals(s) && canAdd(s) } }
                 .maxByOrNull { (m, goal) -> goal - (given[m] ?: 0.0) }?.key ?: break
             val needy = { s: Stretch -> s.primary.count { m -> (targets[m] ?: 0.0) - (given[m] ?: 0.0) > 1e-9 } }
-            // Preferred move type first (pool order), then the move that helps the most needy muscles.
-            take(pool.filter { s -> muscle in s.primary && forGoals(s) && canAdd(s) }.minWith(compareBy({ typeRank(it) }, { -needy(it) })))
+            // Preferred move type first (pool order), then the move that helps the most needy
+            // muscles per hold: a move that stretches both sides at once does in one hold what a
+            // one-side move needs two for, so it counts double (owner, D-046).
+            take(pool.filter { s -> muscle in s.primary && forGoals(s) && canAdd(s) }.minWith(compareBy({ typeRank(it) }, { -needy(it) * bothSidesBonus(it) })))
         }
         // 2. Fill leftover time from the least-covered muscles; muscles whose weekly goal is met come last.
         val metThisWeek = targets.filter { (m, share) -> share <= 1e-9 && (weekMinutes[m] ?: 0.0) > 0 }.keys
@@ -227,6 +235,7 @@ object Generator {
                     { s -> typeRank(s) },
                     { s -> if (s.primary.all { it in metThisWeek }) 1 else 0 },
                     { s -> s.primary.minOf { given[it] ?: 0.0 } },
+                    { s -> -bothSidesBonus(s) },
                 ),
             ) ?: break
             take(pick)

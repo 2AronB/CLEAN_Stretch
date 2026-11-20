@@ -134,6 +134,18 @@ class GeneratorTest {
     }
 
     @Test
+    fun movesThatStretchBothSidesAtOnceArePreferred() {
+        // Hamstrings: a both-sides move (e.g. a forward fold) beats a one-leg move for the same goal.
+        val legs = Profile(focus = setOf(Region.Legs), weeklyDose = 10)
+        val pool = Generator.allowed(legs, RoutineKind.Full).filter { it.kind.isStretch && Muscle.Hamstrings in it.primary }
+        assertTrue("need both kinds of hamstring move", pool.any { it.sided } && pool.any { !it.sided })
+        val r = Generator.generate(legs, RoutineKind.Full, minutes = 5, daysLeft = 5)
+        val firstHamstring = r.keys.mapNotNull { SampleCatalog.byKey(it) }.first { Muscle.Hamstrings in it.primary }
+        assertTrue(firstHamstring.key, !firstHamstring.sided)
+        assertEquals(2, Generator.bothSidesBonus(firstHamstring))
+    }
+
+    @Test
     fun noAreasPickedAimsAtCommonlyStiffMuscles() {
         val p = Profile() // whole-body goal, nothing picked
         assertTrue(p.usesCommonlyStiff)
@@ -148,6 +160,9 @@ class GeneratorTest {
         assertEquals(null, Profile(secondary = setOf(Region.Arms)).weeklyTarget(Muscle.Hamstrings))
         // About an hour of holding a week (was about 137 with the whole body as secondary).
         assertTrue(Generator.weeklyPlanMinutes(p) <= 60)
+        // On the default 5 days it needs about 16 min a day (routines stop at 15).
+        val hold = Generator.holdSeconds(p, RoutineKind.Full)
+        assertTrue(Generator.neededMinutes(p, dev.clean.stretch.settings.DEFAULT_DAYS_PER_WEEK, hold) <= 16)
     }
 
     @Test

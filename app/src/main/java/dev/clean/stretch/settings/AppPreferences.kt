@@ -28,6 +28,9 @@ enum class Palette(val label: String, val description: String) {
 
 
 /** Small on-device settings. User data (session history) lives in Room (data/History.kt). */
+/** New users plan 5 days a week (owner, D-046) so the default goals fit 15-min routines. */
+const val DEFAULT_DAYS_PER_WEEK = 5
+
 class AppPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
@@ -46,7 +49,7 @@ class AppPreferences(context: Context) {
     var vibrationCues by mutableStateOf(prefs.getBoolean(KEY_VIBRATION, true))
         private set
 
-    var daysPerWeek by mutableIntStateOf(prefs.getInt(KEY_DAYS, 3))
+    var daysPerWeek by mutableIntStateOf(prefs.getInt(KEY_DAYS, DEFAULT_DAYS_PER_WEEK))
         private set
     /** Up to three reminders, each with its own routine (D-044). Replaces the single reminder and if-then cue. */
     var reminders by mutableStateOf(loadReminders())
@@ -140,7 +143,7 @@ class AppPreferences(context: Context) {
         voiceCues = prefs.getBoolean(KEY_VOICE, true)
         chimeCues = prefs.getBoolean(KEY_CHIMES, true)
         vibrationCues = prefs.getBoolean(KEY_VIBRATION, true)
-        daysPerWeek = prefs.getInt(KEY_DAYS, 3)
+        daysPerWeek = prefs.getInt(KEY_DAYS, DEFAULT_DAYS_PER_WEEK)
         reminders = loadReminders()
         holdSeconds = prefs.getInt(KEY_HOLD, 0)
         routineKind = RoutineKind.entries.firstOrNull { it.name == prefs.getString(KEY_KIND, null) } ?: RoutineKind.Full

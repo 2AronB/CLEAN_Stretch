@@ -1,14 +1,14 @@
 # Continue here
 
-**State on 2026-11-20 (D-045):** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+**State on 2026-11-20 (D-046):** every first-release slice (S0–S7) exists, plus S8 (strengthen and
 foam rolling), S9 (range-of-motion checks, now 9), a 3D figure, 77 moves (every muscle has at
 least three main moves, D-043), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-98 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
+99 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
-`docs/DECISIONS.md` (D-001…D-045). How to add a move: `docs/ADDING_STRETCHES.md`. Play
+`docs/DECISIONS.md` (D-001…D-046). How to add a move: `docs/ADDING_STRETCHES.md`. Play
 Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 
 ## What the app does now
@@ -103,7 +103,8 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
   back, hip flexors, glutes, hamstrings, calves); smaller muscles (arms, core, inner/outer/deep
   hip, shins) aim for half. Default plan fell from ~137 to 60 min of holding a week.
 - Seen on the emulator: Setup summary and weekly goals page.
-- **Still open:** 60 min/week needs ~27 min a day on the default 3 days; routines stop at 15.
+- D-046: new users default to 5 days a week (needs ~16 min/day; a 15-min routine reaches
+  ~11 of 12 goal minutes). Moves that stretch both sides at once are preferred.
 
 ## Added 2026-11-19: owner round D-043 (seen on the emulator during D-044 only in part)
 
@@ -189,10 +190,7 @@ Owner said 2026-11-19: they're using the app and will give feedback when ready.
 
 **The full plan is `docs/PLAN.md` §8.** Short version:
 
-1. **Owner decision (D-045 follow-up):** the default plan (60 min/week) still needs ~27 min a day
-   on 3 days. Options: start new users at 5 days a week, a shorter stiff list, or keep it and
-   let the Setup note explain. Owner also to review the stiff list and which muscles count as
-   smaller.
+1. **Owner review:** the commonly stiff list and which muscles count as smaller (D-045).
 2. Agent: emulator walk-through of the D-043 body view, motion checks and new moves (the D-044
    pass covered the player, Today, Setup and reminders).
 2. Owner feedback round from using the app; owner reviews of the new moves (see Owner actions).

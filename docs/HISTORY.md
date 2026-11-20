@@ -675,3 +675,12 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   and secondary tests updated); assembleDebug; lintDebug 0 errors. Emulator (emulator-5554):
   Setup summary and weekly goals page show the new text and "About 60 min … 27 min a day".
 
+## D-046 (2026-11-20): 5 days by default; both-sides moves preferred
+- `DEFAULT_DAYS_PER_WEEK = 5` (only when no days were ever saved).
+- `Generator.bothSidesBonus`: goal step picks the move with the most needy muscles per hold
+  (both-sides moves count double); fill step prefers them on ties; weekly estimate likewise.
+- Checks run: 99 JVM tests pass (new `movesThatStretchBothSidesAtOnceArePreferred`);
+  assembleDebug; lintDebug 0 errors. Default on 5 days: needs ~16 min/day; a 15-min routine
+  holds 11.25 of the 12 goal minutes. Emulator: Today's 15-min routine now leans on
+  both-sides moves (cat-cow, chest openers, child's pose, downward dog).
+

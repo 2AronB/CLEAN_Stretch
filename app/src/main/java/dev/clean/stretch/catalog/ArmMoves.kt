@@ -212,5 +212,64 @@ object ArmMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(overheadTriceps, wristFlexor, wristExtensor, prayerStretch, wallBiceps, standingBiceps, seatedBiceps)
+    // Second and third triceps moves (owner, D-043: at least three per muscle). Both start from the
+    // overhead triceps position: elbow up, hand dropped behind the head.
+    val wallTriceps = Stretch(
+        key = "wall_triceps",
+        name = "Wall triceps stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Triceps),
+        secondary = listOf(Muscle.Lats, Muscle.Shoulders),
+        position = Position.Standing,
+        equipment = Equipment.Wall,
+        highlight = setOf(Segment.NearUpperArm),
+        summary = "Face a wall, rest one bent elbow on it above your head and lean your chest gently toward the wall.",
+        cues = listOf(
+            "Stand facing a wall, about a forearm's length away.",
+            "Raise one arm, bend the elbow and let your hand drop behind your head.",
+            "Rest that elbow on the wall above your head.",
+            "Lean your chest gently toward the wall. Feel the back of your upper arm and under your arm.",
+        ),
+        cautions = listOf("Ease off if the front of your shoulder pinches or you feel tingling down the arm."),
+        sourceIds = listOf("S3", "S2"),
+        prop = Prop(Equipment.Wall, x = 24f),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(torso = 172f, nearShoulder = 160f, nearElbow = 140f, nearArmOut = -6f, farElbow = 8f),
+            deep = Pose(torso = 166f, spine = -3f, nearShoulder = 168f, nearElbow = 145f, nearArmOut = -6f, farElbow = 8f),
+        ),
+    )
+
+    val towelTriceps = Stretch(
+        key = "towel_triceps",
+        name = "Towel triceps stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Triceps),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        equipment = Equipment.Strap,
+        level = 2,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Hold a towel behind your back, one hand over your shoulder and one low, and gently pull the towel down.",
+        cues = listOf(
+            "Hold a towel in one hand, raise that arm and let the towel hang down your back.",
+            "Reach your other hand behind your lower back and take hold of the towel.",
+            "Gently pull down with the lower hand so the top elbow points up.",
+            "Feel the back of your top arm. Keep your head up and your back tall.",
+        ),
+        cautions = listOf("Walk your hands closer together only as far as feels comfortable. Ease off if a shoulder pinches."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 170f, nearElbow = 140f, nearArmOut = -8f, farShoulder = -24f, farElbow = 134f, farArmOut = 24f, farArmTurn = -111f),
+            deep = Pose(nearShoulder = 176f, nearElbow = 148f, nearArmOut = -10f, farShoulder = -28f, farElbow = 137f, farArmOut = 21f, farArmTurn = -113f),
+            view = View.Angled,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(overheadTriceps, wristFlexor, wristExtensor, prayerStretch, wallBiceps, standingBiceps, seatedBiceps, wallTriceps, towelTriceps)
 }

@@ -100,6 +100,10 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 | knee_to_opposite_shoulder | Knee to opposite shoulder | Not reviewed | | | | |
 | seated_side_bend | Seated side bend | Not reviewed | | | | |
 | side_reaches | Standing side reaches | Not reviewed | | | | |
+| hands_behind_head_chest | Hands-behind-head chest stretch | Not reviewed | | | | |
+| eagle_arms | Eagle arms stretch | Not reviewed | | | | |
+| wall_triceps | Wall triceps stretch | Not reviewed | | | | |
+| towel_triceps | Towel triceps stretch | Not reviewed | | | | |
 
 ## History (append-only)
 
@@ -114,3 +118,4 @@ Statuses: `Not reviewed`, `Changes requested`, `Reviewed`.
 - 2026-11-14 · seated_figure_four, pigeon, knee_to_opposite_shoulder · Not reviewed · Added (deep hip rotators, PLAN §8.2). Pigeon is level 2 with knee cautions; figure_four was the only move for this muscle before.
 - 2026-11-14 · seated_side_bend, side_reaches · Not reviewed · Added (side body, PLAN §8.2).
 - 2026-11-14 · standing_side_bend · Not reviewed · Main muscles are now Lats and Side body (was Lats only). Owner chose "Yes, main = both" when asked; pose, cues and voice clips unchanged. This is a tagging decision, not a review approval.
+- 2026-11-19 · hands_behind_head_chest, eagle_arms, wall_triceps, towel_triceps · Not reviewed · Added (owner, D-043: at least three main moves per muscle). Chest, shoulders and triceps now have three each. Eagle arms and towel triceps are level 2 (harder versions of cross-body shoulder and overhead triceps).

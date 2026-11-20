@@ -116,5 +116,60 @@ object ShoulderMoves {
         ),
     )
 
-    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings)
+    // Third chest and shoulder moves (owner, D-043: at least three per muscle).
+    val handsBehindHeadChest = Stretch(
+        key = "hands_behind_head_chest",
+        name = "Hands-behind-head chest stretch",
+        kind = StretchKind.Static,
+        sided = false,
+        primary = listOf(Muscle.Chest),
+        secondary = listOf(Muscle.Shoulders),
+        position = Position.Standing,
+        highlight = setOf(Segment.Torso, Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Lace your fingers behind your head and gently draw your elbows back as your chest opens.",
+        cues = listOf(
+            "Stand or sit tall and lace your fingers lightly behind your head.",
+            "Open your elbows wide, out to the sides.",
+            "Gently draw your elbows back and lift your chest.",
+            "Feel the front of your chest. Rest your hands on your head instead of pulling on it.",
+        ),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(spine = -4f, head = 4f, nearShoulder = 207f, nearElbow = 136f, nearArmOut = 43f, nearArmTurn = -88f, farShoulder = 207f, farElbow = 136f, farArmOut = 43f, farArmTurn = -88f),
+            deep = Pose(spine = -6f, head = 5f, nearShoulder = 227f, nearElbow = 133f, nearArmOut = 35f, nearArmTurn = -101f, farShoulder = 227f, farElbow = 133f, farArmOut = 35f, farArmTurn = -101f),
+            view = View.Angled,
+        ),
+    )
+
+    val eagleArms = Stretch(
+        key = "eagle_arms",
+        name = "Eagle arms stretch",
+        kind = StretchKind.Static,
+        sided = true,
+        primary = listOf(Muscle.Shoulders),
+        secondary = listOf(Muscle.UpperBack),
+        position = Position.Standing,
+        level = 2,
+        highlight = setOf(Segment.NearUpperArm, Segment.FarUpperArm),
+        summary = "Cross one arm under the other in front of you, wrap your forearms and lift your elbows a little.",
+        cues = listOf(
+            "Stand or sit tall and reach both arms forward at shoulder height.",
+            "Cross one arm under the other and bend both elbows so your forearms point up.",
+            "Wrap your forearms and bring your palms or the backs of your hands together.",
+            "Lift your elbows a little and ease them away from you. Feel the back of your shoulders.",
+        ),
+        cautions = listOf("If your hands don't meet, give yourself a hug instead, hands on opposite shoulders."),
+        sourceIds = listOf("S3", "S2"),
+        motion = Motion(
+            kind = MotionKind.Hold,
+            start = Pose(nearElbow = 6f, farElbow = 6f),
+            stretch = Pose(nearShoulder = 80f, nearElbow = 95f, nearArmOut = -45f, farShoulder = 94f, farElbow = 85f, farArmOut = -42f),
+            deep = Pose(spine = 3f, nearShoulder = 90f, nearElbow = 95f, nearArmOut = -48f, farShoulder = 104f, farElbow = 85f, farArmOut = -45f),
+            view = View.Front,
+        ),
+    )
+
+    val all: List<Stretch> = listOf(chestOpener, wallChest, crossBodyShoulder, armSwings, handsBehindHeadChest, eagleArms)
 }

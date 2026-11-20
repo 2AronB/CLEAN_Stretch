@@ -267,6 +267,30 @@ object Generator {
         return Routine(RoutineKind.CoolDown, title, picked.map { it.key }, hold, notes)
     }
 
+    /**
+     * "Stretch this now" from a muscle tapped on the body view (PLAN §8.4): up to three allowed
+     * stretches that mainly target it, holds first and easiest first, at the usual full-routine
+     * hold. Stretches only (no rolling or strengthening), so it all counts toward the muscle.
+     */
+    fun forMuscle(profile: Profile, muscle: Muscle): Routine {
+        val kind = RoutineKind.Full
+        val hold = holdSeconds(profile, kind)
+        val title = "Stretch: ${muscle.label.lowercase()}"
+        if (muscle.region in profile.avoid) {
+            return Routine(kind, title, emptyList(), hold,
+                listOf("You've marked ${muscle.region.label.lowercase()} as an area to avoid, so Stretch won't suggest moves for it."))
+        }
+        val picked = allowed(profile, kind)
+            .filter { it.kind.isStretch && muscle in it.primary }
+            .sortedWith(compareBy({ it.level }, { if (it.kind == StretchKind.Static) 0 else 1 }))
+            .take(MUSCLE_NOW_MOVES)
+            .sortedBy { positionOrder.indexOf(it.position) }
+        val notes = if (picked.isEmpty()) listOf("Nothing in the library fits this muscle with your settings yet.") else emptyList()
+        return Routine(kind, title, picked.map { it.key }, hold, notes)
+    }
+
+    const val MUSCLE_NOW_MOVES = 3
+
     private fun allowedRollExists(muscle: Muscle) = SampleCatalog.all.any { it.kind == StretchKind.Roll && muscle in it.muscles }
 
     /** Other allowed stretches for the same body area, for the Swap button. */

@@ -23,6 +23,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import dev.clean.stretch.catalog.Region
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import dev.clean.stretch.catalog.Muscle
 import androidx.compose.material3.Button
 import dev.clean.stretch.data.HistoryDao
 import dev.clean.stretch.data.RomCheckDao
@@ -45,15 +53,20 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 /** This week's minutes per muscle and side (body view), range of motion and recent sessions, recomputed from saved history. */
 @Composable
-fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romChecks: RomCheckDao, onCheck: (String?) -> Unit) {
+fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romChecks: RomCheckDao, onCheck: (String?) -> Unit, onStretchMuscle: (Muscle) -> Unit) {
     val romRows by remember { romChecks.observe() }.collectAsState(initial = emptyList())
     val zone = remember { ZoneId.systemDefault() }
     val weekFrom = remember { Stats.weekStartMillis(LocalDate.now(), zone) }
     val weekSteps by remember { history.stepsSince(weekFrom) }.collectAsState(initial = emptyList())
     val sessions by remember { history.recentSessions(20) }.collectAsState(initial = emptyList())
-    val minutes = remember(weekSteps) { Stats.minutesByMuscle(weekSteps) }
+    // Body view: this week or last week, both recomputed from saved history (PLAN §8.4).
+    var lastWeek by rememberSaveable { mutableStateOf(false) }
+    val lastWeekFrom = remember { Stats.weekStartMillis(LocalDate.now().minusWeeks(1), zone) }
+    val lastWeekSteps by remember { history.stepsBetween(lastWeekFrom, weekFrom) }.collectAsState(initial = emptyList())
+    val minutes = remember(weekSteps, lastWeekSteps, lastWeek) { Stats.minutesByMuscle(if (lastWeek) lastWeekSteps else weekSteps) }
     val starts by remember { history.startTimes() }.collectAsState(initial = emptyList())
     val days = remember(starts) { Stats.daysFromStarts(starts, zone) }
     val today = remember { LocalDate.now() }
@@ -90,15 +103,26 @@ fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romCh
         ) {
             Column(Modifier.padding(20.dp)) {
                 Text("Weekly goals", style = MaterialTheme.typography.titleMedium)
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    listOf("This week", "Last week").forEachIndexed { i, label ->
+                        SegmentedButton(
+                            selected = lastWeek == (i == 1),
+                            onClick = { lastWeek = i == 1 },
+                            shape = SegmentedButtonDefaults.itemShape(index = i, count = 2),
+                            label = { Text(label) },
+                            icon = {},
+                        )
+                    }
+                }
                 Text(
-                    "Each side fills toward this week's goal: " +
+                    "Each side fills toward the week's goal: " +
                         "${profile.dose.minutes} min for primary areas, ${Dose.SECONDARY.minutes} min for secondary. " +
                         "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(16.dp))
-                BodyMap(minutes, profile)
+                BodyMap(minutes, profile, onStretch = onStretchMuscle)
             }
         }
         Spacer(Modifier.height(16.dp))

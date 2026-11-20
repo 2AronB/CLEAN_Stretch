@@ -2,6 +2,14 @@ package dev.clean.stretch.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import dev.clean.stretch.plan.Generator
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -161,7 +169,7 @@ private fun pieces(view: BodyView): List<Triple<Muscle, BodySide, List<Offset>>>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BodyMap(minutes: Map<Muscle, SideMinutes>, profile: Profile, modifier: Modifier = Modifier) {
+fun BodyMap(minutes: Map<Muscle, SideMinutes>, profile: Profile, modifier: Modifier = Modifier, onStretch: ((Muscle) -> Unit)? = null) {
     val scheme = MaterialTheme.colorScheme
     val skin = scheme.surfaceContainerHighest
     val line = scheme.onSurface.copy(alpha = 0.18f)
@@ -174,6 +182,15 @@ fun BodyMap(minutes: Map<Muscle, SideMinutes>, profile: Profile, modifier: Modif
     var selectedName by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = Muscle.entries.firstOrNull { it.name == selectedName }
     val hasMoves = SampleCatalog.musclesWithMoves.toSet()
+    // List mode (PLAN §8.4): the same numbers as rows, for screen readers and large text. It starts
+    // on when TalkBack (touch exploration) is on or the text is set very large; the user can switch.
+    val context = LocalContext.current
+    val fontScale = LocalDensity.current.fontScale
+    val prefersList = remember {
+        val am = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
+        (am?.isTouchExplorationEnabled == true) || fontScale >= LARGE_TEXT_SCALE
+    }
+    var listMode by rememberSaveable { mutableStateOf(prefersList) }
 
     fun goalColor(m: Muscle): Color = when {
         profile.weeklyTarget(m) == null -> noGoalColor
@@ -191,6 +208,21 @@ fun BodyMap(minutes: Map<Muscle, SideMinutes>, profile: Profile, modifier: Modif
     }
 
     Column(modifier) {
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+            listOf("Figure", "List").forEachIndexed { i, label ->
+                SegmentedButton(
+                    selected = listMode == (i == 1),
+                    onClick = { listMode = i == 1 },
+                    shape = SegmentedButtonDefaults.itemShape(index = i, count = 2),
+                    label = { Text(label) },
+                    icon = {},
+                )
+            }
+        }
+        if (listMode) {
+            MuscleList(minutes, profile, hasMoves, selected, { m -> selectedName = if (selected == m) null else m.name }, ::goalColor, onStretch)
+            return@Column
+        }
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             BodyView.entries.forEachIndexed { i, v ->
                 SegmentedButton(
@@ -290,22 +322,112 @@ fun BodyMap(minutes: Map<Muscle, SideMinutes>, profile: Profile, modifier: Modif
                 if (selected == null) {
                     Text("Tap a muscle. Swipe to turn.", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 } else {
-                    val goal = profile.weeklyTarget(selected)
-                    val t = minutes[selected] ?: SideMinutes()
                     Text(selected.label, style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        when {
-                            selected !in hasMoves -> "No moves yet."
-                            goal == null -> "No goal · left ${formatMin(t.left)} · right ${formatMin(t.right)} min"
-                            else -> "Left ${formatMin(t.left)}/${formatMin(goal)} · right ${formatMin(t.right)}/${formatMin(goal)} min" +
-                                if (selected.region in profile.effectiveFocus) " · primary" else " · secondary"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = scheme.onSurfaceVariant,
-                    )
+                    MuscleDetail(selected, minutes, profile, hasMoves, onStretch)
                 }
             }
         }
+    }
+}
+
+/** Text size from which the body view starts in list mode (Android's largest font steps are 1.3–2.0). */
+private const val LARGE_TEXT_SCALE = 1.5f
+
+/** Minutes against the goal for one muscle, plus "Stretch this now" (PLAN §8.4). */
+@Composable
+private fun MuscleDetail(m: Muscle, minutes: Map<Muscle, SideMinutes>, profile: Profile, hasMoves: Set<Muscle>, onStretch: ((Muscle) -> Unit)?) {
+    Text(
+        sideSummary(m, minutes, profile, hasMoves),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (onStretch == null || m !in hasMoves) return
+    val routine = remember(m, profile) { Generator.forMuscle(profile, m) }
+    if (routine.keys.isEmpty()) {
+        routine.notes.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp)) }
+        return
+    }
+    FilledTonalButton(onClick = { onStretch(m) }, modifier = Modifier.padding(top = 8.dp)) {
+        Text("Stretch this now · ${routine.keys.size} moves · about ${Generator.estimateMinutes(routine.keys, routine.holdSeconds)} min")
+    }
+}
+
+private fun sideSummary(m: Muscle, minutes: Map<Muscle, SideMinutes>, profile: Profile, hasMoves: Set<Muscle>): String {
+    val goal = profile.weeklyTarget(m)
+    val t = minutes[m] ?: SideMinutes()
+    return when {
+        m !in hasMoves -> "No moves yet."
+        goal == null -> "No goal · left ${formatMin(t.left)} · right ${formatMin(t.right)} min"
+        else -> "Left ${formatMin(t.left)}/${formatMin(goal)} · right ${formatMin(t.right)}/${formatMin(goal)} min" +
+            if (m.region in profile.effectiveFocus) " · primary" else " · secondary"
+    }
+}
+
+/**
+ * List mode: one row per muscle, grouped by area, with a bar per side. Each row reads as one item
+ * for TalkBack; tapping it opens its minutes and "Stretch this now" in place.
+ */
+@Composable
+private fun MuscleList(
+    minutes: Map<Muscle, SideMinutes>,
+    profile: Profile,
+    hasMoves: Set<Muscle>,
+    selected: Muscle?,
+    onSelect: (Muscle) -> Unit,
+    goalColor: (Muscle) -> Color,
+    onStretch: ((Muscle) -> Unit)?,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Muscle.entries.groupBy { it.region }.forEach { (region, muscles) ->
+            Text(region.label, style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant, modifier = Modifier.padding(top = 8.dp))
+            muscles.forEach { m ->
+                val open = m == selected
+                Surface(
+                    color = if (open) scheme.surfaceContainerHigh else scheme.surfaceContainer,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClickLabel = if (open) "Close" else "Show details") { onSelect(m) }
+                                .semantics(mergeDescendants = true) {},
+                        ) {
+                            Box(Modifier.size(10.dp).background(goalColor(m), CircleShape))
+                            Column(Modifier.weight(1f).padding(start = 10.dp)) {
+                                Text(m.label, style = MaterialTheme.typography.titleSmall)
+                                if (!open) Text(sideSummary(m, minutes, profile, hasMoves), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                            }
+                        }
+                        if (m in hasMoves) {
+                            val goal = profile.weeklyTarget(m) ?: 10.0
+                            val t = minutes[m] ?: SideMinutes()
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp).clearAndSetSemantics {}) {
+                                SideBar("L", (t.left / goal).toFloat(), goalColor(m), Modifier.weight(1f))
+                                SideBar("R", (t.right / goal).toFloat(), goalColor(m), Modifier.weight(1f))
+                            }
+                        }
+                        if (open) MuscleDetail(m, minutes, profile, hasMoves, onStretch)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SideBar(label: String, fraction: Float, color: Color, modifier: Modifier) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(end = 4.dp))
+        LinearProgressIndicator(
+            progress = { fraction.coerceIn(0f, 1f) },
+            color = color,
+            trackColor = color.copy(alpha = 0.18f),
+            modifier = Modifier.weight(1f).height(8.dp),
+        )
     }
 }
 

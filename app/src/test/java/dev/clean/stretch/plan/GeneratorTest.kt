@@ -188,6 +188,37 @@ class GeneratorTest {
     }
 
     @Test
+    fun stretchThisNowPicksStretchesForTheMuscle() {
+        // Every muscle has at least three main moves (owner, D-043), so each gets a routine.
+        for (m in dev.clean.stretch.catalog.Muscle.entries) {
+            val r = Generator.forMuscle(Profile(hasWall = true), m)
+            assertTrue("$m has no moves", r.keys.isNotEmpty())
+            assertTrue(r.keys.size <= Generator.MUSCLE_NOW_MOVES)
+            r.keys.map { SampleCatalog.byKey(it)!! }.forEach { s ->
+                assertTrue("${s.key} is not a stretch", s.kind.isStretch)
+                assertTrue("${s.key} doesn't mainly target $m", m in s.primary)
+            }
+        }
+        val chest = dev.clean.stretch.catalog.Muscle.Chest
+        val rows = SampleCatalog.all.filter { it.kind.isStretch && chest in it.primary }.size
+        assertTrue("chest should have three main stretches, has $rows", rows >= 3)
+        // Limits still apply.
+        assertTrue(Generator.forMuscle(Profile(avoid = setOf(Region.Shoulders)), chest).keys.isEmpty())
+        val easy = Generator.forMuscle(Profile(conditions = setOf(Condition.Hypermobility)), dev.clean.stretch.catalog.Muscle.Triceps)
+        assertTrue(easy.keys.isNotEmpty() && easy.keys.all { SampleCatalog.byKey(it)!!.level == 1 })
+        val noWall = Generator.forMuscle(Profile(hasWall = false), dev.clean.stretch.catalog.Muscle.Triceps)
+        assertTrue(noWall.keys.none { it == "wall_triceps" })
+    }
+
+    @Test
+    fun everyMuscleHasThreeMainMoves() {
+        for (m in dev.clean.stretch.catalog.Muscle.entries) {
+            val n = SampleCatalog.all.count { m in it.primary }
+            assertTrue("${m.label} has $n main moves (owner asked for at least 3, D-043)", n >= 3)
+        }
+    }
+
+    @Test
     fun tenderSpotRespectsLimits() {
         val back = dev.clean.stretch.catalog.Muscle.UpperBack
         val avoided = Generator.tenderSpot(Profile(avoid = setOf(Region.Back)), back)

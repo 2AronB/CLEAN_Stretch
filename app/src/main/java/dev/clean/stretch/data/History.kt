@@ -83,6 +83,10 @@ abstract class HistoryDao {
     @Query("SELECT * FROM session_steps WHERE sessionId IN (SELECT id FROM sessions WHERE startedAt >= :fromMs)")
     abstract fun stepsSince(fromMs: Long): Flow<List<SessionStepEntity>>
 
+    /** Steps of sessions started in [fromMs, toMs), e.g. last week for the body view. */
+    @Query("SELECT * FROM session_steps WHERE sessionId IN (SELECT id FROM sessions WHERE startedAt >= :fromMs AND startedAt < :toMs)")
+    abstract fun stepsBetween(fromMs: Long, toMs: Long): Flow<List<SessionStepEntity>>
+
     @Query("SELECT * FROM sessions ORDER BY id")
     abstract suspend fun allSessionsNow(): List<SessionEntity>
 

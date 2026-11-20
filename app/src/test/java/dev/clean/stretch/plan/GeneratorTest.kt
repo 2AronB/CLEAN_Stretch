@@ -110,8 +110,8 @@ class GeneratorTest {
         assertEquals(2.0, Generator.sessionTargets(legs, mapOf(Muscle.Hamstrings to 4.0), 3)[Muscle.Hamstrings]!!, 1e-9)
         // Last day with nothing done: capped at 4.
         assertEquals(4.0, Generator.sessionTargets(legs, emptyMap(), 1)[Muscle.Hamstrings]!!, 1e-9)
-        // Shins & ankles has moves now (2026-11-14), so it gets a target like any other leg muscle.
-        assertEquals(2.0, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Shins]!!, 1e-9)
+        // Shins & ankles has moves (2026-11-14); as a smaller muscle it aims for half (D-045): 5 / 5 = 1 min.
+        assertEquals(1.0, Generator.sessionTargets(legs, emptyMap(), 5)[Muscle.Shins]!!, 1e-9)
         val r = Generator.generate(legs, RoutineKind.Full, daysLeft = 5)
         assertTrue((Generator.minutesByMuscle(r.keys, r.holdSeconds)[Muscle.Hamstrings] ?: 0.0) > 0.0)
         // No muscle side ever gets more than 4 min in one routine, whatever the length.
@@ -134,6 +134,23 @@ class GeneratorTest {
     }
 
     @Test
+    fun noAreasPickedAimsAtCommonlyStiffMuscles() {
+        val p = Profile() // whole-body goal, nothing picked
+        assertTrue(p.usesCommonlyStiff)
+        assertEquals(7.0, p.weeklyTarget(Muscle.Hamstrings)!!, 1e-9)
+        assertEquals(7.0, p.weeklyTarget(Muscle.Neck)!!, 1e-9)
+        assertEquals(null, p.weeklyTarget(Muscle.Shins))
+        assertEquals(null, p.weeklyTarget(Muscle.Biceps))
+        assertEquals(null, p.copy(avoid = setOf(Region.Neck)).weeklyTarget(Muscle.Neck))
+        // A goal with its own areas, or any area picked, uses those instead.
+        assertTrue(!Profile(goal = Goal.Runner).usesCommonlyStiff)
+        assertTrue(!Profile(secondary = setOf(Region.Arms)).usesCommonlyStiff)
+        assertEquals(null, Profile(secondary = setOf(Region.Arms)).weeklyTarget(Muscle.Hamstrings))
+        // About an hour of holding a week (was about 137 with the whole body as secondary).
+        assertTrue(Generator.weeklyPlanMinutes(p) <= 60)
+    }
+
+    @Test
     fun doseAndSecondaryAreasSetEachMusclesGoal() {
         val p = Profile(focus = setOf(Region.Hips), secondary = setOf(Region.Neck, Region.Hips), weeklyDose = 15)
         assertEquals(15.0, p.weeklyTarget(Muscle.Glutes)!!, 1e-9)
@@ -141,8 +158,9 @@ class GeneratorTest {
         assertEquals(null, p.weeklyTarget(Muscle.Hamstrings))
         // An area to avoid never gets a goal.
         assertEquals(null, p.copy(avoid = setOf(Region.Neck)).weeklyTarget(Muscle.Neck))
-        // Nothing chosen and a whole-body goal: everything is secondary.
-        assertEquals(5.0, Profile().weeklyTarget(Muscle.Calves)!!, 1e-9)
+        // Smaller, supporting muscles get half their area's goal (D-045).
+        assertEquals(7.5, p.weeklyTarget(Muscle.DeepHip)!!, 1e-9)
+        assertEquals(2.5, Profile(secondary = setOf(Region.Legs)).weeklyTarget(Muscle.Shins)!!, 1e-9)
         // The setup page's weekly total grows with the dose.
         val legs = Profile(focus = setOf(Region.Legs))
         assertTrue(Generator.weeklyPlanMinutes(legs.copy(weeklyDose = 5)) < Generator.weeklyPlanMinutes(legs.copy(weeklyDose = 15)))

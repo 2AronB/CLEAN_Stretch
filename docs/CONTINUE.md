@@ -1,14 +1,14 @@
 # Continue here
 
-**State on 2026-11-19 (evening, D-044):** every first-release slice (S0–S7) exists, plus S8 (strengthen and
+**State on 2026-11-20 (D-045):** every first-release slice (S0–S7) exists, plus S8 (strengthen and
 foam rolling), S9 (range-of-motion checks, now 9), a 3D figure, 77 moves (every muscle has at
 least three main moves, D-043), the catalog split by body
 area with an owner review log, and **routines that keep running with the screen off** (D-037).
 Version `0.3.0-first-release-slices` (versionCode 3), database v6, compile/target SDK 37.
-97 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
+98 JVM tests pass; lint shows no errors (2 "newer version available" warnings). Pushed to https://github.com/2AronB/CLEAN_Stretch.
 
 The day-by-day log, with every check that was run, is in `docs/HISTORY.md`. Decisions are in
-`docs/DECISIONS.md` (D-001…D-044). How to add a move: `docs/ADDING_STRETCHES.md`. Play
+`docs/DECISIONS.md` (D-001…D-045). How to add a move: `docs/ADDING_STRETCHES.md`. Play
 Store checklist and drafts: `docs/PLAY_RELEASE.md`.
 
 ## What the app does now
@@ -96,9 +96,14 @@ validated restore, Delete my data, no internet permission, Android auto-backup o
 - **Weekly goals:** 5 / 7 / 10 / 15 min, new users start on 7.
 - **Setup:** three sections — Goal and weekly goals; Health and limits (65+, avoid,
   conditions); Days and reminders (1–3 reminders, each with its own routine).
-- **Open question for the owner:** with no areas picked, the whole body counts as secondary,
-  which adds up to ~137 min a week (~46 min of holding a day on 3 days). Routines stop at
-  15 min, so the day circles can't fill. See "Next".
+
+## Added 2026-11-20: D-045 — weekly goals sized to real life
+
+- No areas picked = the weekly goal for 8 commonly stiff muscles (neck, chest, upper and lower
+  back, hip flexors, glutes, hamstrings, calves); smaller muscles (arms, core, inner/outer/deep
+  hip, shins) aim for half. Default plan fell from ~137 to 60 min of holding a week.
+- Seen on the emulator: Setup summary and weekly goals page.
+- **Still open:** 60 min/week needs ~27 min a day on the default 3 days; routines stop at 15.
 
 ## Added 2026-11-19: owner round D-043 (seen on the emulator during D-044 only in part)
 
@@ -184,9 +189,10 @@ Owner said 2026-11-19: they're using the app and will give feedback when ready.
 
 **The full plan is `docs/PLAN.md` §8.** Short version:
 
-1. **Owner decision:** what "nothing picked" should mean for weekly goals (today: whole body
-   secondary ≈ 137 min/week, far more than 15-min routines can cover). Options: no goals until
-   areas are picked, the goal's default areas only, or a smaller secondary amount.
+1. **Owner decision (D-045 follow-up):** the default plan (60 min/week) still needs ~27 min a day
+   on 3 days. Options: start new users at 5 days a week, a shorter stiff list, or keep it and
+   let the Setup note explain. Owner also to review the stiff list and which muscles count as
+   smaller.
 2. Agent: emulator walk-through of the D-043 body view, motion checks and new moves (the D-044
    pass covered the player, Today, Setup and reminders).
 2. Owner feedback round from using the app; owner reviews of the new moves (see Owner actions).

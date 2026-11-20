@@ -78,17 +78,41 @@ data class Profile(
     /** Focus areas the user picked, or the goal's defaults. Empty means whole body. */
     val effectiveFocus: Set<Region> get() = focus.ifEmpty { goal.defaultFocus }
 
-    /** Secondary areas, never overlapping the primary ones. With no areas chosen at all, the whole body is secondary. */
-    val effectiveSecondary: Set<Region> get() =
-        if (effectiveFocus.isEmpty() && secondary.isEmpty()) Region.entries.toSet() else secondary - effectiveFocus
+    /** Secondary areas, never overlapping the primary ones. */
+    val effectiveSecondary: Set<Region> get() = secondary - effectiveFocus
+
+    /**
+     * No areas chosen and a whole-body goal: aim at the muscles that are most often stiff
+     * ([COMMONLY_STIFF]) instead of the whole body (owner, D-045).
+     */
+    val usesCommonlyStiff: Boolean get() = effectiveFocus.isEmpty() && secondary.isEmpty()
 
     val dose: Dose get() = Dose.of(weeklyDose)
 
-    /** This muscle's weekly goal in minutes per side, or null if it has none. Areas to avoid never get one. */
-    fun weeklyTarget(m: Muscle): Double? = when (m.region) {
-        in avoid -> null
-        in effectiveFocus -> dose.minutes.toDouble()
-        in effectiveSecondary -> Dose.SECONDARY.minutes.toDouble()
-        else -> null
+    /**
+     * This muscle's weekly goal in minutes per side, or null if it has none. Areas to avoid never
+     * get one. Supporting muscles get a share of their area's goal ([Muscle.goalShare], D-045).
+     */
+    fun weeklyTarget(m: Muscle): Double? {
+        val base = when {
+            m.region in avoid -> return null
+            usesCommonlyStiff -> if (m in COMMONLY_STIFF) dose.minutes else return null
+            m.region in effectiveFocus -> dose.minutes
+            m.region in effectiveSecondary -> Dose.SECONDARY.minutes
+            else -> return null
+        }
+        return base * m.goalShare
+    }
+
+    companion object {
+        /**
+         * Muscles that are commonly stiff from sitting and daily life, used when the user hasn't
+         * picked any areas. An app choice (Editorial tier), drawn from the desk and runner focus
+         * lists in EVIDENCE §7; not a research finding.
+         */
+        val COMMONLY_STIFF: Set<Muscle> = setOf(
+            Muscle.Neck, Muscle.Chest, Muscle.UpperBack, Muscle.LowerBack,
+            Muscle.HipFlexors, Muscle.Glutes, Muscle.Hamstrings, Muscle.Calves,
+        )
     }
 }

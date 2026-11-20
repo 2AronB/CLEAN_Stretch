@@ -6,27 +6,40 @@ import dev.clean.stretch.figure.StageProp
 
 enum class Region(val label: String) { Neck("Neck"), Shoulders("Shoulders & chest"), Arms("Arms"), Back("Back"), Core("Core"), Hips("Hips"), Legs("Legs") }
 
-enum class Muscle(val label: String, val region: Region) {
+/**
+ * [main]: a large muscle that is often tight and gets the full weekly goal. Smaller, supporting
+ * muscles (shins, forearms, side body...) get [SUPPORTING_SHARE] of it (owner, D-045). This is an
+ * app design choice, not a research finding: the dose studies did not compare muscle sizes.
+ */
+enum class Muscle(val label: String, val region: Region, val main: Boolean = true) {
     Neck("Neck", Region.Neck),
     Chest("Chest", Region.Shoulders),
     Shoulders("Shoulders", Region.Shoulders),
-    Biceps("Biceps", Region.Arms),
-    Triceps("Triceps", Region.Arms),
-    Forearms("Forearms & wrists", Region.Arms),
+    Biceps("Biceps", Region.Arms, main = false),
+    Triceps("Triceps", Region.Arms, main = false),
+    Forearms("Forearms & wrists", Region.Arms, main = false),
     Lats("Lats", Region.Back),
     UpperBack("Upper back", Region.Back),
     LowerBack("Lower back", Region.Back),
-    Abdominals("Abdominals", Region.Core),
-    Obliques("Side body", Region.Core),
+    Abdominals("Abdominals", Region.Core, main = false),
+    Obliques("Side body", Region.Core, main = false),
     HipFlexors("Hip flexors", Region.Hips),
     Glutes("Glutes", Region.Hips),
-    Adductors("Inner thigh", Region.Hips),
-    OuterHip("Outer hip", Region.Hips),
-    DeepHip("Deep hip rotators", Region.Hips),
+    Adductors("Inner thigh", Region.Hips, main = false),
+    OuterHip("Outer hip", Region.Hips, main = false),
+    DeepHip("Deep hip rotators", Region.Hips, main = false),
     Quadriceps("Quadriceps", Region.Legs),
     Hamstrings("Hamstrings", Region.Legs),
     Calves("Calves", Region.Legs),
-    Shins("Shins & ankles", Region.Legs),
+    Shins("Shins & ankles", Region.Legs, main = false),
+    ;
+
+    /** Share of the weekly goal this muscle aims for. */
+    val goalShare: Double get() = if (main) 1.0 else SUPPORTING_SHARE
+
+    companion object {
+        const val SUPPORTING_SHARE = 0.5
+    }
 }
 
 enum class Position(val label: String) {

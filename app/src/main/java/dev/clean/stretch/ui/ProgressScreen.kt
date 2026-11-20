@@ -116,8 +116,8 @@ fun ProgressScreen(history: HistoryDao, profile: Profile, daysTarget: Int, romCh
                 }
                 Text(
                     "Each side fills toward the week's goal: " +
-                        "${profile.dose.minutes} min for primary areas, ${Dose.SECONDARY.minutes} min for secondary. " +
-                        "",
+                        (if (profile.usesCommonlyStiff) "${profile.dose.minutes} min for commonly stiff muscles. " else "${profile.dose.minutes} min for primary areas, ${Dose.SECONDARY.minutes} min for secondary. ") +
+                        "Smaller muscles get half.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

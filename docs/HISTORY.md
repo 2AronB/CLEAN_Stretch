@@ -662,3 +662,16 @@ Branch `claude/3d-stretch-models-518e55`, up to date with `main` (fast-forwarded
   neck"; the 8:00 alarm in `dumpsys alarm`; after an emulator reboot `BootReceiver` re-set it
   without opening the app. Not checked: hearing the clips (no audio check), the notification
   itself firing at its time.
+
+## D-045 (2026-11-20): commonly stiff default, smaller muscles get half
+- Owner idea: with no areas picked, aim at commonly stiff muscles; small muscles need less time.
+- `Muscle.main` / `goalShare` (supporting muscles 0.5); `Profile.usesCommonlyStiff` and
+  `COMMONLY_STIFF`; `weeklyTarget` applies both. Setup shows the stiff list when nothing is picked,
+  explains the half share, and its "too much for 15 min" note suggests picking a few areas.
+  Setup summary: "Commonly stiff muscles · 7 min". Progress text mentions the half share.
+- Default weekly plan: ~137 → 60 min of holding. Still more than 3 × 15-min routines cover
+  (needs ~27 min/day on 3 days, ~16 on 5, ~12 on 7); owner asked how to close the gap.
+- Checks run: 98 JVM tests pass (new `noAreasPickedAimsAtCommonlyStiffMuscles`; shin target
+  and secondary tests updated); assembleDebug; lintDebug 0 errors. Emulator (emulator-5554):
+  Setup summary and weekly goals page show the new text and "About 60 min … 27 min a day".
+

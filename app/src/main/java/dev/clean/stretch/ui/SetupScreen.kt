@@ -251,7 +251,7 @@ private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> U
     Heading(
         "Weekly goals",
         "Primary areas get your weekly goal for each muscle, on each side. Secondary areas get a smaller amount to keep what you have. " +
-            "Leave all off to follow your goal (${draft.goal.defaultFocus.joinToString { it.label.lowercase() }.ifEmpty { "whole body, secondary" }}).",
+            "Leave all off to follow your goal (${draft.goal.defaultFocus.joinToString { it.label.lowercase() }.ifEmpty { "commonly stiff muscles" }}).",
     )
     val levels = listOf("Off", "Secondary", "Primary")
     Region.entries.filter { it !in draft.avoid }.forEach { r ->
@@ -275,9 +275,22 @@ private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> U
             }
         }
     }
+    if (draft.usesCommonlyStiff) {
+        Text(
+            "No areas picked, so goals cover commonly stiff muscles: " + commonlyStiffText() + ".",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 10.dp),
+        )
+    }
     Spacer(Modifier.height(20.dp))
     Text("Weekly goal for primary areas", style = MaterialTheme.typography.titleMedium)
-    Text("Minutes for each muscle, on each side, per week. Secondary areas get ${Dose.SECONDARY.minutes} minutes.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(
+        "Minutes for each large muscle, on each side, per week. Smaller muscles like shins, forearms and side body get half. " +
+            "Secondary areas get ${Dose.SECONDARY.minutes} minutes.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     Dose.entries.forEach { d ->
         ChoiceRow(d.label, d.info, selected = draft.dose == d) { onChange(draft.copy(weeklyDose = d.minutes)) }
     }
@@ -294,7 +307,7 @@ private fun GoalsPage(draft: Profile, daysPerWeek: Int, onChange: (Profile) -> U
                     "About $perDay min of holding on each of your $daysPerWeek days" +
                         if (needed > Generator.MAX_ROUTINE_MINUTES) {
                             ", which needs about $needed min a day. Suggested routines stop at ${Generator.MAX_ROUTINE_MINUTES} min, " +
-                                "so try fewer primary or secondary areas, a smaller goal, or more days a week."
+                                "so try " + (if (draft.usesCommonlyStiff) "picking a few areas, " else "fewer primary or secondary areas, ") + "a smaller goal, or more days a week."
                         } else {
                             ", so each day's suggested routine is about ${Generator.routineMinutes(draft, daysPerWeek, RoutineKind.Full, hold)} min." +
                                 " Moves that stretch several muscles at once count for each of them."
@@ -435,7 +448,7 @@ private fun formatTime(minutes: Int): String =
 private fun sectionSummaries(d: Profile, prefs: AppPreferences): List<String> = listOf(
     buildList {
         add(d.goal.label)
-        add(d.effectiveFocus.joinToString { it.label }.ifEmpty { "No primary areas" } + " · ${d.dose.minutes} min")
+        add(if (d.usesCommonlyStiff) "Commonly stiff muscles · ${d.dose.minutes} min" else d.effectiveFocus.joinToString { it.label }.ifEmpty { "No primary areas" } + " · ${d.dose.minutes} min")
         if (d.effectiveSecondary.isNotEmpty()) add("secondary: " + d.effectiveSecondary.joinToString { it.label.lowercase() })
     }.joinToString(" · "),
     buildList {
@@ -469,4 +482,10 @@ private fun SectionMenu(summaries: List<String>, onOpen: (Int) -> Unit) {
             }
         }
     }
+}
+
+/** "neck, chest, upper back, ... and calves". */
+private fun commonlyStiffText(): String {
+    val names = Profile.COMMONLY_STIFF.sortedBy { it.ordinal }.map { it.label.lowercase() }
+    return names.dropLast(1).joinToString() + " and " + names.last()
 }
